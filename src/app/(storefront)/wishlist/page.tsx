@@ -7,11 +7,11 @@ import { redirect } from "next/navigation";
 export default async function WishlistPage() {
   const session = await getServerSession(authOptions);
   
-  if (!session || !(session.user as any)?.id) {
+  if (!session || !session.user?.id) {
     redirect("/login");
   }
 
-  const userId = (session.user as any).id;
+  const userId = session.user.id;
 
   const wishlist = await prisma.wishlist.findUnique({
     where: { userId },

@@ -1,9 +1,11 @@
 import { prisma } from "../lib/prisma";
 
-export async function getProducts() {
+export async function getProducts(skip?: number, take?: number) {
   return await prisma.product.findMany({
     include: { collection: true },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
+    ...(skip !== undefined ? { skip } : {}),
+    ...(take !== undefined ? { take } : {}),
   });
 }
 

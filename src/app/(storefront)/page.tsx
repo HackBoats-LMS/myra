@@ -11,7 +11,8 @@ export default async function StorefrontHome() {
 
   const featuredProducts = await prisma.product.findMany({
     take: 4,
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
+    include: { reviews: true }
   });
 
   return (

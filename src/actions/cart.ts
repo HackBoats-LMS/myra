@@ -3,13 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 export async function addToCart(productId: string, quantity: number = 1) {
   const session = await getServerSession(authOptions);
   
-  if ((session?.user as any)?.id) {
+  if (session?.user?.id) {
     // Database approach for logged in users
-    const userId = (session?.user as any).id as string;
+    const userId = session.user.id;
     let cart = await prisma.cart.findUnique({ where: { userId } });
     
     if (!cart) {
@@ -69,13 +70,15 @@ export async function addToCart(productId: string, quantity: number = 1) {
     // Store in cookie for 30 days
     cookieStore.set('guest_cart', JSON.stringify(cartItems), { maxAge: 60 * 60 * 24 * 30 });
   }
+
+  revalidatePath("/");
 }
 
 export async function updateCartQuantity(productId: string, quantity: number) {
   const session = await getServerSession(authOptions);
   
-  if ((session?.user as any)?.id) {
-    const userId = (session!.user as any).id;
+  if (session?.user?.id) {
+    const userId = session.user.id;
     const cart = await prisma.cart.findUnique({ where: { userId } });
     if (!cart) return;
 
@@ -116,16 +119,18 @@ export async function updateCartQuantity(productId: string, quantity: number) {
       cookieStore.set('guest_cart', JSON.stringify(cartItems), { maxAge: 60 * 60 * 24 * 30 });
     }
   }
+
+  revalidatePath("/");
 }
 
 export async function checkoutCart() {
   const session = await getServerSession(authOptions);
   
-  if (!(session?.user as any)?.id) {
+  if (!session?.user?.id) {
     throw new Error("You must be logged in to checkout.");
   }
 
-  const userId = (session!.user as any).id;
+  const userId = session.user.id;
   
   // Use a Prisma transaction to guarantee atomic execution
   await prisma.$transaction(async (tx) => {
@@ -176,4 +181,58 @@ export async function checkoutCart() {
     // Empty the cart
     await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
   });
+
+  revalidatePath("/");
+}
+
+/**
+ * Merges the guest cookie cart into the logged-in user's DB cart.
+ * Called from the NextAuth signIn callback immediately after login.
+ * Safe to call multiple times — uses upsert logic.
+ */
+export async function mergeGuestCart(userId: string, cookieValue: string | undefined) {
+  if (!cookieValue) return;
+
+  let guestItems: { productId: string; quantity: number }[] = [];
+  try {
+    const parsed = JSON.parse(cookieValue);
+    if (Array.isArray(parsed)) {
+      guestItems = parsed
+        .filter(
+          (i) =>
+            typeof i.productId === "string" &&
+            typeof i.quantity === "number" &&
+            i.quantity > 0
+        )
+        .slice(0, 50);
+    }
+  } catch {
+    return; // Corrupted cookie — nothing to merge
+  }
+
+  if (guestItems.length === 0) return;
+
+  // Get or create the user's DB cart
+  let cart = await prisma.cart.findUnique({ where: { userId } });
+  if (!cart) {
+    cart = await prisma.cart.create({ data: { userId } });
+  }
+
+  for (const item of guestItems) {
+    const existing = await prisma.cartItem.findUnique({
+      where: { cartId_productId: { cartId: cart.id, productId: item.productId } },
+    });
+
+    if (existing) {
+      // Add quantities, cap at 99
+      await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: Math.min(existing.quantity + item.quantity, 99) },
+      });
+    } else {
+      await prisma.cartItem.create({
+        data: { cartId: cart.id, productId: item.productId, quantity: Math.min(item.quantity, 99) },
+      });
+    }
+  }
 }

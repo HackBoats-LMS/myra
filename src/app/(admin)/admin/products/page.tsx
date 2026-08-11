@@ -1,10 +1,26 @@
 import Link from 'next/link';
 import { getProducts } from '@/services/products';
-import { Plus, Edit } from 'lucide-react';
+import { PlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import DeleteProductButton from '@/components/admin/DeleteProductButton';
+import Pagination from '@/components/storefront/Pagination';
+import { prisma } from '@/lib/prisma';
 
-export default async function AdminProductsPage() {
-  const products = await getProducts();
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const currentPage = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10));
+  const ITEMS_PER_PAGE = 10;
+
+  const [products, totalProducts] = await Promise.all([
+    getProducts((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE),
+    prisma.product.count()
+  ]);
+
+  const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+  const baseUrl = '/admin/products';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -14,7 +30,7 @@ export default async function AdminProductsPage() {
           <p className="text-sm text-gray-500 mt-1">Manage your storefront inventory</p>
         </div>
         <Link href="/admin/products/new" className="bg-[#B03138] hover:bg-[#8F252B] text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
-          <Plus className="w-4 h-4" />
+          <PlusIcon className="w-4 h-4" />
           Add Product
         </Link>
       </div>
@@ -54,7 +70,7 @@ export default async function AdminProductsPage() {
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <Link href={`/admin/products/${product.id}`} className="inline-block text-gray-400 hover:text-[#0D3B66] transition-colors p-1" title="Edit Product">
-                      <Edit className="w-4 h-4" />
+                      <PencilSquareIcon className="w-4 h-4" />
                     </Link>
                     <DeleteProductButton id={product.id} name={product.name} />
                   </td>
@@ -63,6 +79,10 @@ export default async function AdminProductsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="pt-2">
+        <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
       </div>
     </div>
   );

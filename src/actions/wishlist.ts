@@ -5,9 +5,9 @@ import { authOptions } from "@/lib/auth";
 
 export async function toggleWishlist(productId: string) {
   const session = await getServerSession(authOptions);
-  if (!(session?.user as any)?.id) throw new Error("Must be logged in to wishlist.");
+  if (!session?.user?.id) throw new Error("Must be logged in to wishlist.");
 
-  const userId = (session!.user as any).id;
+  const userId = session.user.id;
 
   let wishlist = await prisma.wishlist.findUnique({ where: { userId } });
   if (!wishlist) {

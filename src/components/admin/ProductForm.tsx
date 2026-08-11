@@ -3,7 +3,8 @@ import { useState } from "react";
 import { createProduct, updateProduct } from "@/actions/admin";
 import { useRouter } from "next/navigation";
 import ImageUpload from "./ImageUpload";
-import { Loader2 } from "lucide-react";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/components/ui/Toast";
 
 interface ProductFormProps {
   collections: any[];
@@ -12,6 +13,7 @@ interface ProductFormProps {
 
 export default function ProductForm({ collections, initialData }: ProductFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialData?.images?.[0] || "");
 
@@ -30,7 +32,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
       router.push("/admin/products");
       router.refresh();
     } catch (error) {
-      alert("Failed to save product");
+      toast.error("Failed to save product. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -95,7 +97,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
           disabled={isSubmitting}
           className="bg-[#0D3B66] hover:bg-[#082a4d] text-white px-6 py-2 rounded-md text-sm font-medium transition-colors flex items-center disabled:opacity-50"
         >
-          {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+          {isSubmitting && <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />}
           {initialData ? "Save Changes" : "Create Product"}
         </button>
       </div>

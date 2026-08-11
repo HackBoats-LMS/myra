@@ -2,10 +2,12 @@
 import { useState } from "react";
 import { createCollection, updateCollection } from "@/actions/admin";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/components/ui/Toast";
 
 export default function CollectionForm({ initialData }: { initialData?: any }) {
   const router = useRouter();
+  const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -22,7 +24,7 @@ export default function CollectionForm({ initialData }: { initialData?: any }) {
       router.push("/admin/collections");
       router.refresh();
     } catch (error) {
-      alert("Failed to save collection");
+      toast.error("Failed to save collection. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -60,7 +62,7 @@ export default function CollectionForm({ initialData }: { initialData?: any }) {
           disabled={isSubmitting}
           className="bg-[#0D3B66] hover:bg-[#082a4d] text-white px-6 py-2 rounded-md text-sm font-medium transition-colors flex items-center disabled:opacity-50"
         >
-          {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+          {isSubmitting && <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />}
           {initialData ? "Save Changes" : "Create Collection"}
         </button>
       </div>

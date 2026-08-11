@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2, Lock } from "lucide-react";
+import { ArrowPathIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-[#0D3B66] rounded-full flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6 text-white" />
+            <LockClosedIcon className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Admin Portal</h1>
           <p className="text-xs text-gray-500 uppercase tracking-widest mt-2">Authorized Personnel Only</p>
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
             disabled={isLoading}
             className="w-full bg-[#0D3B66] hover:bg-[#082a4d] text-white px-4 py-3 rounded-md text-sm font-bold tracking-widest transition-colors flex items-center justify-center disabled:opacity-70 mt-6"
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "AUTHENTICATE"}
+            {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "AUTHENTICATE"}
           </button>
         </form>
       </div>

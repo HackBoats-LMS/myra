@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Package, LayoutDashboard, FolderTree, ShoppingCart, LogOut } from 'lucide-react';
+import { ArchiveBoxIcon, Squares2X2Icon, FolderOpenIcon, ShoppingCartIcon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 
 export default function Sidebar() {
   return (
@@ -11,26 +11,26 @@ export default function Sidebar() {
 
       <nav className="flex-1 p-4 space-y-2 mt-4">
         <Link href="/admin" className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-white/10 transition-colors text-sm font-medium">
-          <LayoutDashboard className="w-4 h-4 opacity-70" />
+          <Squares2X2Icon className="w-4 h-4 opacity-70" />
           Dashboard
         </Link>
         <Link href="/admin/products" className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-white/10 transition-colors text-sm font-medium">
-          <Package className="w-4 h-4 opacity-70" />
+          <ArchiveBoxIcon className="w-4 h-4 opacity-70" />
           Products
         </Link>
         <Link href="/admin/collections" className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-white/10 transition-colors text-sm font-medium">
-          <FolderTree className="w-4 h-4 opacity-70" />
+          <FolderOpenIcon className="w-4 h-4 opacity-70" />
           Collections
         </Link>
         <Link href="/admin/orders" className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-white/10 transition-colors text-sm font-medium">
-          <ShoppingCart className="w-4 h-4 opacity-70" />
+          <ShoppingCartIcon className="w-4 h-4 opacity-70" />
           Orders
         </Link>
       </nav>
 
       <div className="p-4 border-t border-white/10">
         <button className="flex items-center gap-3 px-4 py-3 w-full rounded-md hover:bg-red-500/20 text-red-300 transition-colors text-sm font-medium">
-          <LogOut className="w-4 h-4 opacity-70" />
+          <ArrowRightOnRectangleIcon className="w-4 h-4 opacity-70" />
           Logout
         </button>
       </div>

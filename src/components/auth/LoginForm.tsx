@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -76,7 +76,7 @@ export default function LoginForm() {
           disabled={isLoading || isGoogleLoading}
           className="w-full bg-[#0D3B66] hover:bg-[#082a4d] text-white px-4 py-2.5 rounded-md text-sm font-bold tracking-wider transition-colors flex items-center justify-center disabled:opacity-70"
         >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "SIGN IN"}
+          {isLoading ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "SIGN IN"}
         </button>
       </form>
 
@@ -95,7 +95,7 @@ export default function LoginForm() {
         className="w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-md text-sm font-bold tracking-wider transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm"
       >
         {isGoogleLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+          <ArrowPathIcon className="w-4 h-4 animate-spin text-gray-400" />
         ) : (
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

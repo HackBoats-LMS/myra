@@ -11,6 +11,7 @@ export default function HeroGrid() {
           alt="Main Sale Banner" 
           fill 
           priority
+          sizes="(max-width: 1024px) 100vw, 66vw"
           className="object-cover absolute inset-0 z-0" 
         />
       </div>

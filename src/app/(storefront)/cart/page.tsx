@@ -4,12 +4,19 @@ import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
 import CartItem from "@/components/storefront/CartItem";
 import CheckoutButton from "@/components/storefront/CheckoutButton";
+import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shopping Bag | Myra Shopping Mall",
+  description: "Review items in your shopping bag and proceed to checkout.",
+};
 
 async function getCartItems() {
   const session = await getServerSession(authOptions);
   
-  if ((session?.user as any)?.id) {
-    const userId = (session!.user as any).id;
+  if (session?.user?.id) {
+    const userId = session.user.id;
     const cart = await prisma.cart.findUnique({
       where: { userId },
       include: {
@@ -55,7 +62,15 @@ export default async function CartPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="text-center text-gray-500 py-20">Your bag is empty.</div>
+        <div className="text-center py-20">
+          <p className="text-gray-500 mb-6">Your bag is empty.</p>
+          <Link
+            href="/collections"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#0D3B66] hover:underline"
+          >
+            ← Continue Shopping
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           
@@ -65,6 +80,14 @@ export default async function CartPage() {
               {items.map((item: any) => (
                 <CartItem key={item.id} item={item} />
               ))}
+            </div>
+            <div className="mt-6">
+              <Link
+                href="/collections"
+                className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                ← Continue Shopping
+              </Link>
             </div>
           </div>
 

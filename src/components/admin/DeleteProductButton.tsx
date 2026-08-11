@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
-import { Trash2, Loader2 } from "lucide-react";
+import { TrashIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { deleteProduct } from "@/actions/admin";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
 
 export default function DeleteProductButton({ id, name }: { id: string, name: string }) {
   const router = useRouter();
+  const toast = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -18,7 +20,7 @@ export default function DeleteProductButton({ id, name }: { id: string, name: st
       await deleteProduct(id);
       router.refresh();
     } catch (error) {
-      alert("Failed to delete product");
+      toast.error("Failed to delete product. Please try again.");
       setIsDeleting(false);
     }
   };
@@ -30,7 +32,7 @@ export default function DeleteProductButton({ id, name }: { id: string, name: st
       className="text-gray-400 hover:text-red-600 transition-colors p-1 disabled:opacity-50"
       title="Delete Product"
     >
-      {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+      {isDeleting ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <TrashIcon className="w-4 h-4" />}
     </button>
   );
 }

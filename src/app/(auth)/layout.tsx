@@ -21,6 +21,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           alt="Myra Shopping Mall" 
           fill 
           priority
+          sizes="50vw"
           className="object-cover absolute inset-0 z-0" 
         />
         <div className="absolute inset-0 bg-black/10 z-10" />

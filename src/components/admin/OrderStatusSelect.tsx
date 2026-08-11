@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
 import { updateOrderStatus } from "@/actions/admin";
-import { Loader2 } from "lucide-react";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 
 export default function OrderStatusSelect({ orderId, currentStatus }: { orderId: string, currentStatus: string }) {
   const router = useRouter();
+  const toast = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -14,7 +16,7 @@ export default function OrderStatusSelect({ orderId, currentStatus }: { orderId:
       await updateOrderStatus(orderId, e.target.value as any);
       router.refresh();
     } catch (error) {
-      alert("Failed to update status");
+      toast.error("Failed to update status.");
     } finally {
       setIsUpdating(false);
     }
@@ -35,7 +37,7 @@ export default function OrderStatusSelect({ orderId, currentStatus }: { orderId:
       </select>
       {isUpdating && (
         <div className="absolute right-2 top-1/2 -translate-y-1/2">
-          <Loader2 className="w-3 h-3 animate-spin text-gray-500" />
+          <ArrowPathIcon className="w-3 h-3 animate-spin text-gray-500" />
         </div>
       )}
     </div>

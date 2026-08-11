@@ -1,10 +1,12 @@
 "use client"
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Upload, X, Loader2 } from "lucide-react";
+import { ArrowUpTrayIcon, XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-
 import { uploadImage } from "@/actions/admin";
+import { useToast } from "@/components/ui/Toast";
+
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_SIZE_MB = 5;
 
 interface ImageUploadProps {
   value: string;
@@ -12,22 +14,36 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ value, onChange }: ImageUploadProps) {
+  const toast = useToast();
   const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!e.target.files || e.target.files.length === 0) return;
-      
-      setIsUploading(true);
+
       const file = e.target.files[0];
-      
+
+      // Client-side validation (server also validates)
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        toast.error("Only JPEG, PNG, WebP, and GIF images are allowed.");
+        e.target.value = "";
+        return;
+      }
+
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        toast.error(`Image must be smaller than ${MAX_SIZE_MB} MB.`);
+        e.target.value = "";
+        return;
+      }
+
+      setIsUploading(true);
       const formData = new FormData();
       formData.append("file", file);
 
       const publicUrl = await uploadImage(formData);
       onChange(publicUrl);
     } catch (error: any) {
-      alert(error.message || "Error uploading image");
+      toast.error(error.message || "Error uploading image. Please try again.");
       console.error(error);
     } finally {
       setIsUploading(false);
@@ -43,7 +59,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
           onClick={() => onChange("")}
           className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-sm transition-colors"
         >
-          <X className="w-4 h-4" />
+          <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
     );
@@ -54,15 +70,22 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
         <div className="flex flex-col items-center justify-center pt-5 pb-6">
           {isUploading ? (
-            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mb-3" />
+            <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin mb-3" />
           ) : (
-            <Upload className="w-8 h-8 text-gray-400 mb-3" />
+            <ArrowUpTrayIcon className="w-8 h-8 text-gray-400 mb-3" />
           )}
-          <p className="mb-2 text-sm text-gray-500">
+          <p className="mb-1 text-sm text-gray-500">
             <span className="font-semibold">Click to upload</span> product image
           </p>
+          <p className="text-xs text-gray-400">JPEG, PNG, WebP, GIF · Max {MAX_SIZE_MB} MB</p>
         </div>
-        <input type="file" className="hidden" accept="image/*" onChange={handleUpload} disabled={isUploading} />
+        <input
+          type="file"
+          className="hidden"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleUpload}
+          disabled={isUploading}
+        />
       </label>
     </div>
   );

@@ -8,11 +8,11 @@ import Image from "next/image";
 export default async function AccountPage() {
   const session = await getServerSession(authOptions);
   
-  if (!session || !(session.user as any)?.id) {
+  if (!session || !session.user?.id) {
     redirect("/login");
   }
 
-  const userId = (session.user as any).id;
+  const userId = session.user.id;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },

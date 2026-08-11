@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -27,7 +27,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Link href="/admin/orders" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 transition-colors">
-        <ArrowLeft className="w-4 h-4 mr-1" />
+        <ArrowLeftIcon className="w-4 h-4 mr-1" />
         Back to Orders
       </Link>
 

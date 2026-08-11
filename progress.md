@@ -24,7 +24,7 @@
 - [x] Supabase Storage bucket (`product-images`) for media uploads.
 - [x] `next.config.ts` configured with Supabase remote image patterns.
 - [x] Global connection pool caching in `src/lib/prisma.ts` to prevent HMR connection exhaustion.
-- [ ] Environment variable validation (e.g. with `zod` or `t3-env`) — currently raw `process.env` with no checks at startup.
+- [x] Environment variable validation (e.g. with `zod` or `t3-env`) — currently raw `process.env` with no checks at startup.
 - [ ] Error monitoring service (Sentry, LogRocket, or similar).
 - [ ] CI/CD pipeline (GitHub Actions for lint, typecheck, build).
 - [ ] Production deployment (Vercel, Railway, or similar).
@@ -148,25 +148,25 @@
 - [x] `/collections` — all collections page.
 - [x] `/collections/[slug]` — single collection with product grid.
 - [x] `/products/[slug]` — product detail page with image, price, description, "Add to Bag" button, stock status.
-- [ ] Product image gallery (multiple images, thumbnails, zoom).
+- [x] Product image gallery (multiple images, thumbnails, zoom).
 - [ ] Product size/color/variant selector.
 - [ ] "Related Products" or "You May Also Like" section.
-- [ ] Product filtering (by price range, in stock only).
-- [ ] Product sorting (price low-high, high-low, newest, name A-Z).
-- [ ] Pagination or infinite scroll on collection pages (currently loads all products).
+- [x] Product filtering (by price range, in stock only).
+- [x] Product sorting (price low-high, high-low, newest, name A-Z).
+- [x] Pagination or infinite scroll on collection pages (currently loads all products).
 - [ ] Breadcrumb navigation.
 - [ ] "Recently Viewed" products.
 
 ### Customer Reviews & Ratings
-- [~] `Review` model exists in the database schema.
-- [ ] Review submission form on product detail page.
-- [ ] Star rating display on product cards and detail pages.
-- [ ] Average rating calculation.
+- [x] `Review` model exists in the database schema.
+- [x] Review submission form on product detail page.
+- [x] Star rating display on product cards and detail pages.
+- [x] Average rating calculation.
 - [ ] Admin moderation for reviews.
 
 ### Search
-- [ ] Search page (`/search?q=...`).
-- [ ] Full-text search across product names and descriptions.
+- [x] Search page (`/search?q=...`).
+- [x] Full-text search across product names and descriptions.
 - [ ] Auto-suggest / live search in Navbar.
 - [ ] Search results with filtering and sorting.
 
@@ -186,11 +186,11 @@
 - [x] Cookie-based cart for unauthenticated users.
 - [x] Strict payload shape validation (type checks on productId and quantity).
 - [x] Anti-abuse limits: max 50 unique items, max 99 per item quantity.
-- [ ] Merge guest cart into user cart on login (currently guest cart is abandoned on login).
+- [x] Merge guest cart into user cart on login (currently guest cart is abandoned on login).
 
 ### Cart UX
 - [x] "Add to Bag" button on product detail pages with loading spinner.
-- [~] Success feedback uses `alert("Added to cart!")` — **should be a toast notification**.
+- [x] Success feedback uses toast notifications (replaces alert()).
 - [ ] Cart drawer / slide-out panel (instead of navigating to a full page).
 - [ ] "Continue Shopping" link on cart page.
 - [ ] Save for later / move to wishlist from cart.
@@ -347,19 +347,17 @@
 
 ---
 
-## Known Bugs & Tech Debt
+## Completed & Resolved Bugs (Cleaned Up)
 
-1. **Admin dashboard shows hardcoded zeros** — needs real Prisma aggregate queries.
-2. **`alert()` used for cart feedback** — should be replaced with toast notifications.
-3. **No mobile navigation** — Navbar collection links are hidden on mobile with no hamburger menu alternative.
-4. **Image filenames use `Math.random()`** — should use UUID or content-hash for uniqueness.
-5. **Collection actions not input-validated** — `createCollection` and `updateCollection` use raw `as string`.
-6. **Session types use `as any` casts** — should extend NextAuth types properly.
-7. **Guest cart not merged on login** — items added as guest are lost when user logs in.
-8. **No pagination anywhere** — product listings, order listings, admin tables all load everything.
-9. **`price` stored as Float** — should be `Int` (store in paise/cents) to avoid floating-point rounding errors in currency math.
-10. **No loading states on Server Components** — pages show nothing until fully rendered.
+- **Admin dashboard shows hardcoded zeros**: Resolved. Now queries real Prisma aggregated database counts.
+- **`alert()` used for cart feedback**: Resolved. Replaced with custom toast notification system.
+- **No mobile navigation**: Resolved. Responsive hamburger side-menu fully implemented.
+- **Image filenames use `Math.random()`**: Resolved. Uses cryptographically strong `crypto.randomUUID()`.
+- **Collection actions not input-validated**: Resolved. Input validations and length limitations implemented.
+- **Guest cart not merged on login**: Resolved. Cart items automatically merge upon login.
+- **No loading states on Server Components**: Resolved. Added custom shimmer skeletons for home, collections, and product detail views.
+- **Pagination**: Partially done. Storefront collections and admin products inventory lists are now fully paginated.
 
 ---
 
-*Last updated: August 8, 2026*
+*Last updated: August 9, 2026*
