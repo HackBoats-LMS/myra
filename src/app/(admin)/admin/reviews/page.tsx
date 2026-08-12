@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import AdminReviewList from "@/components/admin/AdminReviewList";
+import { Prisma } from "@/generated/prisma";
 
 export const metadata = {
   title: "Review Management | Admin Dashboard",
@@ -15,7 +16,12 @@ export default async function AdminReviewsPage() {
     redirect("/admin/login");
   }
 
-  let reviews: any[] = [];
+  let reviews: Prisma.ReviewGetPayload<{
+    include: {
+      user: { select: { name: true; email: true } };
+      product: { select: { name: true; slug: true; images: true } };
+    }
+  }>[] = [];
   try {
     reviews = await prisma.review.findMany({
       include: {

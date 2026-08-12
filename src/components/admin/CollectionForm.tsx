@@ -4,7 +4,6 @@ import { createCollection, updateCollection } from "@/actions/admin";
 import ImageUpload from "./ImageUpload";
 import Image from "next/image";
 import AdminForm from "./AdminForm";
-import { XMarkIcon } from "@heroicons/react/24/outline";
 import type { Collection } from "@/generated/prisma";
 
 export default function CollectionForm({ initialData }: { initialData?: Collection }) {
@@ -21,44 +20,44 @@ export default function CollectionForm({ initialData }: { initialData?: Collecti
     >
       {() => (
         <>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Collection Banner Image</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Collection Banner Image</label>
               <div className="flex flex-wrap gap-4 items-center">
                 {image ? (
-                  <div className="relative w-64 h-32 rounded-lg overflow-hidden border border-gray-200 shadow-sm flex-shrink-0">
+                  <div className="relative w-64 h-32 border border-[#B6925B]/20 flex-shrink-0 rounded-none">
                     <Image fill src={image} alt="Collection Banner" className="object-cover" />
                     <button
                       type="button"
                       onClick={() => setImage("")}
-                      className="absolute top-1.5 right-1.5 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 shadow-sm transition-colors"
+                      className="absolute top-1.5 right-1.5 bg-red-500 text-white p-1 hover:bg-red-600 shadow-sm transition-colors flex items-center justify-center rounded-none"
                     >
-                      <XMarkIcon className="w-3.5 h-3.5" />
+                      <i className="ri-close-line text-xs" />
                     </button>
                   </div>
                 ) : (
-                  <div className="w-64 h-32 border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="w-64 h-32 border border-[#B6925B]/20 overflow-hidden rounded-none">
                     <ImageUpload value="" onChange={(url) => { if (url) setImage(url) }} />
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-500 mt-2">Recommended size: 1200x400px (16:9 ratio approx)</p>
+              <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-2">Recommended size: 1200x400px (16:9 ratio approx)</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Collection Name</label>
-                <input required defaultValue={initialData?.name} name="name" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" placeholder="e.g. Winter Collection" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Collection Name</label>
+                <input required defaultValue={initialData?.name} name="name" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. Winter Collection" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Slug (URL friendly)</label>
-                <input required defaultValue={initialData?.slug} name="slug" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" placeholder="e.g. winter-collection" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Slug (URL friendly)</label>
+                <input required defaultValue={initialData?.slug} name="slug" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. winter-collection" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
-              <textarea defaultValue={initialData?.description ?? ""} name="description" rows={3} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" />
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Description (Optional)</label>
+              <textarea defaultValue={initialData?.description ?? ""} name="description" rows={3} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
             </div>
           </div>
 

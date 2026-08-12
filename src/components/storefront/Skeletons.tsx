@@ -1,9 +1,9 @@
 export function ProductCardSkeleton() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
-      <div className="relative aspect-[3/4] w-full bg-slate-100 rounded-md" />
-      <div className="h-4 w-3/4 bg-slate-100 rounded-md" />
-      <div className="h-4 w-1/4 bg-slate-100 rounded-md" />
+      <div className="relative aspect-[3/4] w-full bg-slate-100 rounded-none" />
+      <div className="h-4 w-3/4 bg-slate-100 rounded-none" />
+      <div className="h-4 w-1/4 bg-slate-100 rounded-none" />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { getProducts } from '@/services/products';
-import { PlusIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/storefront/Pagination';
 import { prisma } from '@/lib/prisma';
 import ProductListTable from '@/components/admin/ProductListTable';
@@ -14,7 +13,7 @@ export default async function AdminProductsPage({
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10));
   const ITEMS_PER_PAGE = 10;
 
-  let products: any[] = [];
+  let products: Awaited<ReturnType<typeof getProducts>> = [];
   let totalProducts = 0;
 
   try {
@@ -38,8 +37,8 @@ export default async function AdminProductsPage({
           <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Products</h2>
           <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage your storefront inventory</p>
         </div>
-        <Link href="/admin/products/new" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm">
-          <PlusIcon className="w-4 h-4" />
+        <Link href="/admin/products/new" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none">
+          <i className="ri-plus-line text-sm" />
           Add Product
         </Link>
       </div>

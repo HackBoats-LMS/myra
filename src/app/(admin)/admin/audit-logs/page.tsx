@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { AuditLog } from "@/generated/prisma";
 
 export const metadata = {
   title: "Audit Logs | Admin Dashboard",
@@ -58,9 +59,9 @@ export default async function AdminAuditLogsPage({
 
   const where = actionFilter ? { action: actionFilter } : {};
 
-  let logs: any[] = [];
+  let logs: AuditLog[] = [];
   let total = 0;
-  let distinctActions: any[] = [];
+  let distinctActions: { action: string }[] = [];
 
   try {
     const results = await Promise.all([

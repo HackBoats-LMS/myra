@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { checkoutCart, validateCouponAction } from "@/actions/cart";
 import { useRouter } from "next/navigation";
-import { ArrowPathIcon, TicketIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
 
 interface Address {
@@ -141,7 +140,7 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
           {appliedCoupon ? (
             <div className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-800">
               <span className="flex items-center gap-1 font-bold">
-                <TicketIcon className="w-3.5 h-3.5" />
+                <i className="ri-ticket-2-line text-sm" />
                 {appliedCoupon} Applied
               </span>
               <button onClick={handleRemoveCoupon} className="text-red-500 font-bold hover:underline">
@@ -155,14 +154,14 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
                 placeholder="WELCOME10"
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value)}
-                className="flex-1 bg-transparent border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] uppercase"
+                className="flex-1 bg-transparent border border-[#B6925B]/20 px-3 py-2 text-xs focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] uppercase rounded-none"
               />
               <button
                 onClick={handleApplyCoupon}
                 disabled={isValidatingCoupon || !couponInput.trim()}
-                className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center justify-center"
+                className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center justify-center rounded-none"
               >
-                {isValidatingCoupon ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "Apply"}
+                {isValidatingCoupon ? <i className="ri-loader-4-line animate-spin text-base" /> : "Apply"}
               </button>
             </div>
           )}
@@ -177,7 +176,7 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
           </label>
           
           {hasNoAddresses ? (
-            <div className="bg-[#FAFAFA] border border-[#B6925B]/20 p-4 text-xs text-[#4A3B2C] space-y-2">
+            <div className="bg-[#FAFAFA] border border-[#B6925B]/20 p-4 text-xs text-[#4A3B2C] space-y-2 rounded-none">
               <p>You have no saved addresses. Please add a shipping address in your account to continue.</p>
               <a href="/account" className="inline-block underline font-bold uppercase tracking-wider text-[#B6925B]">
                 Go to Account Dashboard →
@@ -187,7 +186,7 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
             <select
               value={selectedAddressId}
               onChange={(e) => setSelectedAddressId(e.target.value)}
-              className="w-full bg-transparent border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-[#B6925B] text-[#4A3B2C]"
+              className="w-full bg-transparent border border-[#B6925B]/20 px-3 py-2.5 text-sm focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
             >
               {addresses.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -208,10 +207,10 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
       <button 
         onClick={handleCheckout}
         disabled={isProcessing || hasNoAddresses}
-        className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-4 text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-50"
+        className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-4 text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-50 rounded-none"
       >
         {isProcessing ? (
-          <ArrowPathIcon className="w-5 h-5 animate-spin" />
+          <i className="ri-loader-4-line animate-spin text-lg" />
         ) : (
           isLoggedIn ? "Place Order" : "Log in to Checkout"
         )}

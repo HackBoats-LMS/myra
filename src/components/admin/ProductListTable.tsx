@@ -1,12 +1,9 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import DeleteButton from "./DeleteButton";
 import { bulkDeleteProducts, bulkUpdateStock, deleteProduct } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import type { Prisma } from "@/generated/prisma";
 
 type ProductWithCollection = Prisma.ProductGetPayload<{ include: { collection: true } }>;
@@ -73,7 +70,7 @@ export default function ProductListTable({ products }: { products: ProductWithCo
     <div className="space-y-4">
       {/* Bulk Actions Toolbar */}
       {selectedIds.length > 0 && (
-        <div className="bg-[#FAFAFA] border border-[#B6925B]/20 p-3 flex items-center justify-between">
+        <div className="bg-[#FAFAFA] border border-[#B6925B]/20 p-3 flex items-center justify-between rounded-none">
           <span className="text-xs font-bold uppercase tracking-widest text-[#4A3B2C]">
             {selectedIds.length} item(s) selected
           </span>
@@ -81,14 +78,14 @@ export default function ProductListTable({ products }: { products: ProductWithCo
             <button
               onClick={handleBulkUpdateStock}
               disabled={isProcessing}
-              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors"
+              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors rounded-none"
             >
               Update Stock
             </button>
             <button
               onClick={handleBulkDelete}
               disabled={isProcessing}
-              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 transition-colors rounded-none"
             >
               Delete
             </button>
@@ -96,10 +93,10 @@ export default function ProductListTable({ products }: { products: ProductWithCo
         </div>
       )}
 
-      <div className="bg-white border border-[#B6925B]/20 relative">
+      <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
         {isProcessing && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10">
-            <ArrowPathIcon className="w-8 h-8 text-[#B6925B] animate-spin" />
+            <i className="ri-loader-4-line text-2xl text-[#B6925B] animate-spin" />
           </div>
         )}
         
@@ -109,7 +106,7 @@ export default function ProductListTable({ products }: { products: ProductWithCo
               <th className="px-6 py-4 w-12 border-r border-[#B6925B]/10">
                 <input
                   type="checkbox"
-                  className="rounded-sm border-[#B6925B]/30 text-[#4A3B2C] focus:ring-[#B6925B]"
+                  className="rounded-none border-[#B6925B]/30 text-[#4A3B2C] focus:ring-[#B6925B]"
                   checked={products.length > 0 && selectedIds.length === products.length}
                   onChange={handleSelectAll}
                 />
@@ -124,7 +121,7 @@ export default function ProductListTable({ products }: { products: ProductWithCo
           <tbody className="divide-y divide-[#B6925B]/10">
             {products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest">
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
                   No products found. Click &ldquo;Add Product&rdquo; to create one.
                 </td>
               </tr>
@@ -134,26 +131,26 @@ export default function ProductListTable({ products }: { products: ProductWithCo
                   <td className="px-6 py-4 border-r border-[#B6925B]/10">
                     <input
                       type="checkbox"
-                      className="rounded-sm border-[#B6925B]/30 text-[#4A3B2C] focus:ring-[#B6925B]"
+                      className="rounded-none border-[#B6925B]/30 text-[#4A3B2C] focus:ring-[#B6925B]"
                       checked={selectedIds.includes(product.id)}
                       onChange={() => handleSelect(product.id)}
                     />
                   </td>
                   <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">{product.name}</td>
                   <td className="px-6 py-4 border-r border-[#B6925B]/10">
-                    <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#B6925B]">
+                    <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#B6925B] rounded-none">
                       {product.collection?.name || 'Uncategorized'}
                     </span>
                   </td>
                   <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">Rs. {product.price.toFixed(2)}</td>
                   <td className="px-6 py-4 border-r border-[#B6925B]/10">
-                    <span className={`inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest border ${product.stockQuantity > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                    <span className={`inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest border rounded-none ${product.stockQuantity > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                       {product.stockQuantity} in stock
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right space-x-3">
-                    <Link href={`/admin/products/${product.id}`} className="inline-block text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1" title="Edit Product">
-                      <PencilSquareIcon className="w-5 h-5" />
+                  <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
+                    <Link href={`/admin/products/${product.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="Edit Product">
+                      <i className="ri-edit-box-line text-lg" />
                     </Link>
                     <DeleteButton 
                       id={product.id} 

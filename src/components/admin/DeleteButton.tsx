@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { TrashIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
@@ -51,10 +50,10 @@ export default function DeleteButton({
     <button 
       onClick={handleDelete}
       disabled={isDeleting}
-      className={`text-gray-400 hover:text-red-600 transition-colors p-1 disabled:opacity-50 ${className}`}
+      className={`text-gray-400 hover:text-red-600 transition-colors p-1 disabled:opacity-50 flex items-center justify-center ${className}`}
       title={`Delete ${entityName}`}
     >
-      {isDeleting ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <TrashIcon className="w-4 h-4" />}
+      {isDeleting ? <i className="ri-loader-4-line animate-spin text-sm" /> : <i className="ri-delete-bin-line text-sm" />}
     </button>
   );
 }

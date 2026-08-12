@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { updateOrderStatus } from "@/actions/admin";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import type { OrderStatus } from "@/generated/prisma";
@@ -37,8 +36,8 @@ export default function OrderStatusSelect({ orderId, currentStatus }: { orderId:
         <option value="CANCELLED">Cancelled</option>
       </select>
       {isUpdating && (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-          <ArrowPathIcon className="w-3 h-3 animate-spin text-[#B6925B]" />
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center">
+          <i className="ri-loader-4-line animate-spin text-sm text-[#B6925B]" />
         </div>
       )}
     </div>

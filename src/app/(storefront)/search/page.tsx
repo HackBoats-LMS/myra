@@ -27,8 +27,8 @@ export default async function SearchPage({
   if (!query) {
     return (
       <div className="max-w-7xl mx-auto px-8 py-24 min-h-screen text-center">
-        <h1 className="text-3xl font-serif text-gray-900 mb-4">Search Our Catalog</h1>
-        <p className="text-gray-500 mb-8">Enter a search term in the search bar above to browse products.</p>
+        <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide mb-4">Search Our Catalog</h1>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">Enter a search term in the search bar above to browse products.</p>
       </div>
     );
   }
@@ -113,7 +113,7 @@ export default async function SearchPage({
         <FilterControls />
 
         {productsWithReviews.length === 0 ? (
-          <div className="text-center text-gray-500 py-20 border border-dashed border-gray-200 rounded-lg bg-white mt-8">
+          <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-20 border border-dashed border-[#B6925B]/20 bg-white mt-8">
             No products match your search query and filters. Try another term or loosen filters!
           </div>
         ) : (

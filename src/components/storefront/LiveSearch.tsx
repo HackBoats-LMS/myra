@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useReducer, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface SearchResult {
   id: string;
@@ -14,11 +13,48 @@ interface SearchResult {
   collection?: { name: string | null } | null;
 }
 
+interface SearchState {
+  query: string;
+  results: SearchResult[];
+  isLoading: boolean;
+  isOpen: boolean;
+}
+
+type SearchAction =
+  | { type: "TYPING"; query: string }
+  | { type: "SUCCESS"; results: SearchResult[] }
+  | { type: "LOADING" }
+  | { type: "RESET" }
+  | { type: "CLOSE" }
+  | { type: "OPEN" };
+
+function searchReducer(state: SearchState, action: SearchAction): SearchState {
+  switch (action.type) {
+    case "TYPING":
+      return { ...state, query: action.query, isOpen: true };
+    case "LOADING":
+      return { ...state, isLoading: true };
+    case "SUCCESS":
+      return { ...state, isLoading: false, results: action.results };
+    case "RESET":
+      return { query: "", results: [], isLoading: false, isOpen: false };
+    case "CLOSE":
+      return { ...state, isOpen: false };
+    case "OPEN":
+      return { ...state, isOpen: true };
+    default:
+      return state;
+  }
+}
+
 export default function LiveSearch() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [state, dispatch] = useReducer(searchReducer, {
+    query: "",
+    results: [],
+    isLoading: false,
+    isOpen: false,
+  });
+  const { query, results, isLoading, isOpen } = state;
   const wrapperRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -26,7 +62,7 @@ export default function LiveSearch() {
     // Click outside to close
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        dispatch({ type: "CLOSE" });
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -36,19 +72,18 @@ export default function LiveSearch() {
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query.trim().length < 2) {
-        setResults([]);
+        dispatch({ type: "SUCCESS", results: [] });
         return;
       }
 
-      setIsLoading(true);
+      dispatch({ type: "LOADING" });
       try {
         const res = await fetch(`/api/search/suggest?q=${encodeURIComponent(query)}`);
         const data = await res.json();
-        setResults(data.products || []);
+        dispatch({ type: "SUCCESS", results: data.products || [] });
       } catch (error) {
         console.error("Failed to fetch suggestions:", error);
-      } finally {
-        setIsLoading(false);
+        dispatch({ type: "SUCCESS", results: [] });
       }
     };
 
@@ -59,15 +94,13 @@ export default function LiveSearch() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      setIsOpen(false);
+      dispatch({ type: "CLOSE" });
       router.push(`/search?q=${encodeURIComponent(query)}`);
     }
   };
 
   const handleClear = () => {
-    setQuery("");
-    setResults([]);
-    setIsOpen(false);
+    dispatch({ type: "RESET" });
   };
 
   return (
@@ -76,65 +109,62 @@ export default function LiveSearch() {
         <input
           type="text"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
+          onChange={(e) => dispatch({ type: "TYPING", query: e.target.value })}
+          onFocus={() => dispatch({ type: "OPEN" })}
           placeholder="Search products..."
-          className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-4 pr-10 text-xs focus:outline-none focus:border-[#0D3B66] focus:bg-white focus:ring-1 focus:ring-[#0D3B66]/20 transition-all text-gray-900 placeholder-gray-400"
+          className="w-full bg-[#FAFAFA] border border-[#B6925B]/20 rounded-none py-2 pl-4 pr-10 text-[10px] uppercase tracking-widest font-bold focus:outline-none focus:border-[#B6925B] focus:bg-white focus:ring-1 focus:ring-[#B6925B] transition-all text-[#4A3B2C] placeholder-gray-400"
         />
         
         {query ? (
-          <button type="button" onClick={handleClear} className="absolute right-3 text-gray-400 hover:text-gray-600 p-1">
-            <XMarkIcon className="w-4 h-4" />
+          <button type="button" onClick={handleClear} className="absolute right-3 text-[#B6925B] hover:text-[#4A3B2C] p-1 transition-colors flex items-center justify-center">
+            <i className="ri-close-line text-base leading-none" />
           </button>
         ) : (
-          <button type="submit" className="absolute right-3 text-gray-400 hover:text-gray-600 p-1">
-            <MagnifyingGlassIcon className="w-4 h-4" />
+          <button type="submit" className="absolute right-3 text-[#B6925B] hover:text-[#4A3B2C] p-1 transition-colors flex items-center justify-center">
+            <i className="ri-search-line text-base leading-none" />
           </button>
         )}
       </form>
 
       {/* Dropdown Results */}
       {isOpen && query.trim().length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-xl border border-[#B6925B]/20 overflow-hidden">
           {isLoading && results.length === 0 ? (
-            <div className="p-4 text-center text-xs text-gray-500">Searching...</div>
+            <div className="p-4 text-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">Searching...</div>
           ) : results.length > 0 ? (
             <div className="flex flex-col">
               {results.map((product) => (
                 <Link
                   key={product.id}
                   href={`/products/${product.slug}`}
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                  onClick={() => dispatch({ type: "CLOSE" })}
+                  className="flex items-center gap-3 p-3 hover:bg-[#FAFAFA] transition-colors border-b border-[#B6925B]/10 last:border-0"
                 >
-                  <div className="relative w-10 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                  <div className="relative w-10 h-10 bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0">
                     {product.images?.[0] && (
                       <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                    <p className="text-xs font-bold text-[#4A3B2C] truncate">{product.name}</p>
                     {product.collection && (
-                      <p className="text-[10px] uppercase tracking-wider text-gray-500 truncate">{product.collection.name}</p>
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-[#B6925B] truncate mt-0.5">{product.collection.name}</p>
                     )}
                   </div>
-                  <div className="text-xs font-bold text-[#0D3B66]">
+                  <div className="text-xs font-bold text-[#4A3B2C]">
                     ₹{product.price.toFixed(2)}
                   </div>
                 </Link>
               ))}
               <div 
                 onClick={handleSubmit} 
-                className="p-3 text-center text-xs font-semibold text-[#0D3B66] bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                className="p-3 text-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] bg-[#FAFAFA] hover:bg-white hover:text-[#4A3B2C] cursor-pointer transition-colors border-t border-[#B6925B]/20"
               >
                 View all results for &ldquo;{query}&rdquo;
               </div>
             </div>
           ) : (
-            <div className="p-4 text-center text-xs text-gray-500">
+            <div className="p-4 text-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">
               No products found for &ldquo;{query}&rdquo;
             </div>
           )}

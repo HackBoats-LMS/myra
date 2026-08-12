@@ -1,15 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PlusIcon } from "@heroicons/react/24/outline";
 import CouponActions from "./CouponActions";
+import { Coupon } from "@/generated/prisma";
 
 export const metadata: Metadata = {
   title: "Manage Coupons | Admin Portal",
 };
 
 export default async function AdminCouponsPage() {
-  let coupons: any[] = [];
+  let coupons: Coupon[] = [];
   try {
     coupons = await prisma.coupon.findMany({
       orderBy: { createdAt: 'desc' },
@@ -19,7 +19,7 @@ export default async function AdminCouponsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 rounded-none">
       <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-4">
         <div>
           <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Coupons & Discounts</h2>
@@ -27,9 +27,9 @@ export default async function AdminCouponsPage() {
         </div>
         <Link 
           href="/admin/coupons/new"
-          className="inline-flex items-center gap-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
         >
-          <PlusIcon className="w-4 h-4" />
+          <i className="ri-plus-line text-sm" />
           Create Coupon
         </Link>
       </div>

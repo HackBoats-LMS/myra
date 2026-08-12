@@ -48,8 +48,8 @@ export default function RecentlyViewed({ currentProductId }: { currentProductId?
   }
 
   return (
-    <section className="mt-24 border-t border-gray-100 pt-16">
-      <h2 className="text-2xl font-serif text-gray-900 tracking-tight mb-10 text-center">
+    <section className="mt-24 border-t border-[#B6925B]/20 pt-16">
+      <h2 className="text-2xl font-serif text-[#4A3B2C] tracking-wide mb-10 text-center">
         Recently Viewed
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">

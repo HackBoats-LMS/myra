@@ -18,9 +18,9 @@ function SectionHeading({ title }: { title: string }) {
 }
 
 export default async function StorefrontHome() {
-  let collections: any[] = [];
-  let featuredProducts: any[] = [];
-  let bestSellers: any[] = [];
+  let collections: Awaited<ReturnType<typeof getAllCollections>> = [];
+  let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
+  let bestSellers: Awaited<ReturnType<typeof getBestSellers>> = [];
 
   try {
     const results = await Promise.all([
@@ -67,7 +67,7 @@ export default async function StorefrontHome() {
             <button className="hidden md:flex p-2 text-gray-400 hover:text-[#B6925B] transition-colors"><span className="text-2xl">&rsaquo;</span></button>
           </div>
           <div className="flex justify-center mt-12">
-            <Link href="/collections" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-colors">
+            <Link href="/collections" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-2.5 rounded-none text-xs font-bold uppercase tracking-widest transition-colors">
               View All
             </Link>
           </div>
@@ -98,7 +98,7 @@ export default async function StorefrontHome() {
               <p className="text-sm text-[#FDFBF7]/90 font-serif italic">
                 Handcrafted Kanjeevaram Silks.<br />Made for Your Grand Beginning.
               </p>
-              <Link href="/collections/bridal" className="inline-block bg-[#FDFBF7] text-[#4A3B2C] hover:bg-white px-8 py-3 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors shadow-lg">
+              <Link href="/collections/bridal" className="inline-block bg-[#FDFBF7] text-[#4A3B2C] hover:bg-white px-8 py-3 rounded-none text-xs font-bold uppercase tracking-widest transition-colors shadow-lg">
                 Shop Bridal Collection &rsaquo;
               </Link>
             </div>
@@ -116,7 +116,7 @@ export default async function StorefrontHome() {
             <button className="hidden md:flex p-2 text-gray-400 hover:text-[#B6925B] transition-colors"><span className="text-2xl">&rsaquo;</span></button>
           </div>
           <div className="flex justify-center mt-12">
-            <Link href="/collections" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-colors">
+            <Link href="/collections" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-2.5 rounded-none text-xs font-bold uppercase tracking-widest transition-colors">
               View All
             </Link>
           </div>
@@ -160,7 +160,7 @@ export default async function StorefrontHome() {
               Experience the luxury of our collections in person at our flagship store. Feel the fabrics, try on your favorite outfits, and let our expert stylists help you find the perfect look for any occasion.
             </p>
             <p className="text-xs text-[#B6925B] font-bold">📍 123 Elite Avenue, Landmark Plaza, Chennai</p>
-            <Link href="/contact" className="inline-block bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors shadow-md mt-4">
+            <Link href="/contact" className="inline-block bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 rounded-none text-xs font-bold uppercase tracking-widest transition-colors shadow-md mt-4">
               Get Directions
             </Link>
           </div>

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { changePassword } from "@/actions/user";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export default function ChangePasswordForm() {
   const [loading, setLoading] = useState(false);
@@ -25,25 +24,27 @@ export default function ChangePasswordForm() {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mt-8 space-y-4">
-      <h3 className="text-lg font-bold text-gray-900 tracking-tight">Security</h3>
-      <p className="text-xs text-gray-500">Update your account login password</p>
+    <div className="bg-white border border-[#B6925B]/20 shadow-sm mt-8 relative rounded-none">
+      <div className="p-6 border-b border-[#B6925B]/20 bg-[#FAFAFA]">
+        <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide">Security</h3>
+        <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">Update your account login password</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 p-6">
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
             Current Password
           </label>
           <input
             required
             name="currentPassword"
             type="password"
-            className="w-full bg-white border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#0D3B66] text-gray-900"
+            className="w-full bg-white border border-[#B6925B]/20 rounded-none px-3 py-2 text-sm focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] transition-all"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
             New Password
           </label>
           <input
@@ -51,12 +52,12 @@ export default function ChangePasswordForm() {
             name="newPassword"
             type="password"
             minLength={6}
-            className="w-full bg-white border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#0D3B66] text-gray-900"
+            className="w-full bg-white border border-[#B6925B]/20 rounded-none px-3 py-2 text-sm focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] transition-all"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
             Confirm New Password
           </label>
           <input
@@ -64,18 +65,20 @@ export default function ChangePasswordForm() {
             name="confirmPassword"
             type="password"
             minLength={6}
-            className="w-full bg-white border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#0D3B66] text-gray-900"
+            className="w-full bg-white border border-[#B6925B]/20 rounded-none px-3 py-2 text-sm focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] transition-all"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-[#0D3B66] hover:bg-[#082a4d] text-white py-2.5 rounded-md text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {loading && <ArrowPathIcon className="w-4 h-4 animate-spin" />}
-          <span>Change Password</span>
-        </button>
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#4A3B2C] hover:bg-[#34291f] text-white py-3 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50 rounded-none"
+          >
+            {loading && <i className="ri-loader-4-line animate-spin text-base" />}
+            <span>Change Password</span>
+          </button>
+        </div>
       </form>
     </div>
   );

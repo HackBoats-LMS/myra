@@ -1,8 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useReducer } from "react";
 import { createProduct, updateProduct } from "@/actions/admin";
 import ImageUpload from "./ImageUpload";
-import { XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import AdminForm from "./AdminForm";
 import type { Collection, Prisma } from "@/generated/prisma";
@@ -21,23 +20,52 @@ interface ProductFormProps {
   initialData?: Prisma.ProductGetPayload<{ include: { variants: true } }>;
 }
 
+type ImagesAction =
+  | { type: "ADD"; url: string }
+  | { type: "REMOVE"; index: number }
+  | { type: "MOVE"; from: number; to: number };
+
+function imagesReducer(state: string[], action: ImagesAction): string[] {
+  switch (action.type) {
+    case "ADD":
+      return [...state, action.url];
+    case "REMOVE":
+      return state.filter((_, i) => i !== action.index);
+    case "MOVE": {
+      const next = [...state];
+      [next[action.from], next[action.to]] = [next[action.to], next[action.from]];
+      return next;
+    }
+    default:
+      return state;
+  }
+}
+
+type VariantsAction =
+  | { type: "ADD" }
+  | { type: "UPDATE"; index: number; field: string; value: string | number }
+  | { type: "REMOVE"; index: number };
+
+const emptyVariant = (): ProductVariant => ({ id: "", sku: "", size: "", color: "", stockQuantity: 0, priceOffset: 0 });
+
+function variantsReducer(state: ProductVariant[], action: VariantsAction): ProductVariant[] {
+  switch (action.type) {
+    case "ADD":
+      return [...state, emptyVariant()];
+    case "UPDATE":
+      return state.map((v, i) =>
+        i === action.index ? { ...v, [action.field]: action.value } : v
+      );
+    case "REMOVE":
+      return state.filter((_, i) => i !== action.index);
+    default:
+      return state;
+  }
+}
+
 export default function ProductForm({ collections, initialData }: ProductFormProps) {
-  const [images, setImages] = useState<string[]>(initialData?.images || []);
-  const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
-
-  const addVariant = () => {
-    setVariants([...variants, { id: "", sku: "", size: "", color: "", stockQuantity: 0, priceOffset: 0 }]);
-  };
-
-  const updateVariant = (index: number, field: string, value: string | number) => {
-    const newVariants = [...variants];
-    newVariants[index] = { ...newVariants[index], [field]: value };
-    setVariants(newVariants);
-  };
-
-  const removeVariant = (index: number) => {
-    setVariants(variants.filter((_, i) => i !== index));
-  };
+  const [images, dispatchImages] = useReducer(imagesReducer, initialData?.images || []);
+  const [variants, dispatchVariants] = useReducer(variantsReducer, initialData?.variants || []);
 
   return (
     <AdminForm
@@ -52,10 +80,10 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
         <>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Product Images ({images.length}/5)</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Product Images ({images.length}/5)</label>
               <div className="flex flex-wrap gap-4 items-center">
                 {images.map((url, index) => (
-                  <div key={index} className="relative w-28 h-28 rounded-lg overflow-hidden border border-gray-200 shadow-sm flex-shrink-0 group">
+                  <div key={index} className="relative w-28 h-28 rounded-none overflow-hidden border border-[#B6925B]/20 shadow-sm flex-shrink-0 group">
                     <Image fill src={url} alt={`Upload ${index + 1}`} className="object-cover" />
                     
                     {/* Reorder Buttons (Hover) */}
@@ -63,80 +91,72 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                       <button
                         type="button"
                         disabled={index === 0}
-                        onClick={() => {
-                          const newImages = [...images];
-                          [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
-                          setImages(newImages);
-                        }}
-                        className="text-white disabled:opacity-30 hover:text-blue-300 p-1 rounded"
+                        onClick={() => dispatchImages({ type: "MOVE", from: index, to: index - 1 })}
+                        className="text-white disabled:opacity-30 hover:text-[#B6925B] p-1 rounded flex items-center justify-center"
                         aria-label="Move image left"
                       >
-                        <ChevronLeftIcon className="w-5 h-5" />
+                        <i className="ri-arrow-left-s-line text-lg" />
                       </button>
                       <button
                         type="button"
                         disabled={index === images.length - 1}
-                        onClick={() => {
-                          const newImages = [...images];
-                          [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
-                          setImages(newImages);
-                        }}
-                        className="text-white disabled:opacity-30 hover:text-blue-300 p-1 rounded"
+                        onClick={() => dispatchImages({ type: "MOVE", from: index, to: index + 1 })}
+                        className="text-white disabled:opacity-30 hover:text-[#B6925B] p-1 rounded flex items-center justify-center"
                         aria-label="Move image right"
                       >
-                        <ChevronRightIcon className="w-5 h-5" />
+                        <i className="ri-arrow-right-s-line text-lg" />
                       </button>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => setImages(prev => prev.filter((_, i) => i !== index))}
-                      className="absolute top-1.5 right-1.5 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 shadow-sm transition-colors"
+                      onClick={() => dispatchImages({ type: "REMOVE", index })}
+                      className="absolute top-1.5 right-1.5 bg-red-500 text-white p-1 hover:bg-red-600 shadow-sm transition-colors flex items-center justify-center rounded-none"
                     >
-                      <XMarkIcon className="w-3.5 h-3.5" />
+                      <i className="ri-close-line text-xs" />
                     </button>
                   </div>
                 ))}
                 
                 {images.length < 5 && (
-                  <div className="w-28 h-28 border border-gray-200 rounded-lg overflow-hidden">
-                    <ImageUpload value="" onChange={(url) => { if (url) setImages(prev => [...prev, url]) }} />
+                  <div className="w-28 h-28 border border-[#B6925B]/20 rounded-none overflow-hidden">
+                    <ImageUpload value="" onChange={(url) => { if (url) dispatchImages({ type: "ADD", url }) }} />
                   </div>
                 )}
               </div>
               {images.length >= 5 && (
-                <p className="text-xs text-amber-600 mt-2 font-medium">Maximum limit of 5 images reached.</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mt-2">Maximum limit of 5 images reached.</p>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input required defaultValue={initialData?.name} name="name" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Name</label>
+                <input required defaultValue={initialData?.name} name="name" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Slug (URL friendly)</label>
-                <input required defaultValue={initialData?.slug} name="slug" type="text" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Slug (URL friendly)</label>
+                <input required defaultValue={initialData?.slug} name="slug" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea required defaultValue={initialData?.description} name="description" rows={4} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" />
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Description</label>
+              <textarea required defaultValue={initialData?.description} name="description" rows={4} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Base Price (₹)</label>
-                <input required defaultValue={initialData?.price} name="price" type="number" step="0.01" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Base Price (₹)</label>
+                <input required defaultValue={initialData?.price} name="price" type="number" step="0.01" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Default Stock</label>
-                <input required defaultValue={initialData?.stockQuantity} name="stockQuantity" type="number" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Default Stock</label>
+                <input required defaultValue={initialData?.stockQuantity} name="stockQuantity" type="number" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Collection</label>
-                <select name="collectionId" defaultValue={initialData?.collectionId || ""} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Collection</label>
+                <select name="collectionId" defaultValue={initialData?.collectionId || ""} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]">
                   <option value="">None</option>
                   {collections.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -146,47 +166,47 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             </div>
             
             {/* Variants Section */}
-            <div className="pt-6 border-t border-gray-100">
+            <div className="pt-6 border-t border-[#B6925B]/20">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Product Variants</h3>
+                <h3 className="text-sm font-bold text-[#4A3B2C] uppercase tracking-widest">Product Variants</h3>
                 <button
                   type="button"
-                  onClick={addVariant}
-                  className="text-xs font-bold uppercase tracking-wider text-[#0D3B66] hover:underline"
+                  onClick={() => dispatchVariants({ type: "ADD" })}
+                  className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors"
                 >
                   + Add Variant
                 </button>
               </div>
               
               {variants.length === 0 ? (
-                <p className="text-sm text-gray-500 italic">No variants added. This product will be sold as a single standard item.</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">No variants added. This product will be sold as a single standard item.</p>
               ) : (
                 <div className="space-y-4">
                   {variants.map((v, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-2 items-start bg-gray-50 p-3 rounded-md border border-gray-200">
+                    <div key={index} className="grid grid-cols-12 gap-2 items-start bg-[#FAFAFA] p-3 rounded-none border border-[#B6925B]/20">
                       <div className="col-span-2">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase">Size</label>
-                        <input value={v.size || ""} onChange={e => updateVariant(index, "size", e.target.value)} type="text" placeholder="e.g. M" className="w-full mt-1 rounded border border-gray-300 px-2 py-1 text-xs focus:ring-[#0D3B66]" />
+                        <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Size</label>
+                        <input value={v.size || ""} onChange={e => dispatchVariants({ type: "UPDATE", index, field: "size", value: e.target.value })} type="text" placeholder="e.g. M" className="w-full mt-2 rounded-none border border-[#B6925B]/20 bg-white px-2 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase">Color</label>
-                        <input value={v.color || ""} onChange={e => updateVariant(index, "color", e.target.value)} type="text" placeholder="e.g. Red" className="w-full mt-1 rounded border border-gray-300 px-2 py-1 text-xs focus:ring-[#0D3B66]" />
+                        <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Color</label>
+                        <input value={v.color || ""} onChange={e => dispatchVariants({ type: "UPDATE", index, field: "color", value: e.target.value })} type="text" placeholder="e.g. Red" className="w-full mt-2 rounded-none border border-[#B6925B]/20 bg-white px-2 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
                       </div>
                       <div className="col-span-3">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase">SKU</label>
-                        <input value={v.sku || ""} onChange={e => updateVariant(index, "sku", e.target.value)} type="text" placeholder="SKU-123" className="w-full mt-1 rounded border border-gray-300 px-2 py-1 text-xs focus:ring-[#0D3B66]" />
+                        <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">SKU</label>
+                        <input value={v.sku || ""} onChange={e => dispatchVariants({ type: "UPDATE", index, field: "sku", value: e.target.value })} type="text" placeholder="SKU-123" className="w-full mt-2 rounded-none border border-[#B6925B]/20 bg-white px-2 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase">Stock</label>
-                        <input value={v.stockQuantity} onChange={e => updateVariant(index, "stockQuantity", e.target.value)} type="number" className="w-full mt-1 rounded border border-gray-300 px-2 py-1 text-xs focus:ring-[#0D3B66]" />
+                        <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Stock</label>
+                        <input value={v.stockQuantity} onChange={e => dispatchVariants({ type: "UPDATE", index, field: "stockQuantity", value: e.target.value })} type="number" className="w-full mt-2 rounded-none border border-[#B6925B]/20 bg-white px-2 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase">Price Offset (₹)</label>
-                        <input value={v.priceOffset} onChange={e => updateVariant(index, "priceOffset", e.target.value)} type="number" step="0.01" className="w-full mt-1 rounded border border-gray-300 px-2 py-1 text-xs focus:ring-[#0D3B66]" />
+                        <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Price Offset (₹)</label>
+                        <input value={v.priceOffset} onChange={e => dispatchVariants({ type: "UPDATE", index, field: "priceOffset", value: e.target.value })} type="number" step="0.01" className="w-full mt-2 rounded-none border border-[#B6925B]/20 bg-white px-2 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
                       </div>
-                      <div className="col-span-1 flex justify-end mt-5">
-                        <button type="button" onClick={() => removeVariant(index)} className="text-red-500 hover:text-red-700 p-1">
-                          <XMarkIcon className="w-4 h-4" />
+                      <div className="col-span-1 flex justify-end mt-6">
+                        <button type="button" onClick={() => dispatchVariants({ type: "REMOVE", index })} className="text-gray-400 hover:text-red-700 p-1 transition-colors flex items-center justify-center">
+                          <i className="ri-close-line text-base" />
                         </button>
                       </div>
                     </div>

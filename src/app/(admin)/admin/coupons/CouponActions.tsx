@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { toggleCouponStatus, deleteCoupon } from "@/actions/coupons";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowPathIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 
 export default function CouponActions({ couponId, initialStatus }: { couponId: string; initialStatus: boolean }) {
   const [isActive, setIsActive] = useState(initialStatus);
@@ -39,24 +38,24 @@ export default function CouponActions({ couponId, initialStatus }: { couponId: s
       <button
         onClick={handleToggle}
         disabled={loading}
-        className="p-1.5 text-gray-500 hover:text-[#0D3B66] hover:bg-gray-100 rounded transition-colors disabled:opacity-50"
+        className="p-1.5 text-[#B6925B] hover:text-[#4A3B2C] hover:bg-[#FAFAFA] border border-[#B6925B]/20 rounded-none transition-colors disabled:opacity-50 flex items-center justify-center"
         title={isActive ? "Deactivate" : "Activate"}
       >
         {loading ? (
-          <ArrowPathIcon className="w-5 h-5 animate-spin" />
+          <i className="ri-loader-4-line animate-spin text-lg" />
         ) : isActive ? (
-          <XCircleIcon className="w-5 h-5" />
+          <i className="ri-close-circle-line text-lg" />
         ) : (
-          <CheckCircleIcon className="w-5 h-5" />
+          <i className="ri-checkbox-circle-line text-lg" />
         )}
       </button>
       <button
         onClick={handleDelete}
         disabled={loading}
-        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+        className="p-1.5 text-gray-400 hover:text-red-700 hover:bg-red-50 border border-transparent rounded-none transition-colors disabled:opacity-50 flex items-center justify-center"
         title="Delete"
       >
-        <TrashIcon className="w-5 h-5" />
+        <i className="ri-delete-bin-line text-lg" />
       </button>
     </div>
   );

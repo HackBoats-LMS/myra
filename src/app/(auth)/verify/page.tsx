@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -11,11 +10,11 @@ export default async function VerifyEmailPage({
 
   if (!token) {
     return (
-      <div className="text-center space-y-6">
-        <XCircleIcon className="w-16 h-16 text-red-500 mx-auto" />
+      <div className="text-center space-y-6 rounded-none">
+        <i className="ri-close-circle-fill text-5xl text-red-500 mx-auto block" />
         <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Invalid Link</h1>
         <p className="text-gray-500">No verification token was provided.</p>
-        <Link href="/login" className="inline-block mt-4 text-[#B6925B] hover:underline font-bold uppercase tracking-widest text-xs">
+        <Link href="/login" className="inline-block mt-4 text-[#B6925B] hover:underline font-bold uppercase tracking-widest text-xs rounded-none">
           Go to Login
         </Link>
       </div>
@@ -28,11 +27,11 @@ export default async function VerifyEmailPage({
 
   if (!verificationToken || verificationToken.expiresAt < new Date()) {
     return (
-      <div className="text-center space-y-6">
-        <XCircleIcon className="w-16 h-16 text-red-500 mx-auto" />
+      <div className="text-center space-y-6 rounded-none">
+        <i className="ri-close-circle-fill text-5xl text-red-500 mx-auto block" />
         <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Link Expired</h1>
         <p className="text-gray-500">Your verification link has expired or is invalid. Please sign up again or request a new link.</p>
-        <Link href="/login" className="inline-block mt-4 text-[#B6925B] hover:underline font-bold uppercase tracking-widest text-xs">
+        <Link href="/login" className="inline-block mt-4 text-[#B6925B] hover:underline font-bold uppercase tracking-widest text-xs rounded-none">
           Go to Login
         </Link>
       </div>
@@ -57,11 +56,11 @@ export default async function VerifyEmailPage({
   }
 
   return (
-    <div className="text-center space-y-6">
-      <CheckCircleIcon className="w-16 h-16 text-[#B6925B] mx-auto" />
+    <div className="text-center space-y-6 rounded-none">
+      <i className="ri-checkbox-circle-fill text-5xl text-[#B6925B] mx-auto block" />
       <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Email Verified!</h1>
       <p className="text-gray-500">Your email has been successfully verified. You can now log into your account.</p>
-      <Link href="/login" className="inline-block w-full mt-4 px-4 py-3 bg-[#B6925B] hover:bg-[#9c7d4e] text-white font-bold uppercase tracking-widest transition-colors flex justify-center">
+      <Link href="/login" className="inline-block w-full mt-4 px-4 py-3 bg-[#B6925B] hover:bg-[#9c7d4e] text-white font-bold uppercase tracking-widest transition-colors flex justify-center rounded-none">
         Log In Now
       </Link>
     </div>

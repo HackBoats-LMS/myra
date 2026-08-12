@@ -67,10 +67,10 @@ export default function DashboardWidgets({
   const maxRevenue = Math.max(...revenueByDay.map((d) => d.total), 1); // Avoid division by zero
 
   const statusColors: Record<OrderStatus, string> = {
-    PENDING: "bg-yellow-50 text-yellow-800 border border-yellow-200",
-    SHIPPED: "bg-blue-50 text-blue-800 border border-blue-200",
-    DELIVERED: "bg-green-50 text-green-800 border border-green-200",
-    CANCELLED: "bg-red-50 text-red-800 border border-red-200",
+    PENDING: "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30",
+    SHIPPED: "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30",
+    DELIVERED: "bg-[#FAFAFA] text-green-700 border border-[#B6925B]/20",
+    CANCELLED: "bg-red-50 text-red-700 border border-red-200",
   };
 
   return (

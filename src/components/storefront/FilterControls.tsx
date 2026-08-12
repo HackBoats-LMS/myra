@@ -24,15 +24,15 @@ export default function FilterControls() {
   };
 
   return (
-    <div className="w-full flex flex-wrap gap-4 items-center justify-between border-y border-gray-100 py-4 mb-10 text-sm">
-      <div className="flex flex-wrap items-center gap-4">
+    <div className="w-full flex flex-wrap gap-6 items-center justify-between border-y border-[#B6925B]/20 py-4 mb-10 text-[10px] font-bold uppercase tracking-widest bg-[#FAFAFA] px-4">
+      <div className="flex flex-wrap items-center gap-6">
         {/* Availability Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 font-medium">Availability:</span>
+          <span className="text-[#4A3B2C]">Availability:</span>
           <select
             value={currentStock}
             onChange={(e) => handleParamChange("stock", e.target.value)}
-            className="border border-gray-200 rounded-md px-3 py-1.5 focus:outline-none focus:border-[#0D3B66] text-gray-700 bg-white"
+            className="border border-[#B6925B]/20 rounded-none px-3 py-1.5 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] bg-white transition-all"
           >
             <option value="all">All Items</option>
             <option value="instock">In Stock</option>
@@ -41,11 +41,11 @@ export default function FilterControls() {
 
         {/* Price Range Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-500 font-medium">Price:</span>
+          <span className="text-[#4A3B2C]">Price:</span>
           <select
             value={currentPriceRange}
             onChange={(e) => handleParamChange("priceRange", e.target.value)}
-            className="border border-gray-200 rounded-md px-3 py-1.5 focus:outline-none focus:border-[#0D3B66] text-gray-700 bg-white"
+            className="border border-[#B6925B]/20 rounded-none px-3 py-1.5 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] bg-white transition-all"
           >
             <option value="all">Any Price</option>
             <option value="under-1000">Under ₹1,000</option>
@@ -57,11 +57,11 @@ export default function FilterControls() {
 
       {/* Sorting */}
       <div className="flex items-center gap-2">
-        <span className="text-gray-500 font-medium">Sort by:</span>
+        <span className="text-[#4A3B2C]">Sort by:</span>
         <select
           value={currentSort}
           onChange={(e) => handleParamChange("sort", e.target.value)}
-          className="border border-gray-200 rounded-md px-3 py-1.5 focus:outline-none focus:border-[#0D3B66] text-gray-700 bg-white"
+          className="border border-[#B6925B]/20 rounded-none px-3 py-1.5 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] bg-white transition-all"
         >
           <option value="newest">Newest Arrivals</option>
           <option value="price-asc">Price: Low to High</option>

@@ -28,7 +28,15 @@ export default async function AccountPage() {
   }
 
   const userId = session.user.id;
-  let user: any = null;
+  let user: Prisma.UserGetPayload<{
+    include: {
+      addresses: { orderBy: { createdAt: 'asc' } };
+      orders: {
+        orderBy: { createdAt: 'desc' };
+        include: { orderItems: { include: { product: true } } };
+      };
+    };
+  }> | null = null;
 
   try {
     user = await prisma.user.findUnique({
@@ -101,11 +109,11 @@ export default async function AccountPage() {
                       </div>
                       <div>
                         <p className="text-xs text-[#B6925B] uppercase tracking-widest font-bold">Status</p>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-widest mt-1.5
-                          ${order.status === 'DELIVERED' ? 'bg-green-50 text-green-700 border border-green-200' : 
-                            order.status === 'SHIPPED' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-widest mt-1.5
+                          ${order.status === 'DELIVERED' ? 'bg-[#FAFAFA] text-green-700 border border-[#B6925B]/20' : 
+                            order.status === 'SHIPPED' ? 'bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30' : 
                             order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-200' : 
-                            'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+                            'bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30'}`}>
                           {order.status}
                         </span>
                       </div>

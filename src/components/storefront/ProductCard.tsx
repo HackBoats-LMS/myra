@@ -27,7 +27,7 @@ export default function ProductCard({
     <Link href={`/products/${product.slug}`} className="group flex flex-col gap-3 relative">
       <WishlistButton productId={product.id} isWishlisted={isWishlisted} />
       
-      <div className="relative aspect-[3/4] w-full bg-[#f8f8f8] overflow-hidden rounded-md">
+      <div className="relative aspect-[3/4] w-full bg-[#FAFAFA] overflow-hidden rounded-none border border-[#B6925B]/10">
         {product.images?.[0] ? (
           <Image 
             src={product.images[0]} 
@@ -41,20 +41,17 @@ export default function ProductCard({
         )}
       </div>
       <div className="flex flex-col space-y-1 mt-2">
-        <h3 className="text-sm font-serif font-medium text-gray-800 group-hover:text-[#B6925B] transition-colors line-clamp-1">{product.name}</h3>
+        <h3 className="text-sm font-bold text-[#4A3B2C] group-hover:text-[#B6925B] transition-colors line-clamp-1">{product.name}</h3>
         
         {reviewCount > 0 && (
           <div className="flex items-center gap-1.5 py-0.5">
-            <StarRating rating={averageRating} sizeClassName="w-3 h-3 text-[#B6925B]" />
-            <span className="text-[11px] text-gray-400 font-medium">({reviewCount})</span>
+            <StarRating rating={averageRating} sizeClassName="text-[10px] text-[#B6925B]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">({reviewCount})</span>
           </div>
         )}
 
         <div className="flex items-center gap-2 pt-1">
           <span className="text-sm font-bold text-[#4A3B2C]">&#8377;{product.price.toLocaleString('en-IN')}</span>
-          {/* Simulated original price and discount for visual effect */}
-          <span className="text-xs text-gray-400 line-through">&#8377;{Math.round(product.price * 1.15).toLocaleString('en-IN')}</span>
-          <span className="text-[10px] font-bold text-green-600 tracking-wider">15% OFF</span>
         </div>
       </div>
     </Link>

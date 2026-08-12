@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { UserIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -8,6 +7,7 @@ import { cookies } from "next/headers";
 import MobileMenu from "./MobileMenu";
 import CartButton from "./CartButton";
 import LiveSearch from "../storefront/LiveSearch";
+import type { Collection } from "@/generated/prisma";
 
 async function getCartCount(userId: string | null): Promise<number> {
   if (userId) {
@@ -33,7 +33,7 @@ export default async function Navbar() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
 
-  let collections: any[] = [];
+  let collections: Collection[] = [];
   let cartCount = 0;
 
   try {
@@ -48,7 +48,7 @@ export default async function Navbar() {
   }
 
   return (
-    <nav className="w-full bg-white border-b border-gray-100 flex items-center justify-between px-6 md:px-8 py-4 relative z-50">
+    <nav className="w-full bg-white border-b border-[#B6925B]/20 flex items-center justify-between px-6 md:px-8 py-4 relative z-50">
       {/* Logo */}
       <Link href="/" className="flex items-center">
         <Image
@@ -62,14 +62,14 @@ export default async function Navbar() {
 
       {/* Desktop Navigation Links */}
       <div className="hidden md:flex items-center gap-8">
-        <Link href="/collections" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+        <Link href="/collections" className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] transition-colors">
           All Products
         </Link>
         {collections.map((c) => (
           <Link
             key={c.id}
             href={`/collections/${c.slug}`}
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] transition-colors"
           >
             {c.name.toLowerCase()}
           </Link>
@@ -83,20 +83,20 @@ export default async function Navbar() {
       <div className="hidden md:flex items-center gap-8">
         <Link
           href={session ? "/account" : "/login"}
-          className="flex flex-col items-center gap-1 text-gray-700 hover:text-gray-900 transition-colors"
+          className="flex flex-col items-center gap-1 text-[#4A3B2C] hover:text-[#B6925B] transition-colors"
         >
-          <UserIcon className="w-[22px] h-[22px] stroke-[1.5]" />
-          <span className="text-[10px] capitalize text-gray-600">account</span>
+          <i className="ri-user-line text-[22px] leading-none stroke-[1.5]" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">account</span>
         </Link>
 
         <CartButton cartCount={cartCount} />
 
         <Link
           href="/wishlist"
-          className="flex flex-col items-center gap-1 text-gray-700 hover:text-gray-900 transition-colors"
+          className="flex flex-col items-center gap-1 text-[#4A3B2C] hover:text-[#B6925B] transition-colors"
         >
-          <HeartIcon className="w-[22px] h-[22px] stroke-[1.5]" />
-          <span className="text-[10px] capitalize text-gray-600">wishlist</span>
+          <i className="ri-heart-line text-[22px] leading-none stroke-[1.5]" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">wishlist</span>
         </Link>
       </div>
 

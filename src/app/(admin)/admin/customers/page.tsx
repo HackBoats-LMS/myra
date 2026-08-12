@@ -1,13 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Prisma } from "@/generated/prisma";
 
 export const metadata: Metadata = {
   title: "Customers Directory | Admin Portal",
 };
 
 export default async function AdminCustomersPage() {
-  let customers: any[] = [];
+  let customers: Prisma.UserGetPayload<{
+    where: { role: 'CUSTOMER' };
+    include: { orders: { select: { totalAmount: true } } };
+  }>[] = [];
   try {
     customers = await prisma.user.findMany({
       where: { role: 'CUSTOMER' },
@@ -52,7 +56,7 @@ export default async function AdminCustomersPage() {
             ) : (
               customers.map((customer) => {
                 const orderCount = customer.orders.length;
-                const totalSpent = customer.orders.reduce((sum: number, order: any) => sum + order.totalAmount, 0);
+                const totalSpent = customer.orders.reduce((sum: number, order) => sum + order.totalAmount, 0);
 
                 return (
                   <tr key={customer.id} className="hover:bg-[#FAFAFA] transition-colors group">

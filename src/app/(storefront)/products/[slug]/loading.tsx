@@ -8,10 +8,10 @@ export default function ProductDetailsLoading() {
         
         {/* Left Column: Image Gallery Skeleton */}
         <div className="flex flex-col gap-4 animate-pulse">
-          <div className="relative aspect-[3/4] w-full bg-slate-100 rounded-md" />
+          <div className="relative aspect-[3/4] w-full bg-slate-100 rounded-none" />
           <div className="flex gap-4">
             {[1, 2, 3, 4].map((idx) => (
-              <div key={idx} className="w-20 h-20 bg-slate-100 rounded-md flex-shrink-0" />
+              <div key={idx} className="w-20 h-20 bg-slate-100 rounded-none flex-shrink-0" />
             ))}
           </div>
         </div>
@@ -19,28 +19,28 @@ export default function ProductDetailsLoading() {
         {/* Right Column: Info Skeleton */}
         <div className="flex flex-col pt-4 md:pt-12 space-y-6 animate-pulse">
           {/* Collection Tag */}
-          <div className="h-4 w-24 bg-slate-100 rounded-md" />
+          <div className="h-4 w-24 bg-slate-100 rounded-none" />
           {/* Title */}
-          <div className="h-10 w-3/4 bg-slate-100 rounded-md" />
+          <div className="h-10 w-3/4 bg-slate-100 rounded-none" />
           {/* Price */}
-          <div className="h-8 w-32 bg-slate-100 rounded-md" />
+          <div className="h-8 w-32 bg-slate-100 rounded-none" />
           {/* Description Lines */}
           <div className="space-y-2.5 pt-4">
-            <div className="h-4 w-full bg-slate-100 rounded-md" />
-            <div className="h-4 w-full bg-slate-100 rounded-md" />
-            <div className="h-4 w-5/6 bg-slate-100 rounded-md" />
-            <div className="h-4 w-2/3 bg-slate-100 rounded-md" />
+            <div className="h-4 w-full bg-slate-100 rounded-none" />
+            <div className="h-4 w-full bg-slate-100 rounded-none" />
+            <div className="h-4 w-5/6 bg-slate-100 rounded-none" />
+            <div className="h-4 w-2/3 bg-slate-100 rounded-none" />
           </div>
           {/* Add to Bag Button Placeholder */}
-          <div className="h-14 w-full bg-slate-100 rounded-md mt-8" />
+          <div className="h-14 w-full bg-slate-100 rounded-none mt-8" />
           {/* Subtext */}
-          <div className="h-4 w-1/2 bg-slate-100 rounded-md mx-auto" />
+          <div className="h-4 w-1/2 bg-slate-100 rounded-none mx-auto" />
         </div>
       </div>
 
       {/* Bottom Column: Related Products Skeleton */}
-      <section className="mt-24 border-t border-gray-100 pt-16">
-        <div className="h-8 w-48 bg-slate-100 rounded-md mx-auto mb-10 animate-pulse" />
+      <section className="mt-24 border-t border-[#B6925B]/20 pt-16">
+        <div className="h-8 w-48 bg-slate-100 rounded-none mx-auto mb-10 animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {[1, 2, 3, 4].map((idx) => (
             <ProductCardSkeleton key={idx} />

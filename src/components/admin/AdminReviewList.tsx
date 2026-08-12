@@ -4,8 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { deleteReview } from "@/actions/review";
 import { useToast } from "@/components/ui/Toast";
-import { StarIcon } from "@heroicons/react/24/solid";
-import { TrashIcon } from "@heroicons/react/24/outline";
 import type { Prisma } from "@/generated/prisma";
 
 type ReviewWithRelations = Prisma.ReviewGetPayload<{
@@ -37,7 +35,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
 
   if (reviews.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest">
+      <div className="p-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
         No reviews have been submitted yet.
       </div>
     );
@@ -61,7 +59,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
             <tr key={review.id} className="hover:bg-[#FAFAFA] transition-colors group">
               <td className="p-4 border-r border-[#B6925B]/10">
                 <Link href={`/products/${review.product.slug}`} target="_blank" className="flex items-center gap-3 group/link">
-                  <div className="relative w-10 h-10 bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0">
+                  <div className="relative w-10 h-10 bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0 rounded-none">
                     {review.product.images[0] && (
                       <Image src={review.product.images[0]} alt={review.product.name} fill className="object-cover" />
                     )}
@@ -73,7 +71,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
               </td>
               <td className="p-4 border-r border-[#B6925B]/10">
                 <div className="flex items-center gap-1">
-                  <StarIcon className="w-4 h-4 text-[#B6925B]" />
+                  <i className="ri-star-fill text-[#B6925B] text-base leading-none" />
                   <span className="font-bold text-[#4A3B2C]">{review.rating}</span>
                 </div>
               </td>
@@ -91,10 +89,10 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
                 <button
                   onClick={() => handleDelete(review.id)}
                   disabled={deletingId === review.id}
-                  className="text-red-700 hover:text-red-900 p-2 hover:bg-red-50 transition-colors disabled:opacity-50"
+                  className="text-red-700 hover:text-red-900 p-2 hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center rounded-none"
                   title="Delete Review"
                 >
-                  <TrashIcon className="w-5 h-5" />
+                  <i className="ri-delete-bin-line text-lg" />
                 </button>
               </td>
             </tr>

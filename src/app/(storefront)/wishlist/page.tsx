@@ -93,7 +93,7 @@ export default async function WishlistPage() {
         </div>
 
         {itemsWithReviews.length === 0 ? (
-          <div className="text-center text-gray-500 py-20 bg-white border border-[#B6925B]/20 rounded-sm">You haven&rsquo;t saved any items yet.</div>
+          <div className="text-center text-[#B6925B] text-[10px] uppercase font-bold tracking-widest py-20 bg-white border border-[#B6925B]/20 rounded-none">You haven&rsquo;t saved any items yet.</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {itemsWithReviews.map((item) => (

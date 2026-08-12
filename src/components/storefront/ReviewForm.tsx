@@ -1,10 +1,7 @@
 "use client";
 import { useState } from "react";
 import { addReview } from "@/actions/reviews";
-import { StarIcon } from "@heroicons/react/24/solid";
-import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
 export default function ReviewForm({ productId }: { productId: string }) {
@@ -37,13 +34,13 @@ export default function ReviewForm({ productId }: { productId: string }) {
   };
 
   return (
-    <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
-      <h3 className="font-bold text-gray-900 mb-4 uppercase tracking-wider text-sm">Write a Review</h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-[#FAFAFA] p-6 border border-[#B6925B]/20">
+      <h3 className="font-serif text-xl text-[#4A3B2C] mb-6 tracking-wide">Write a Review</h3>
+      <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Star Selector */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Your Rating</label>
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -55,9 +52,9 @@ export default function ReviewForm({ productId }: { productId: string }) {
                 onClick={() => setRating(star)}
               >
                 {star <= (hoverRating || rating) ? (
-                  <StarIcon className="w-8 h-8 text-yellow-400" />
+                  <i className="ri-star-fill text-2xl text-[#B6925B] leading-none" />
                 ) : (
-                  <StarOutlineIcon className="w-8 h-8 text-gray-300 hover:text-yellow-400" />
+                  <i className="ri-star-line text-2xl text-gray-300 hover:text-[#B6925B] leading-none" />
                 )}
               </button>
             ))}
@@ -66,12 +63,12 @@ export default function ReviewForm({ productId }: { productId: string }) {
 
         {/* Comment */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
+          <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Your Review</label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows={4}
-            className="w-full rounded-md border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50 transition-all resize-none"
+            className="w-full rounded-none border border-[#B6925B]/20 bg-white px-4 py-3 text-sm focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all resize-none text-[#4A3B2C]"
             placeholder="What did you like or dislike? What did you use this product for?"
           />
         </div>
@@ -79,11 +76,11 @@ export default function ReviewForm({ productId }: { productId: string }) {
         <button
           type="submit"
           disabled={isLoading || rating === 0}
-          className="bg-[#0D3B66] text-white px-6 py-2.5 rounded-md font-bold tracking-wider text-sm transition-colors hover:bg-[#082a4d] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="bg-[#4A3B2C] text-white px-8 py-3 font-bold tracking-widest text-[10px] uppercase transition-colors hover:bg-[#34291f] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <>
-              <ArrowPathIcon className="w-4 h-4 animate-spin" />
+              <i className="ri-loader-4-line animate-spin text-sm leading-none" />
               SUBMITTING...
             </>
           ) : (

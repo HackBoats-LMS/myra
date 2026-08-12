@@ -2,9 +2,6 @@
 import { useState } from "react";
 import { submitReview } from "@/actions/review";
 import StarRating from "./StarRating";
-import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
-import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
 
 interface Review {
@@ -61,11 +58,11 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {reviews.map((review) => (
-                <div key={review.id} className="border border-[#B6925B]/20 p-5 flex flex-col gap-3 bg-white">
+                <div key={review.id} className="border border-[#B6925B]/20 p-5 flex flex-col gap-3 bg-white rounded-none">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       {/* Placeholder Avatar */}
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                      <div className="w-10 h-10 rounded-none border border-[#B6925B]/20 bg-[#FAFAFA] flex items-center justify-center overflow-hidden shrink-0">
                         <span className="text-gray-500 font-bold text-lg">
                           {(review.user.name || "V").charAt(0).toUpperCase()}
                         </span>
@@ -74,7 +71,7 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
                         <span className="font-serif font-bold text-[#4A3B2C] text-sm">
                           {review.user.name || "Verified Buyer"}
                         </span>
-                        <StarRating rating={review.rating} sizeClassName="w-3.5 h-3.5 text-[#B6925B]" />
+                        <StarRating rating={review.rating} sizeClassName="text-[10px] text-[#B6925B]" />
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
@@ -102,7 +99,7 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
         </div>
 
         {/* Submit Review Form */}
-        <div className="border border-[#B6925B]/20 p-6 bg-white h-fit space-y-6">
+        <div className="border border-[#B6925B]/20 p-6 bg-white h-fit space-y-6 rounded-none">
           <h4 className="font-serif font-bold text-[#4A3B2C] text-lg">
             {userReview ? "Update Your Review" : "Write a Review"}
           </h4>
@@ -112,7 +109,7 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
               Please sign in to leave reviews and share your feedback with other customers.
             </p>
           ) : !hasPurchased ? (
-            <p className="text-sm text-[#B6925B] leading-relaxed bg-[#FDFBF7] p-4 border border-[#B6925B]/20">
+            <p className="text-sm text-[#B6925B] leading-relaxed bg-[#FDFBF7] p-4 border border-[#B6925B]/20 rounded-none">
               You can only review products that you have successfully purchased from our store.
             </p>
           ) : (
@@ -130,12 +127,12 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
-                      className="text-[#B6925B] focus:outline-none transition-transform active:scale-95"
+                      className="text-[#B6925B] focus:outline-none transition-transform active:scale-95 flex items-center justify-center"
                     >
                       {star <= (hoverRating || rating) ? (
-                        <StarSolid className="w-7 h-7" />
+                        <i className="ri-star-fill text-2xl" />
                       ) : (
-                        <StarOutline className="w-7 h-7 text-gray-300 hover:text-[#B6925B]" />
+                        <i className="ri-star-line text-2xl text-gray-300 hover:text-[#B6925B]" />
                       )}
                     </button>
                   ))}
@@ -152,7 +149,7 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Share your thoughts about this product..."
                   rows={4}
-                  className="w-full bg-transparent border border-gray-200 p-3 text-sm focus:outline-none focus:border-[#B6925B] text-gray-900 placeholder-gray-400 resize-none"
+                  className="w-full bg-transparent border border-[#B6925B]/20 rounded-none p-3 text-sm focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] placeholder-gray-400 resize-none"
                 />
               </div>
 
@@ -160,10 +157,10 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white py-3 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white py-3 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50 rounded-none"
               >
                 {isSubmitting ? (
-                  <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                  <i className="ri-loader-4-line animate-spin text-sm leading-none" />
                 ) : userReview ? (
                   "Update Review"
                 ) : (

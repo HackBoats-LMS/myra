@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { updateOrderInternalNotes } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowPathIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 
 export default function OrderInternalNotes({ orderId, initialNotes }: { orderId: string; initialNotes: string | null }) {
   const [notes, setNotes] = useState(initialNotes || "");
@@ -22,24 +21,24 @@ export default function OrderInternalNotes({ orderId, initialNotes }: { orderId:
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 space-y-4 print:hidden">
-      <div className="flex items-center gap-1.5 border-b border-gray-100 pb-2">
-        <ClipboardDocumentIcon className="w-4 h-4 text-gray-500" />
-        <h3 className="font-semibold text-gray-900">Internal Order Notes</h3>
+    <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-4 print:hidden rounded-none">
+      <div className="flex items-center gap-1.5 border-b border-[#B6925B]/20 pb-3">
+        <i className="ri-file-list-3-line text-[#B6925B] text-base leading-none" />
+        <h3 className="font-serif text-[#4A3B2C] text-lg tracking-wide">Internal Order Notes</h3>
       </div>
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Add private staff comments regarding shipping updates, customer special requests, or return logs..."
-        className="w-full min-h-[100px] bg-white border border-gray-200 rounded p-3 text-xs focus:outline-none focus:border-[#0D3B66] text-gray-900 placeholder-gray-400 font-normal leading-relaxed"
+        className="w-full min-h-[100px] bg-white border border-[#B6925B]/20 rounded-none p-3 text-xs focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] placeholder-gray-400 font-normal leading-relaxed"
       />
       <div className="flex justify-end pt-1">
         <button
           onClick={handleSave}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 bg-[#0D3B66] hover:bg-[#082a4d] text-white px-4 py-2 rounded text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 bg-[#4A3B2C] hover:bg-[#34291f] text-white px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 rounded-none"
         >
-          {loading && <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />}
+          {loading && <i className="ri-loader-4-line animate-spin text-sm leading-none" />}
           <span>Save Note</span>
         </button>
       </div>

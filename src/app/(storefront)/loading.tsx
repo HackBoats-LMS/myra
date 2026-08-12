@@ -14,10 +14,10 @@ export default function StorefrontLoading() {
       </section>
 
       {/* Featured Products Skeleton */}
-      <section className="max-w-7xl mx-auto px-8 py-24 border-t border-gray-100">
+      <section className="max-w-7xl mx-auto px-8 py-24 border-t border-[#B6925B]/20">
         <div className="flex flex-col items-center mb-16 space-y-4">
-          <div className="h-8 w-64 bg-slate-100 rounded-md animate-pulse" />
-          <div className="h-4 w-32 bg-slate-100 rounded-md animate-pulse" />
+          <div className="h-8 w-64 bg-slate-100 rounded-none animate-pulse" />
+          <div className="h-4 w-32 bg-slate-100 rounded-none animate-pulse" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {[1, 2, 3, 4].map((idx) => (

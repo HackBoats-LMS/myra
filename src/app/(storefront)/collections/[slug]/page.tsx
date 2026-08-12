@@ -5,7 +5,6 @@ import FilterControls from "@/components/storefront/FilterControls";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
-import Image from "next/image";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -150,7 +149,7 @@ export default async function CollectionPage({
           <FilterControls />
 
           {productsWithReviews.length === 0 ? (
-            <div className="text-center text-gray-500 py-20 border border-dashed border-gray-200 rounded-lg bg-white">
+            <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-20 border border-dashed border-[#B6925B]/20 bg-white">
               No products match the selected filters.
             </div>
           ) : (

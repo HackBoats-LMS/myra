@@ -3,7 +3,6 @@ import { useState } from "react";
 import Image from "next/image";
 import { updateCartQuantity } from "@/actions/cart";
 import { useRouter } from "next/navigation";
-import { ArrowPathIcon, MinusIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 interface CartLineItem {
   id: string;
@@ -35,11 +34,11 @@ export default function CartItem({ item }: { item: CartLineItem }) {
     <div className="flex gap-6 py-6 border-b border-[#B6925B]/20 last:border-0 relative">
       {isUpdating && (
         <div className="absolute inset-0 bg-[#FAFAFA]/70 flex items-center justify-center z-10">
-          <ArrowPathIcon className="w-6 h-6 animate-spin text-[#B6925B]" />
+          <i className="ri-loader-4-line animate-spin text-2xl text-[#B6925B]" />
         </div>
       )}
       
-      <div className="relative w-24 h-32 md:w-32 md:h-40 bg-gray-50 flex-shrink-0 rounded-sm overflow-hidden border border-gray-100">
+      <div className="relative w-24 h-32 md:w-32 md:h-40 bg-[#FAFAFA] flex-shrink-0 rounded-none overflow-hidden border border-[#B6925B]/20">
         {item.product.images[0] && (
           <Image src={item.product.images[0]} alt={item.product.name} fill sizes="(max-width: 768px) 96px, 128px" className="object-cover" />
         )}
@@ -53,7 +52,7 @@ export default function CartItem({ item }: { item: CartLineItem }) {
               <p className="text-xs text-[#B6925B] mt-1 uppercase tracking-widest">{item.product.collection.name}</p>
             )}
             {item.variant && (
-              <p className="text-xs text-gray-500 mt-2 font-medium bg-gray-100 px-2 py-1 inline-block rounded-sm">
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2 bg-[#FAFAFA] px-2 py-1 inline-block rounded-none border border-[#B6925B]/20">
                 {[item.variant.size, item.variant.color].filter(Boolean).join(" - ")}
               </p>
             )}
@@ -64,20 +63,20 @@ export default function CartItem({ item }: { item: CartLineItem }) {
         </div>
         
         <div className="mt-auto flex items-center justify-between">
-          <div className="flex items-center w-24 h-8 border border-gray-200 rounded-sm">
-            <button onClick={() => handleUpdate(item.quantity - 1)} className="w-1/3 h-full text-gray-500 hover:text-[#B6925B] transition-colors flex items-center justify-center">
-              <MinusIcon className="w-3 h-3" />
+          <div className="flex items-center w-24 h-8 border border-[#B6925B]/30 rounded-none bg-white">
+            <button onClick={() => handleUpdate(item.quantity - 1)} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center">
+              <i className="ri-subtract-line text-sm" />
             </button>
-            <div className="w-1/3 h-full flex items-center justify-center text-xs font-medium text-[#4A3B2C]">
+            <div className="w-1/3 h-full flex items-center justify-center text-xs font-bold text-[#4A3B2C]">
               {item.quantity}
             </div>
-            <button onClick={() => handleUpdate(item.quantity + 1)} className="w-1/3 h-full text-gray-500 hover:text-[#B6925B] transition-colors flex items-center justify-center">
-              <PlusIcon className="w-3 h-3" />
+            <button onClick={() => handleUpdate(item.quantity + 1)} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center">
+              <i className="ri-add-line text-sm" />
             </button>
           </div>
           
-          <button onClick={() => handleUpdate(0)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-            <TrashIcon className="w-4 h-4" />
+          <button onClick={() => handleUpdate(0)} className="p-2 text-gray-400 hover:text-red-600 transition-colors">
+            <i className="ri-delete-bin-line text-base" />
           </button>
         </div>
       </div>

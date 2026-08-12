@@ -4,12 +4,10 @@ import type { Metadata } from "next";
 import AddToCartButton from "@/components/storefront/AddToCartButton";
 import ImageGallery from "@/components/storefront/ImageGallery";
 import ProductCard from "@/components/storefront/ProductCard";
-import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import StarRating from "@/components/storefront/StarRating";
 import ReviewSection from "@/components/storefront/ReviewSection";
-import RecentlyViewed from "@/components/storefront/RecentlyViewed";
 import { getCachedReviews, getCachedRelatedProducts } from "@/lib/cache";
 
 export const revalidate = 3600; // 1 hour ISR
@@ -167,9 +165,6 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             {/* Price Block */}
             <div className="flex items-end gap-3 mb-8">
               <span className="text-xl font-bold text-[#4A3B2C]">Rs. {product.price.toLocaleString('en-IN')}</span>
-              {/* Simulated original price and discount */}
-              <span className="text-sm text-gray-400 line-through">Rs. {Math.round(product.price * 1.25).toLocaleString('en-IN')}</span>
-              <span className="text-xs font-bold text-green-600 mb-0.5 tracking-wider">20%</span>
             </div>
 
             <AddToCartButton 
@@ -179,7 +174,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             />
 
             {/* Product Specifications */}
-            <div className="mt-8 space-y-2 border-t border-gray-100 pt-6">
+            <div className="mt-8 space-y-2 border-t border-[#B6925B]/20 pt-6">
               <div className="grid grid-cols-[120px_1fr] text-xs">
                 <span className="font-bold text-[#4A3B2C]">Product Type:</span>
                 <span className="text-gray-600">Anarkali Suit Set (3 Piece)</span>
@@ -206,9 +201,9 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             <div className="mt-8">
               <h3 className="font-bold text-[#4A3B2C] text-sm mb-3">Shipping</h3>
               <div className="flex items-center gap-2 max-w-[200px]">
-                <div className="flex items-center border border-gray-200 rounded-sm w-full bg-white px-3 py-2 text-xs">
+                <div className="flex items-center border border-[#B6925B]/20 rounded-none w-full bg-white px-3 py-2 text-xs">
                   <span className="text-gray-400 mr-2">🚚</span>
-                  <input type="text" placeholder="Check your pincode..." className="w-full bg-transparent outline-none text-gray-700" />
+                  <input type="text" placeholder="Check your pincode..." className="w-full bg-transparent outline-none text-[#4A3B2C]" />
                 </div>
               </div>
             </div>

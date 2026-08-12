@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export default function SignupForm() {
   const router = useRouter();
@@ -59,7 +58,7 @@ export default function SignupForm() {
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-sm border border-red-100">{error}</div>}
+        {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-none border border-red-100">{error}</div>}
         
         <div>
           <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Full Name</label>
@@ -68,7 +67,7 @@ export default function SignupForm() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
             placeholder="John Doe"
           />
         </div>
@@ -79,7 +78,7 @@ export default function SignupForm() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
             placeholder="you@example.com"
           />
         </div>
@@ -91,7 +90,7 @@ export default function SignupForm() {
             required
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
             placeholder="e.g. 9876543210"
           />
         </div>
@@ -103,7 +102,7 @@ export default function SignupForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
             placeholder="Create a strong password"
           />
         </div>
@@ -111,9 +110,9 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={isLoading || isGoogleLoading}
-          className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 mt-4"
+          className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 mt-4 rounded-none"
         >
-          {isLoading ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "Create Account"}
+          {isLoading ? <i className="ri-loader-4-line animate-spin text-base" /> : "Create Account"}
         </button>
       </form>
 
@@ -129,10 +128,10 @@ export default function SignupForm() {
       <button
         onClick={handleGoogleSignIn}
         disabled={isLoading || isGoogleLoading}
-        className="w-full bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FDFBF7] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm"
+        className="w-full bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FDFBF7] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm rounded-none"
       >
         {isGoogleLoading ? (
-          <ArrowPathIcon className="w-4 h-4 animate-spin text-[#B6925B]" />
+          <i className="ri-loader-4-line animate-spin text-base text-[#B6925B]" />
         ) : null}
         CONTINUE WITH GOOGLE
       </button>

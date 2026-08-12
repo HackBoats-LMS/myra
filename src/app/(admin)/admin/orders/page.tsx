@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { EyeIcon } from '@heroicons/react/24/outline';
 import OrderStatusSelect from '@/components/admin/OrderStatusSelect';
+import { Prisma } from '@/generated/prisma';
 
 export default async function AdminOrdersPage() {
-  let orders: any[] = [];
+  let orders: Prisma.OrderGetPayload<{
+    include: {
+      user: { select: { name: true; email: true; phoneNumber: true } }
+      _count: { select: { orderItems: true } }
+    }
+  }>[] = [];
   try {
     orders = await prisma.order.findMany({
       include: {
@@ -22,7 +27,7 @@ export default async function AdminOrdersPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 rounded-none">
       <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-4">
         <div>
           <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Orders</h2>
@@ -31,13 +36,13 @@ export default async function AdminOrdersPage() {
         <a 
           href="/api/admin/orders/export" 
           download 
-          className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1.5"
+          className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1.5 rounded-none"
         >
           Export CSV
         </a>
       </div>
 
-      <div className="bg-white border border-[#B6925B]/20 relative">
+      <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
         <table className="w-full text-left text-sm text-[#4A3B2C]">
           <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
             <tr>
@@ -52,7 +57,7 @@ export default async function AdminOrdersPage() {
           <tbody className="divide-y divide-[#B6925B]/10">
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest">
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
                   No orders have been placed yet.
                 </td>
               </tr>
@@ -69,8 +74,8 @@ export default async function AdminOrdersPage() {
                     <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link href={`/admin/orders/${order.id}`} className="inline-block text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1" title="View Details">
-                      <EyeIcon className="w-5 h-5" />
+                    <Link href={`/admin/orders/${order.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="View Details">
+                      <i className="ri-eye-line text-lg" />
                     </Link>
                   </td>
                 </tr>

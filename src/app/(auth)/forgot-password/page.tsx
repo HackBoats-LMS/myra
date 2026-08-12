@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { generateResetToken } from "@/actions/password";
 import Link from "next/link";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ForgotPasswordPage() {
@@ -28,15 +27,15 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4">
-      <div className="max-w-md w-full bg-white p-8 border border-[#B6925B]/20 shadow-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4 rounded-none">
+      <div className="max-w-md w-full bg-white p-8 border border-[#B6925B]/20 shadow-sm rounded-none">
         <h2 className="text-3xl font-serif text-[#4A3B2C] mb-2 text-center tracking-wide">Forgot Password</h2>
         
         {isSuccess ? (
-          <div className="text-sm text-gray-600 mb-6 text-center mt-6">
+          <div className="text-sm text-gray-600 mb-6 text-center mt-6 rounded-none">
             We&rsquo;ve sent a password reset link to <strong>{email}</strong>. Please check your inbox (and spam folder) and click the link to reset your password.
             <div className="mt-8">
-              <Link href="/login" className="text-[#B6925B] font-bold hover:underline uppercase tracking-widest text-xs">
+              <Link href="/login" className="text-[#B6925B] font-bold hover:underline uppercase tracking-widest text-xs rounded-none">
                 Return to Login
               </Link>
             </div>
@@ -54,20 +53,20 @@ export default function ForgotPasswordPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+                  className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
                   placeholder="you@example.com"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 flex justify-center items-center"
+                className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 flex justify-center items-center rounded-none"
               >
-                {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Send Reset Link"}
+                {isLoading ? <i className="ri-loader-4-line animate-spin text-sm" /> : "Send Reset Link"}
               </button>
             </form>
             <div className="mt-8 text-center">
-              <Link href="/login" className="text-[#B6925B] font-bold hover:underline uppercase tracking-widest text-xs">
+              <Link href="/login" className="text-[#B6925B] font-bold hover:underline uppercase tracking-widest text-xs rounded-none">
                 Back to Login
               </Link>
             </div>

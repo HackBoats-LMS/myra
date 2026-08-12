@@ -27,23 +27,23 @@ export default function CreateCouponForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label htmlFor="code" className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Coupon Code *</label>
+          <label htmlFor="code" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Coupon Code *</label>
           <input
             type="text"
             id="code"
             name="code"
             required
             placeholder="e.g. SUMMER20"
-            className="w-full uppercase font-mono px-4 py-2 border border-gray-300 rounded-md focus:ring-[#0D3B66] focus:border-[#0D3B66]"
+            className="w-full uppercase font-mono px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="discountType" className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Discount Type *</label>
+          <label htmlFor="discountType" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Discount Type *</label>
           <select
             id="discountType"
             name="discountType"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#0D3B66] focus:border-[#0D3B66]"
+            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
           >
             <option value="PERCENTAGE">Percentage (%)</option>
             <option value="FIXED">Fixed Amount (₹)</option>
@@ -51,7 +51,7 @@ export default function CreateCouponForm() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="discountValue" className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Discount Value *</label>
+          <label htmlFor="discountValue" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Discount Value *</label>
           <input
             type="number"
             id="discountValue"
@@ -60,12 +60,12 @@ export default function CreateCouponForm() {
             min="0.01"
             step="0.01"
             placeholder="e.g. 20"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#0D3B66] focus:border-[#0D3B66]"
+            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="minOrderAmount" className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Min. Order Amount (₹)</label>
+          <label htmlFor="minOrderAmount" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Min. Order Amount (₹)</label>
           <input
             type="number"
             id="minOrderAmount"
@@ -73,12 +73,12 @@ export default function CreateCouponForm() {
             min="0"
             step="0.01"
             placeholder="0"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#0D3B66] focus:border-[#0D3B66]"
+            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="maxUses" className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Max Uses (Optional)</label>
+          <label htmlFor="maxUses" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Max Uses (Optional)</label>
           <input
             type="number"
             id="maxUses"
@@ -86,17 +86,17 @@ export default function CreateCouponForm() {
             min="1"
             step="1"
             placeholder="Leave blank for unlimited"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#0D3B66] focus:border-[#0D3B66]"
+            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="expiresAt" className="block text-sm font-bold text-gray-700 uppercase tracking-wider">Expiry Date (Optional)</label>
+          <label htmlFor="expiresAt" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Expiry Date (Optional)</label>
           <input
             type="date"
             id="expiresAt"
             name="expiresAt"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-[#0D3B66] focus:border-[#0D3B66]"
+            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
           />
         </div>
       </div>
@@ -105,9 +105,10 @@ export default function CreateCouponForm() {
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#0D3B66] hover:bg-[#0a2c4c] text-white px-6 py-3 rounded-md text-sm font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50"
+          className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 rounded-none"
         >
-          {loading ? "Creating..." : "Create Coupon"}
+          {loading && <i className="ri-loader-4-line animate-spin text-base" />}
+          <span>Create Coupon</span>
         </button>
       </div>
     </form>
