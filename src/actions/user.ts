@@ -1,26 +1,41 @@
 "use server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { verifyUser } from "@/lib/auth-utils";
+
+import { z } from "zod";
+
+const userProfileSchema = z.object({
+  name: z.string().max(100).optional().nullable(),
+  email: z.string().email("Invalid email address").max(100).optional().nullable(),
+  phoneNumber: z.string().regex(/^\d{10}$/, "Phone number must be exactly 10 digits").optional().nullable(),
+  addressLine1: z.string().max(255).optional().nullable(),
+  city: z.string().max(100).optional().nullable(),
+  state: z.string().max(100).optional().nullable(),
+  postalCode: z.string().max(20).optional().nullable(),
+  country: z.string().max(100).optional().nullable(),
+});
 
 export async function updateUserProfile(formData: FormData) {
-  const session = await getServerSession(authOptions);
+  const userId = await verifyUser();
   
-  if (!session || !session.user?.id) {
-    throw new Error("Unauthorized");
+  const rawData = {
+    name: formData.get("name") ? String(formData.get("name")).trim() : null,
+    email: formData.get("email") ? String(formData.get("email")).trim() : null,
+    phoneNumber: formData.get("phoneNumber") ? String(formData.get("phoneNumber")).trim() : null,
+    addressLine1: formData.get("addressLine1") ? String(formData.get("addressLine1")).trim() : null,
+    city: formData.get("city") ? String(formData.get("city")).trim() : null,
+    state: formData.get("state") ? String(formData.get("state")).trim() : null,
+    postalCode: formData.get("postalCode") ? String(formData.get("postalCode")).trim() : null,
+    country: formData.get("country") ? String(formData.get("country")).trim() : null,
+  };
+
+  const result = userProfileSchema.safeParse(rawData);
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
   }
 
-  const userId = session.user.id;
-  
-  const name = String(formData.get("name") || "").trim().substring(0, 100);
-  const email = String(formData.get("email") || "").trim().substring(0, 100);
-  const phoneNumber = String(formData.get("phoneNumber") || "").trim().substring(0, 20);
-  const addressLine1 = String(formData.get("addressLine1") || "").trim().substring(0, 255);
-  const city = String(formData.get("city") || "").trim().substring(0, 100);
-  const state = String(formData.get("state") || "").trim().substring(0, 100);
-  const postalCode = String(formData.get("postalCode") || "").trim().substring(0, 20);
-  const country = String(formData.get("country") || "").trim().substring(0, 100);
+  const data = result.data;
 
   const existingUser = await prisma.user.findUnique({
     where: { id: userId }
@@ -31,14 +46,14 @@ export async function updateUserProfile(formData: FormData) {
   await prisma.user.update({
     where: { id: userId },
     data: {
-      name: name || null,
-      email: email || null,
-      addressLine1: addressLine1 || null,
-      city: city || null,
-      state: state || null,
-      postalCode: postalCode || null,
-      country: country || null,
-      ...(canUpdatePhone && phoneNumber ? { phoneNumber } : {})
+      name: data.name,
+      email: data.email,
+      addressLine1: data.addressLine1,
+      city: data.city,
+      state: data.state,
+      postalCode: data.postalCode,
+      country: data.country,
+      ...(canUpdatePhone && data.phoneNumber ? { phoneNumber: data.phoneNumber } : {})
     }
   });
 
@@ -46,13 +61,7 @@ export async function updateUserProfile(formData: FormData) {
 }
 
 export async function changePassword(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || !session.user?.id) {
-    throw new Error("Unauthorized");
-  }
-
-  const userId = session.user.id;
+  const userId = await verifyUser();
   const currentPassword = String(formData.get("currentPassword") || "");
   const newPassword = String(formData.get("newPassword") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
@@ -88,6 +97,76 @@ export async function changePassword(formData: FormData) {
   await prisma.user.update({
     where: { id: userId },
     data: { password: hashedPassword }
+  });
+}
+
+export async function cancelOrder(orderId: string) {
+  const userId = await verifyUser();
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId }
+  });
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  if (order.userId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  if (order.status !== "PENDING") {
+    throw new Error("Only pending orders can be cancelled.");
+  }
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { status: "CANCELLED" }
+  });
+
+  revalidatePath("/account");
+  revalidatePath(`/account/orders/${orderId}`);
+}
+
+export async function deleteUserAccount() {
+  const userId = await verifyUser();
+
+  await prisma.$transaction(async (tx) => {
+    // Delete addresses
+    await tx.address.deleteMany({ where: { userId } });
+
+    // Delete reviews
+    await tx.review.deleteMany({ where: { userId } });
+
+    // Delete cart
+    const cart = await tx.cart.findUnique({ where: { userId } });
+    if (cart) {
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+      await tx.cart.delete({ where: { id: cart.id } });
+    }
+
+    // Delete wishlist
+    const wishlist = await tx.wishlist.findUnique({ where: { userId } });
+    if (wishlist) {
+      await tx.wishlistItem.deleteMany({ where: { wishlistId: wishlist.id } });
+      await tx.wishlist.delete({ where: { id: wishlist.id } });
+    }
+
+    // Anonymize User record to satisfy foreign key constraints of Order history
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        name: "Deleted Account",
+        email: `deleted-${userId}@myra.com`, // Unique dummy to prevent conflicts
+        phoneNumber: null,
+        password: null,
+        addressLine1: null,
+        city: null,
+        state: null,
+        postalCode: null,
+        country: null,
+      }
+    });
   });
 }
 

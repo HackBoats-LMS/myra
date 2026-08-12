@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
         router.push("/admin/products");
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred");
     } finally {
       setIsLoading(false);
@@ -37,39 +37,39 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+    <div className="w-full min-h-screen flex items-center justify-center bg-[#FAFAFA]">
+      <div className="w-full max-w-md bg-white p-8 border border-[#B6925B]/20 shadow-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-[#0D3B66] rounded-full flex items-center justify-center mb-4">
-            <LockClosedIcon className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 bg-[#4A3B2C] flex items-center justify-center mb-4">
+            <LockClosedIcon className="w-6 h-6 text-[#B6925B]" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Admin Portal</h1>
-          <p className="text-xs text-gray-500 uppercase tracking-widest mt-2">Authorized Personnel Only</p>
+          <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Admin Portal</h1>
+          <p className="text-xs text-[#B6925B] uppercase tracking-widest mt-2 font-bold">Authorized Personnel Only</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md border border-red-100 text-center">{error}</div>}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && <div className="p-3 text-xs font-bold uppercase tracking-widest text-red-600 bg-red-50 border border-red-200 text-center">{error}</div>}
           
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Staff Email</label>
+            <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Staff Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50 bg-gray-50 focus:bg-white transition-colors"
+              className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
               placeholder="admin@myra.com"
             />
           </div>
           
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Password</label>
+            <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D3B66]/50 bg-gray-50 focus:bg-white transition-colors"
+              className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
               placeholder="••••••••"
             />
           </div>
@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#0D3B66] hover:bg-[#082a4d] text-white px-4 py-3 rounded-md text-sm font-bold tracking-widest transition-colors flex items-center justify-center disabled:opacity-70 mt-6"
+            className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-xs font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 mt-6"
           >
             {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "AUTHENTICATE"}
           </button>

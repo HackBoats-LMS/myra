@@ -15,8 +15,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import type { User } from "@/generated/prisma";
 
-export default function ProfileForm({ user }: { user: any }) {
+export default function ProfileForm({ user }: { user: User }) {
   const toast = useToast();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -34,7 +35,7 @@ export default function ProfileForm({ user }: { user: any }) {
       toast.success("Profile updated successfully!");
       setIsEditing(false);
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Failed to update profile. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -51,8 +52,8 @@ export default function ProfileForm({ user }: { user: any }) {
       toast.success("Password changed successfully!");
       (e.target as HTMLFormElement).reset();
       setShowPasswordSection(false);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to change password.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to change password.");
     } finally {
       setIsChangingPassword(false);
     }

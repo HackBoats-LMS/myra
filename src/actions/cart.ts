@@ -4,126 +4,86 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
+import { sendEmail } from "@/lib/email";
+import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
+import { 
+  upsertCartItem, 
+  updateCartItemQuantity, 
+  getOrCreateCart, 
+  mergeGuestCartItems,
+  parseGuestCartCookie 
+} from "@/lib/cart-service";
+import { CACHE_TAGS } from "@/lib/cache";
+import { rateLimit } from "@/lib/rate-limit";
 
-export async function addToCart(productId: string, quantity: number = 1) {
+const LOW_STOCK_THRESHOLD = 5;
+
+export async function addToCart(productId: string, quantity: number = 1, variantId?: string) {
   const session = await getServerSession(authOptions);
   
   if (session?.user?.id) {
-    // Database approach for logged in users
-    const userId = session.user.id;
-    let cart = await prisma.cart.findUnique({ where: { userId } });
-    
-    if (!cart) {
-      cart = await prisma.cart.create({ data: { userId } });
-    }
-    
-    const existingItem = await prisma.cartItem.findUnique({
-      where: { cartId_productId: { cartId: cart.id, productId } }
-    });
-    
-    if (existingItem) {
-      await prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + quantity }
-      });
-    } else {
-      await prisma.cartItem.create({
-        data: { cartId: cart.id, productId, quantity }
-      });
-    }
+    const cart = await getOrCreateCart(session.user.id);
+    await upsertCartItem(cart.id, productId, quantity, variantId);
   } else {
-    // Cookie approach for guests
     const cookieStore = await cookies();
     const cartCookie = cookieStore.get('guest_cart');
-    let cartItems: { productId: string, quantity: number }[] = [];
+    const cartItems = parseGuestCartCookie(cartCookie?.value);
     
-    if (cartCookie) {
-      try {
-        const parsed = JSON.parse(cartCookie.value);
-        if (Array.isArray(parsed)) {
-          // Strictly validate the payload shape to prevent injection
-          cartItems = parsed.filter(i => 
-            typeof i.productId === 'string' && 
-            typeof i.quantity === 'number' && 
-            i.quantity > 0
-          ).slice(0, 50); // Hard limit to 50 items to prevent cookie bombing
-        }
-      } catch (e) {
-        // Corrupted cookie, start fresh
-      }
-    }
-    
-    const existingItemIndex = cartItems.findIndex(item => item.productId === productId);
+    const existingItemIndex = cartItems.findIndex(item => 
+      item.productId === productId && (item.variantId || null) === (variantId || null)
+    );
     
     if (existingItemIndex > -1) {
-      cartItems[existingItemIndex].quantity += quantity;
-      // Cap quantity to reasonable number to prevent overflow/abuse
-      if (cartItems[existingItemIndex].quantity > 99) {
-        cartItems[existingItemIndex].quantity = 99;
-      }
+      cartItems[existingItemIndex].quantity = Math.min(cartItems[existingItemIndex].quantity + quantity, 99);
     } else {
       if (cartItems.length < 50) {
-        cartItems.push({ productId, quantity: Math.min(quantity, 99) });
+        cartItems.push({ productId, quantity: Math.min(quantity, 99), variantId });
       }
     }
     
-    // Store in cookie for 30 days
     cookieStore.set('guest_cart', JSON.stringify(cartItems), { maxAge: 60 * 60 * 24 * 30 });
   }
 
   revalidatePath("/");
 }
 
-export async function updateCartQuantity(productId: string, quantity: number) {
+export async function updateCartQuantity(productId: string, quantity: number, variantId?: string) {
   const session = await getServerSession(authOptions);
   
   if (session?.user?.id) {
-    const userId = session.user.id;
-    const cart = await prisma.cart.findUnique({ where: { userId } });
-    if (!cart) return;
-
-    const item = await prisma.cartItem.findUnique({ where: { cartId_productId: { cartId: cart.id, productId } } });
-    if (item) {
-      if (quantity <= 0) {
-        await prisma.cartItem.delete({ where: { id: item.id } });
-      } else {
-        await prisma.cartItem.update({ where: { id: item.id }, data: { quantity } });
-      }
+    const cart = await prisma.cart.findUnique({ where: { userId: session.user.id } });
+    if (cart) {
+      await updateCartItemQuantity(cart.id, productId, quantity, variantId);
     }
   } else {
     const cookieStore = await cookies();
     const cartCookie = cookieStore.get('guest_cart');
-    if (!cartCookie) return;
-    
-    let cartItems: { productId: string, quantity: number }[] = [];
-    try {
-      const parsed = JSON.parse(cartCookie.value);
-      if (Array.isArray(parsed)) {
-        cartItems = parsed.filter(i => 
-          typeof i.productId === 'string' && 
-          typeof i.quantity === 'number'
-        );
+    if (cartCookie) {
+      try {
+        let parsed = parseGuestCartCookie(cartCookie.value);
+        if (quantity <= 0) {
+          parsed = parsed.filter(i => 
+            !(i.productId === productId && (i.variantId || null) === (variantId || null))
+          );
+        } else {
+          const index = parsed.findIndex(i => 
+            i.productId === productId && (i.variantId || null) === (variantId || null)
+          );
+          if (index > -1) {
+            parsed[index].quantity = quantity;
+          }
+        }
+        cookieStore.set('guest_cart', JSON.stringify(parsed), { maxAge: 60 * 60 * 24 * 30 });
+      } catch {
+        // Ignore malformed cookie
       }
-    } catch (e) {
-      return; // Stop if corrupted
-    }
-    
-    const index = cartItems.findIndex(i => i.productId === productId);
-    
-    if (index > -1) {
-      if (quantity <= 0) {
-        cartItems.splice(index, 1);
-      } else {
-        cartItems[index].quantity = Math.min(quantity, 99);
-      }
-      cookieStore.set('guest_cart', JSON.stringify(cartItems), { maxAge: 60 * 60 * 24 * 30 });
     }
   }
-
   revalidatePath("/");
 }
 
-export async function checkoutCart() {
+export async function checkoutCart(addressId: string, couponCode?: string) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
@@ -131,108 +91,236 @@ export async function checkoutCart() {
   }
 
   const userId = session.user.id;
+  const userEmail = session.user.email;
+  const userName = session.user.name || "Customer";
+
+  const limitResult = rateLimit(`checkout_${userId}`, 5, 60 * 1000);
+  if (!limitResult.success) {
+    throw new Error("Too many checkout attempts. Please try again in a minute.");
+  }
   
-  // Use a Prisma transaction to guarantee atomic execution
-  await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const cart = await tx.cart.findUnique({
       where: { userId },
-      include: { items: { include: { product: true } } }
+      include: { items: { include: { product: true, variant: true } } }
     });
 
     if (!cart || cart.items.length === 0) {
       throw new Error("Your cart is empty.");
     }
 
-    let totalAmount = 0;
-
-    // Validate stock and calculate total securely
-    for (const item of cart.items) {
-      if (item.product.stockQuantity < item.quantity) {
-        throw new Error(`Item ${item.product.name} is out of stock. Only ${item.product.stockQuantity} remaining.`);
-      }
-      totalAmount += item.product.price * item.quantity;
+    const address = await tx.address.findUnique({
+      where: { id: addressId }
+    });
+    if (!address || address.userId !== userId) {
+      throw new Error("Invalid delivery address selected.");
     }
 
-    // Create the order
-    await tx.order.create({
+    const items = cart.items.map(item => ({
+      price: item.product.price + (item.variant?.priceOffset || 0),
+      quantity: item.quantity
+    }));
+
+    let discountAmount = 0;
+    let finalAmount = 0;
+
+    if (couponCode) {
+      const code = couponCode.trim().toUpperCase();
+      const dbCoupon = await tx.coupon.findUnique({ where: { code } });
+      
+      if (!dbCoupon || !dbCoupon.isActive) {
+        throw new Error("Invalid or inactive coupon code.");
+      }
+      
+      if (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date()) {
+        throw new Error("This coupon code has expired.");
+      }
+
+      if (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses) {
+        throw new Error("This coupon code has reached its usage limit.");
+      }
+
+      const { calculateOrderTotal } = await import("@/lib/pricing");
+      const pricing = calculateOrderTotal(items, {
+        isActive: dbCoupon.isActive,
+        expiresAt: dbCoupon.expiresAt,
+        maxUses: dbCoupon.maxUses,
+        timesUsed: dbCoupon.timesUsed,
+        minOrderAmount: dbCoupon.minOrderAmount,
+        discountType: dbCoupon.discountType,
+        discountValue: dbCoupon.discountValue
+      });
+      
+      discountAmount = pricing.discountAmount;
+      finalAmount = pricing.finalAmount;
+
+      await tx.coupon.update({
+        where: { id: dbCoupon.id },
+        data: { timesUsed: { increment: 1 } }
+      });
+    } else {
+      const { calculateOrderTotal } = await import("@/lib/pricing");
+      const pricing = calculateOrderTotal(items);
+      discountAmount = pricing.discountAmount;
+      finalAmount = pricing.finalAmount;
+    }
+
+    const order = await tx.order.create({
       data: {
         userId,
-        totalAmount,
+        addressId,
+        totalAmount: finalAmount,
+        couponCode: couponCode || null,
+        discountAmount,
         status: 'PENDING',
         paymentMethod: 'CASH_ON_DELIVERY',
         orderItems: {
           create: cart.items.map(item => ({
             productId: item.productId,
+            variantId: item.variantId || null,
             quantity: item.quantity,
-            price: item.product.price
+            price: item.product.price + (item.variant?.priceOffset || 0)
           }))
         }
       }
     });
 
-    // Decrement stock levels for all products
     for (const item of cart.items) {
-      await tx.product.update({
-        where: { id: item.productId },
-        data: { stockQuantity: { decrement: item.quantity } }
-      });
+      if (item.variantId) {
+        const res = await tx.productVariant.updateMany({
+          where: { id: item.variantId, stockQuantity: { gte: item.quantity } },
+          data: { stockQuantity: { decrement: item.quantity } }
+        });
+        if (res.count === 0) {
+          throw new Error(
+            `Insufficient stock for ${item.product.name} (${item.variant?.size}/${item.variant?.color}).`
+          );
+        }
+      } else {
+        const res = await tx.product.updateMany({
+          where: { id: item.productId, stockQuantity: { gte: item.quantity } },
+          data: { stockQuantity: { decrement: item.quantity } }
+        });
+        if (res.count === 0) {
+          throw new Error(`Insufficient stock for "${item.product.name}".`);
+        }
+      }
     }
 
-    // Empty the cart
     await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+    return {
+      orderId: order.id,
+      finalAmount,
+      items: cart.items.map(item => ({
+        productId: item.productId,
+        name: `${item.product.name}${item.variant ? ` (${item.variant.size}/${item.variant.color})` : ''}`,
+        quantity: item.quantity,
+        price: item.product.price + (item.variant?.priceOffset || 0)
+      }))
+    };
   });
 
+  if (userEmail) {
+    await sendEmail({
+      to: userEmail,
+      subject: `Your Myra Order Receipt #${result.orderId.substring(0, 8)}`,
+      react: OrderConfirmationEmail({
+        orderId: result.orderId,
+        customerName: userName,
+        totalAmount: result.finalAmount,
+        items: result.items
+      })
+    });
+  }
+
+  // Alert admin if any ordered product dropped to low stock
+  const lowStock = await prisma.product.findMany({
+    where: {
+      id: { in: result.items.map((i) => i.productId) },
+      stockQuantity: { lte: LOW_STOCK_THRESHOLD },
+    },
+    select: { name: true, stockQuantity: true },
+  });
+  if (lowStock.length > 0) {
+    const { sendLowStockAlert } = await import("@/lib/email");
+    sendLowStockAlert(lowStock.map((p) => ({ name: p.name, stockQuantity: p.stockQuantity }))).catch(console.error);
+  }
+
   revalidatePath("/");
+  updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.cart(userId));
+
+  return result;
 }
 
-/**
- * Merges the guest cookie cart into the logged-in user's DB cart.
- * Called from the NextAuth signIn callback immediately after login.
- * Safe to call multiple times — uses upsert logic.
- */
 export async function mergeGuestCart(userId: string, cookieValue: string | undefined) {
-  if (!cookieValue) return;
-
-  let guestItems: { productId: string; quantity: number }[] = [];
-  try {
-    const parsed = JSON.parse(cookieValue);
-    if (Array.isArray(parsed)) {
-      guestItems = parsed
-        .filter(
-          (i) =>
-            typeof i.productId === "string" &&
-            typeof i.quantity === "number" &&
-            i.quantity > 0
-        )
-        .slice(0, 50);
-    }
-  } catch {
-    return; // Corrupted cookie — nothing to merge
-  }
-
+  const guestItems = parseGuestCartCookie(cookieValue);
   if (guestItems.length === 0) return;
+  
+  await mergeGuestCartItems(userId, guestItems);
+}
 
-  // Get or create the user's DB cart
-  let cart = await prisma.cart.findUnique({ where: { userId } });
-  if (!cart) {
-    cart = await prisma.cart.create({ data: { userId } });
-  }
-
-  for (const item of guestItems) {
-    const existing = await prisma.cartItem.findUnique({
-      where: { cartId_productId: { cartId: cart.id, productId: item.productId } },
+export async function getCart() {
+  const session = await getServerSession(authOptions);
+  
+  if (session?.user?.id) {
+    const cart = await prisma.cart.findUnique({
+      where: { userId: session.user.id },
+      include: {
+        items: {
+          include: { product: { include: { collection: true } } },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
     });
-
-    if (existing) {
-      // Add quantities, cap at 99
-      await prisma.cartItem.update({
-        where: { id: existing.id },
-        data: { quantity: Math.min(existing.quantity + item.quantity, 99) },
+    return cart?.items || [];
+  } else {
+    const cookieStore = await cookies();
+    const cartCookie = cookieStore.get('guest_cart');
+    if (!cartCookie) return [];
+    
+    try {
+      const parsed = parseGuestCartCookie(cartCookie.value);
+      const productIds = parsed.map(p => p.productId);
+      const products = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        include: { collection: true }
       });
-    } else {
-      await prisma.cartItem.create({
-        data: { cartId: cart.id, productId: item.productId, quantity: Math.min(item.quantity, 99) },
-      });
+      
+      return parsed.map(p => {
+        const prod = products.find(prod => prod.id === p.productId);
+        return prod ? { ...p, product: prod, id: `guest-${prod.id}` } : null;
+      }).filter(Boolean);
+    } catch {
+      return [];
     }
   }
+}
+
+export async function validateCouponAction(code: string, cartTotal: number) {
+  const codeUpper = code.trim().toUpperCase();
+  const dbCoupon = await prisma.coupon.findUnique({ where: { code: codeUpper } });
+  
+  if (!dbCoupon || !dbCoupon.isActive) {
+    throw new Error("Invalid or inactive coupon code.");
+  }
+  
+  if (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date()) {
+    throw new Error("This coupon code has expired.");
+  }
+
+  if (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses) {
+    throw new Error("This coupon code has reached its usage limit.");
+  }
+
+  if (cartTotal < dbCoupon.minOrderAmount) {
+    throw new Error(`This coupon requires a minimum purchase of ₹${dbCoupon.minOrderAmount.toFixed(2)}.`);
+  }
+
+  return {
+    code: dbCoupon.code,
+    type: dbCoupon.discountType,
+    value: dbCoupon.discountValue
+  };
 }

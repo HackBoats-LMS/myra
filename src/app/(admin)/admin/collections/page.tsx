@@ -1,63 +1,74 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { Plus, Edit } from 'lucide-react';
-import DeleteCollectionButton from '@/components/admin/DeleteCollectionButton';
+import { PlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import DeleteButton from '@/components/admin/DeleteButton';
+import { deleteCollection } from '@/actions/admin';
 
 export default async function AdminCollectionsPage() {
-  const collections = await prisma.collection.findMany({
-    include: {
-      _count: {
-        select: { products: true }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  let collections: any[] = [];
+  try {
+    collections = await prisma.collection.findMany({
+      include: {
+        _count: {
+          select: { products: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.warn("Database unreachable in AdminCollectionsPage:", error);
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Collections</h2>
-          <p className="text-sm text-gray-500 mt-1">Organize your products into categories</p>
+          <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Collections</h2>
+          <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Organize your products into categories</p>
         </div>
-        <Link href="/admin/collections/new" className="bg-[#B03138] hover:bg-[#8F252B] text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
-          <Plus className="w-4 h-4" />
+        <Link href="/admin/collections/new" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm">
+          <PlusIcon className="w-4 h-4" />
           Add Collection
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full text-left text-sm text-gray-600">
-          <thead className="bg-gray-50 text-gray-700 text-xs uppercase font-semibold border-b border-gray-200">
+      <div className="bg-white border border-[#B6925B]/20 relative">
+        <table className="w-full text-left text-sm text-[#4A3B2C]">
+          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
             <tr>
-              <th className="px-6 py-4">Collection Name</th>
-              <th className="px-6 py-4">Slug</th>
-              <th className="px-6 py-4">Total Products</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Collection Name</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Slug</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Total Products</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-[#B6925B]/10">
             {collections.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                  No collections found. Click "Add Collection" to create one.
+                <td colSpan={4} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest">
+                  No collections found. Click &ldquo;Add Collection&rdquo; to create one.
                 </td>
               </tr>
             ) : (
               collections.map((collection) => (
-                <tr key={collection.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-900">{collection.name}</td>
-                  <td className="px-6 py-4 text-gray-500">{collection.slug}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                <tr key={collection.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">{collection.name}</td>
+                  <td className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#B6925B] border-r border-[#B6925B]/10">{collection.slug}</td>
+                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
+                    <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#B6925B]">
                       {collection._count.products} products
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <Link href={`/admin/collections/${collection.id}`} className="inline-block text-gray-400 hover:text-[#0D3B66] transition-colors p-1" title="Edit Collection">
-                      <Edit className="w-4 h-4" />
+                  <td className="px-6 py-4 text-right space-x-3">
+                    <Link href={`/admin/collections/${collection.id}`} className="inline-block text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1" title="Edit Collection">
+                      <PencilSquareIcon className="w-5 h-5" />
                     </Link>
-                    <DeleteCollectionButton id={collection.id} name={collection.name} />
+                    <DeleteButton 
+                      id={collection.id} 
+                      entityName="Collection" 
+                      deleteAction={deleteCollection} 
+                      confirmMessage={`Are you sure you want to delete ${collection.name}? This will NOT delete the products inside it, but will remove them from the collection.`}
+                    />
                   </td>
                 </tr>
               ))

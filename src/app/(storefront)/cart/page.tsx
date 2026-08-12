@@ -2,17 +2,33 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { CartItemData } from "@/lib/cart-service";
 import CartItem from "@/components/storefront/CartItem";
 import CheckoutButton from "@/components/storefront/CheckoutButton";
 import Link from "next/link";
 import type { Metadata } from "next";
+
+interface CartLineItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  variantId?: string | null;
+  product: {
+    id: string;
+    price: number;
+    name: string;
+    images: string[];
+    collection?: { name: string | null } | null;
+  };
+  variant?: { priceOffset: number; size?: string | null; color?: string | null } | null;
+}
 
 export const metadata: Metadata = {
   title: "Shopping Bag | Myra Shopping Mall",
   description: "Review items in your shopping bag and proceed to checkout.",
 };
 
-async function getCartItems() {
+async function getCartItems(): Promise<CartLineItem[]> {
   const session = await getServerSession(authOptions);
   
   if (session?.user?.id) {
@@ -21,7 +37,10 @@ async function getCartItems() {
       where: { userId },
       include: {
         items: {
-          include: { product: { include: { collection: true } } },
+          include: { 
+            product: { include: { collection: true } },
+            variant: true
+          },
           orderBy: { createdAt: 'desc' }
         }
       }
@@ -32,98 +51,96 @@ async function getCartItems() {
     const cartCookie = cookieStore.get('guest_cart');
     if (!cartCookie) return [];
     
-    const parsed = JSON.parse(cartCookie.value);
+    const parsed = JSON.parse(cartCookie.value) as CartItemData[];
     
-    // Fetch products for the guest cart
-    const productIds = parsed.map((p: any) => p.productId);
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
-      include: { collection: true }
-    });
+    const productIds = parsed.map((p) => p.productId);
+    const variantIds = parsed.map((p) => p.variantId).filter((id): id is string => Boolean(id));
     
-    return parsed.map((p: any) => {
-      const prod = products.find(prod => prod.id === p.productId);
-      return prod ? { ...p, product: prod, id: `guest-${prod.id}` } : null;
-    }).filter(Boolean);
+    const [products, variants] = await Promise.all([
+      prisma.product.findMany({
+        where: { id: { in: productIds } },
+        include: { collection: true }
+      }),
+      prisma.productVariant.findMany({
+        where: { id: { in: variantIds } }
+      })
+    ]);
+    
+    return parsed.map((p, idx) => {
+      const prod = products.find((prod) => prod.id === p.productId);
+      const vrnt = p.variantId ? variants.find((v) => v.id === p.variantId) : null;
+      return prod ? { ...p, product: prod, variant: vrnt, id: `guest-${idx}` } : null;
+    }).filter(Boolean) as CartLineItem[];
   }
 }
 
 export default async function CartPage() {
   const items = await getCartItems();
   const session = await getServerSession(authOptions);
+  const userId = session?.user?.id ?? null;
+
+  const [addresses] = await Promise.all([
+    userId ? prisma.address.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }) : Promise.resolve([])
+  ]);
   
-  const totalAmount = items.reduce((sum: number, item: any) => sum + (item.product.price * item.quantity), 0);
+  const totalAmount = items.reduce((sum: number, item) => {
+    const basePrice = item.product.price;
+    const offset = item.variant?.priceOffset || 0;
+    return sum + ((basePrice + offset) * item.quantity);
+  }, 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-16 min-h-screen">
-      <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4">
-        <h1 className="text-4xl md:text-5xl font-serif text-gray-900 tracking-tight">Shopping Bag</h1>
-        <p className="text-sm text-gray-500 uppercase tracking-widest">{items.length} items</p>
-      </div>
-
-      {items.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-gray-500 mb-6">Your bag is empty.</p>
-          <Link
-            href="/collections"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#0D3B66] hover:underline"
-          >
-            ← Continue Shopping
-          </Link>
+    <div className="w-full bg-[#FAFAFA] min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+        <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4">
+          <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">Shopping Bag</h1>
+          <p className="text-sm text-gray-500 tracking-widest">{items.length} items</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          
-          {/* Cart Items */}
-          <div className="lg:col-span-8 flex flex-col">
-            <div className="border-t border-gray-200 pt-6">
-              {items.map((item: any) => (
-                <CartItem key={item.id} item={item} />
-              ))}
-            </div>
-            <div className="mt-6">
-              <Link
-                href="/collections"
-                className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
-              >
-                ← Continue Shopping
-              </Link>
-            </div>
-          </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-4">
-            <div className="bg-gray-50 border border-gray-100 p-8 sticky top-32">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 mb-6">Order Summary</h3>
-              
-              <div className="space-y-4 text-sm text-gray-600 mb-6">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>₹{totalAmount.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span className="uppercase tracking-widest text-xs">Complimentary</span>
-                </div>
+        {items.length === 0 ? (
+          <div className="text-center py-20 bg-white border border-[#B6925B]/20">
+            <p className="text-gray-500 mb-6 font-serif">Your bag is empty.</p>
+            <Link
+              href="/collections"
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#B6925B] hover:text-[#9c7d4e] uppercase tracking-widest transition-colors"
+            >
+              ← Continue Shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+            
+            {/* Cart Items */}
+            <div className="lg:col-span-8 flex flex-col">
+              <div className="border-t border-[#B6925B]/20 pt-6">
+                {items.map((item) => (
+                  <CartItem key={item.id} item={item} />
+                ))}
               </div>
-              
-              <div className="border-t border-gray-200 pt-6 mb-8 flex justify-between items-end">
-                <span className="text-sm font-bold uppercase tracking-widest text-gray-900">Total</span>
-                <span className="text-2xl text-gray-900">₹{totalAmount.toFixed(2)}</span>
+              <div className="mt-8">
+                <Link
+                  href="/collections"
+                  className="inline-flex items-center gap-2 text-sm font-bold text-[#B6925B] hover:text-[#9c7d4e] uppercase tracking-widest transition-colors"
+                >
+                  ← Continue Shopping
+                </Link>
               </div>
-              
-              <CheckoutButton isLoggedIn={!!session} />
+            </div>
+
+            {/* Order Summary */}
+            <div className="lg:col-span-4">
+              <CheckoutButton isLoggedIn={!!session} addresses={addresses} subtotal={totalAmount} />
               
               {!session && (
-                <p className="text-xs text-center text-gray-500 mt-4">
+                <p className="text-xs text-center text-gray-500 mt-6 leading-relaxed">
                   You are checking out as a guest. <br/> Log in to save your order to your account.
                 </p>
               )}
             </div>
-          </div>
 
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

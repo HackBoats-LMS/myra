@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { UserIcon, ShoppingBagIcon, HeartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { UserIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
 import MobileMenu from "./MobileMenu";
+import CartButton from "./CartButton";
+import LiveSearch from "../storefront/LiveSearch";
 
 async function getCartCount(userId: string | null): Promise<number> {
   if (userId) {
@@ -31,10 +33,19 @@ export default async function Navbar() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
 
-  const [collections, cartCount] = await Promise.all([
-    prisma.collection.findMany({ take: 5, orderBy: { createdAt: "asc" } }),
-    getCartCount(userId),
-  ]);
+  let collections: any[] = [];
+  let cartCount = 0;
+
+  try {
+    const results = await Promise.all([
+      prisma.collection.findMany({ take: 5, orderBy: { createdAt: "asc" } }),
+      getCartCount(userId),
+    ]);
+    collections = results[0];
+    cartCount = results[1];
+  } catch (error) {
+    console.warn("Database unreachable in Navbar, falling back to empty state:", error);
+  }
 
   return (
     <nav className="w-full bg-white border-b border-gray-100 flex items-center justify-between px-6 md:px-8 py-4 relative z-50">
@@ -66,16 +77,7 @@ export default async function Navbar() {
       </div>
 
       {/* Global Search Bar */}
-      <form action="/search" method="GET" className="hidden lg:flex items-center relative max-w-xs w-64">
-        <input
-          name="q"
-          placeholder="Search products..."
-          className="w-full bg-gray-50 border border-gray-200 rounded-full py-1.5 pl-4 pr-10 text-xs focus:outline-none focus:border-[#0D3B66] focus:bg-white transition-all text-gray-900 placeholder-gray-400"
-        />
-        <button type="submit" className="absolute right-3 text-gray-400 hover:text-gray-600">
-          <MagnifyingGlassIcon className="w-4 h-4" />
-        </button>
-      </form>
+      <LiveSearch />
 
       {/* Desktop Action Icons */}
       <div className="hidden md:flex items-center gap-8">
@@ -87,20 +89,7 @@ export default async function Navbar() {
           <span className="text-[10px] capitalize text-gray-600">account</span>
         </Link>
 
-        <Link
-          href="/cart"
-          className="flex flex-col items-center gap-1 text-gray-700 hover:text-gray-900 transition-colors relative"
-        >
-          <div className="relative">
-            <ShoppingBagIcon className="w-[22px] h-[22px] stroke-[1.5]" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-0.5 bg-[#B03138] text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
-                {cartCount > 99 ? "99+" : cartCount}
-              </span>
-            )}
-          </div>
-          <span className="text-[10px] capitalize text-gray-600">cart</span>
-        </Link>
+        <CartButton cartCount={cartCount} />
 
         <Link
           href="/wishlist"

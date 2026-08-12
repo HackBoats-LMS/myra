@@ -17,6 +17,8 @@ model User {
   password      String?
   name          String?
   role          Role      @default(CUSTOMER)
+  isDisabled    Boolean   @default(false)
+  emailVerified DateTime?
   
   // Address Fields
   addressLine1  String?
@@ -29,8 +31,28 @@ model User {
   reviews       Review[]
   cart          Cart?
   wishlist      Wishlist?
+  addresses     Address[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+}
+
+model Address {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String   // E.g., "Home", "Office"
+  addressLine1 String
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]
+
+  @@index([userId])
 }
 
 model Wishlist {
@@ -48,9 +70,11 @@ model WishlistItem {
   wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
   productId  String
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId  String?
+  variant    ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 
-  @@unique([wishlistId, productId])
+  @@unique([wishlistId, productId, variantId])
 }
 
 model Collection {
@@ -58,6 +82,7 @@ model Collection {
   name        String    @unique
   slug        String    @unique
   description String?
+  image       String?
   products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -74,24 +99,52 @@ model Product {
   images        String[]
   collectionId  String?
   collection    Collection?    @relation(fields: [collectionId], references: [id])
+  variants      ProductVariant[]
   orderItems    OrderItem[]
   reviews       Review[]
   cartItems     CartItem[]
   wishlistItems WishlistItem[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+
+  @@index([collectionId])
+}
+
+model ProductVariant {
+  id            String      @id @default(uuid())
+  productId     String
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku           String?     @unique
+  size          String?
+  color         String?
+  stockQuantity Int         @default(0)
+  priceOffset   Float       @default(0) // Added to base product price
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  wishlistItems WishlistItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Order {
-  id            String      @id @default(uuid())
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  status        OrderStatus @default(PENDING)
-  totalAmount   Float
-  paymentMethod PaymentMethod?
-  orderItems    OrderItem[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id             String      @id @default(uuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  addressId      String?
+  address        Address?    @relation(fields: [addressId], references: [id])
+  couponCode     String?
+  discountAmount Float       @default(0)
+  status         OrderStatus @default(PENDING)
+  totalAmount    Float
+  refundedAmount Float       @default(0)
+  paymentMethod  PaymentMethod?
+  orderItems     OrderItem[]
+  internalNotes  String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([userId])
 }
 
 model OrderItem {
@@ -100,6 +153,8 @@ model OrderItem {
   order     Order   @relation(fields: [orderId], references: [id])
   productId String
   product   Product @relation(fields: [productId], references: [id])
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
   quantity  Int
   price     Float   // Price at time of purchase
 }
@@ -114,15 +169,19 @@ model Review {
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([productId])
 }
 
 model Cart {
-  id        String     @id @default(uuid())
-  userId    String?    @unique 
-  user      User?      @relation(fields: [userId], references: [id])
-  items     CartItem[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id               String     @id @default(uuid())
+  userId           String?    @unique 
+  user             User?      @relation(fields: [userId], references: [id])
+  items            CartItem[]
+  reminderSentAt   DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 }
 
 model CartItem {
@@ -131,16 +190,20 @@ model CartItem {
   cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  @@unique([cartId, productId])
+  // We remove the strict unique constraint to allow multiple variants of the same product.
+  // We'll handle duplicate prevention in application logic.
 }
 
 enum Role {
   CUSTOMER
   ADMIN
+  DELIVERY
 }
 
 enum OrderStatus {
@@ -153,4 +216,59 @@ enum OrderStatus {
 enum PaymentMethod {
   RAZORPAY
   CASH_ON_DELIVERY
+}
+
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
+model Coupon {
+  id               String       @id @default(uuid())
+  code             String       @unique
+  discountType     DiscountType
+  discountValue    Float
+  minOrderAmount   Float        @default(0)
+  maxUses          Int?         // Null means unlimited
+  timesUsed        Int          @default(0)
+  isActive         Boolean      @default(true)
+  expiresAt        DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  action    String
+  entity    String?
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([entityId])
+  @@index([createdAt])
 }

@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 3600;
+
 export default async function AllProductsPage({
   searchParams,
 }: {
@@ -27,10 +29,19 @@ export default async function AllProductsPage({
       orderBy: { createdAt: 'desc' },
       skip: (currentPage - 1) * ITEMS_PER_PAGE,
       take: ITEMS_PER_PAGE,
-      include: { reviews: true }
+      include: { reviews: { select: { rating: true } } }
     }),
     prisma.product.count()
   ]);
+
+  // Compute review data for each product
+  const productsWithReviews = products.map(({ reviews, ...product }) => {
+    const reviewCount = reviews?.length || 0;
+    const averageRating = reviewCount > 0 
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+      : 0;
+    return { ...product, reviewCount, averageRating };
+  });
 
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
   const baseUrl = '/collections';
@@ -42,12 +53,12 @@ export default async function AllProductsPage({
         <p className="text-sm text-gray-500 uppercase tracking-widest">Explore our entire collection</p>
       </div>
 
-      {products.length === 0 ? (
+      {productsWithReviews.length === 0 ? (
         <div className="text-center text-gray-500 py-20">No products available at the moment.</div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {products.map(product => (
+            {productsWithReviews.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

@@ -1,21 +1,37 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { name, phoneNumber, password } = await req.json();
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const limitResult = rateLimit(`register_${ip}`, 5, 15 * 60 * 1000); // 5 requests per 15 minutes
+    
+    if (!limitResult.success) {
+      return NextResponse.json(
+        { error: "Too many registration attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": Math.ceil((limitResult.reset - Date.now()) / 1000).toString() } }
+      );
+    }
+
+    const { name, phoneNumber, email, password } = await req.json();
 
     if (!phoneNumber || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { phoneNumber },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { phoneNumber },
+          ...(email ? [{ email }] : [])
+        ]
+      },
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "Phone number already in use" }, { status: 400 });
+      return NextResponse.json({ error: "Phone number or email already in use" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -24,12 +40,28 @@ export async function POST(req: Request) {
       data: {
         name,
         phoneNumber,
+        email: email || null,
         password: hashedPassword,
         role: "CUSTOMER",
       },
     });
 
-    return NextResponse.json({ user: { id: user.id, name: user.name } }, { status: 201 });
+    if (user.email) {
+      const token = crypto.randomUUID();
+      await prisma.verificationToken.create({
+        data: {
+          email: user.email,
+          token,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+        }
+      });
+      
+      const { sendVerificationEmail, sendWelcomeEmail } = await import("@/lib/email");
+      sendVerificationEmail(user.email, token).catch(console.error);
+      sendWelcomeEmail(user.email, user.name || "there").catch(console.error);
+    }
+
+    return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } }, { status: 201 });
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

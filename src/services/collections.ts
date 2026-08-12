@@ -1,11 +1,5 @@
-import { prisma } from "../lib/prisma";
+import { getCachedAllCollections } from "@/lib/cache";
 
 export async function getAllCollections() {
-  return await prisma.collection.findMany({
-    include: {
-      _count: {
-        select: { products: true }
-      }
-    }
-  });
+  return getCachedAllCollections();
 }

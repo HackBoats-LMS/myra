@@ -7,7 +7,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   const { id } = await params;
   
   const product = await prisma.product.findUnique({
-    where: { id }
+    where: { id },
+    include: { variants: true }
   });
 
   if (!product) {

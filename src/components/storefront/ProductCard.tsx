@@ -3,11 +3,25 @@ import Link from 'next/link';
 import WishlistButton from './WishlistButton';
 import StarRating from './StarRating';
 
-export default function ProductCard({ product, isWishlisted = false }: { product: any, isWishlisted?: boolean }) {
-  const reviewCount = product.reviews?.length || 0;
-  const averageRating = reviewCount > 0 
-    ? product.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
-    : 0;
+interface ProductCardProps {
+  product: {
+    id: string;
+    slug: string;
+    name: string;
+    price: number;
+    images: string[];
+    reviewCount?: number;
+    averageRating?: number;
+  };
+  isWishlisted?: boolean;
+}
+
+export default function ProductCard({ 
+  product, 
+  isWishlisted = false 
+}: ProductCardProps) {
+  const reviewCount = product.reviewCount || 0;
+  const averageRating = product.averageRating || 0;
 
   return (
     <Link href={`/products/${product.slug}`} className="group flex flex-col gap-3 relative">
@@ -26,17 +40,22 @@ export default function ProductCard({ product, isWishlisted = false }: { product
           <div className="w-full h-full flex items-center justify-center text-gray-300">No Image</div>
         )}
       </div>
-      <div className="flex flex-col space-y-1">
-        <h3 className="text-sm font-medium text-gray-900 group-hover:text-gray-600 transition-colors">{product.name}</h3>
+      <div className="flex flex-col space-y-1 mt-2">
+        <h3 className="text-sm font-serif font-medium text-gray-800 group-hover:text-[#B6925B] transition-colors line-clamp-1">{product.name}</h3>
         
         {reviewCount > 0 && (
           <div className="flex items-center gap-1.5 py-0.5">
-            <StarRating rating={averageRating} sizeClassName="w-3 h-3" />
+            <StarRating rating={averageRating} sizeClassName="w-3 h-3 text-[#B6925B]" />
             <span className="text-[11px] text-gray-400 font-medium">({reviewCount})</span>
           </div>
         )}
 
-        <p className="text-sm text-gray-500">₹{product.price.toFixed(2)}</p>
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-sm font-bold text-[#4A3B2C]">&#8377;{product.price.toLocaleString('en-IN')}</span>
+          {/* Simulated original price and discount for visual effect */}
+          <span className="text-xs text-gray-400 line-through">&#8377;{Math.round(product.price * 1.15).toLocaleString('en-IN')}</span>
+          <span className="text-[10px] font-bold text-green-600 tracking-wider">15% OFF</span>
+        </div>
       </div>
     </Link>
   );

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { getProducts } from '@/services/products';
-import { PlusIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
-import DeleteProductButton from '@/components/admin/DeleteProductButton';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import Pagination from '@/components/storefront/Pagination';
 import { prisma } from '@/lib/prisma';
+import ProductListTable from '@/components/admin/ProductListTable';
 
 export default async function AdminProductsPage({
   searchParams,
@@ -14,72 +14,37 @@ export default async function AdminProductsPage({
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10));
   const ITEMS_PER_PAGE = 10;
 
-  const [products, totalProducts] = await Promise.all([
-    getProducts((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE),
-    prisma.product.count()
-  ]);
+  let products: any[] = [];
+  let totalProducts = 0;
 
-  const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
+  try {
+    const results = await Promise.all([
+      getProducts((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE),
+      prisma.product.count()
+    ]);
+    products = results[0];
+    totalProducts = results[1];
+  } catch (error) {
+    console.warn("Database unreachable in AdminProductsPage:", error);
+  }
+
+  const totalPages = Math.max(1, Math.ceil(totalProducts / ITEMS_PER_PAGE));
   const baseUrl = '/admin/products';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Products</h2>
-          <p className="text-sm text-gray-500 mt-1">Manage your storefront inventory</p>
+          <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Products</h2>
+          <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage your storefront inventory</p>
         </div>
-        <Link href="/admin/products/new" className="bg-[#B03138] hover:bg-[#8F252B] text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+        <Link href="/admin/products/new" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm">
           <PlusIcon className="w-4 h-4" />
           Add Product
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full text-left text-sm text-gray-600">
-          <thead className="bg-gray-50 text-gray-700 text-xs uppercase font-semibold border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-4">Product Name</th>
-              <th className="px-6 py-4">Collection</th>
-              <th className="px-6 py-4">Price</th>
-              <th className="px-6 py-4">Stock</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {products.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                  No products found. Click "Add Product" to create one.
-                </td>
-              </tr>
-            ) : (
-              products.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-900">{product.name}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                      {product.collection?.name || 'Uncategorized'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-gray-900">₹{product.price.toFixed(2)}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${product.stockQuantity > 0 ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                      {product.stockQuantity} in stock
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <Link href={`/admin/products/${product.id}`} className="inline-block text-gray-400 hover:text-[#0D3B66] transition-colors p-1" title="Edit Product">
-                      <PencilSquareIcon className="w-4 h-4" />
-                    </Link>
-                    <DeleteProductButton id={product.id} name={product.name} />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ProductListTable products={products} />
 
       <div className="pt-2">
         <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />

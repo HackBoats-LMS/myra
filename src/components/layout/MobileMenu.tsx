@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Bars3Icon, XMarkIcon, UserIcon, ShoppingBagIcon, HeartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { useCartDrawer } from "@/context/CartContext";
 
 interface Collection {
   id: string;
@@ -18,6 +19,7 @@ interface MobileMenuProps {
 export default function MobileMenu({ collections, isLoggedIn, cartCount }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { openCart } = useCartDrawer();
 
   // Close on outside click
   useEffect(() => {
@@ -107,10 +109,12 @@ export default function MobileMenu({ collections, isLoggedIn, cartCount }: Mobil
             <UserIcon className="w-4 h-4" />
             {isLoggedIn ? "My Account" : "Log In"}
           </Link>
-          <Link
-            href="/cart"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-gray-900 py-2.5 border-b border-gray-50 transition-colors"
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              openCart();
+            }}
+            className="flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-gray-900 py-2.5 border-b border-gray-50 transition-colors w-full text-left"
           >
             <div className="relative">
               <ShoppingBagIcon className="w-4 h-4" />
@@ -121,7 +125,7 @@ export default function MobileMenu({ collections, isLoggedIn, cartCount }: Mobil
               )}
             </div>
             Cart{cartCount > 0 && ` (${cartCount})`}
-          </Link>
+          </button>
           <Link
             href="/wishlist"
             onClick={() => setIsOpen(false)}

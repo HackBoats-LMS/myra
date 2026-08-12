@@ -11,7 +11,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   // Create admin
   const adminPassword = await bcrypt.hash('admin123', 10);
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'admin@myra.com' },
     update: {},
     create: {

@@ -1,62 +1,76 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { Eye } from 'lucide-react';
+import { EyeIcon } from '@heroicons/react/24/outline';
 import OrderStatusSelect from '@/components/admin/OrderStatusSelect';
 
 export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({
-    include: {
-      user: {
-        select: { name: true, email: true, phoneNumber: true }
+  let orders: any[] = [];
+  try {
+    orders = await prisma.order.findMany({
+      include: {
+        user: {
+          select: { name: true, email: true, phoneNumber: true }
+        },
+        _count: {
+          select: { orderItems: true }
+        }
       },
-      _count: {
-        select: { orderItems: true }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (error) {
+    console.warn("Database unreachable in AdminOrdersPage:", error);
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Orders</h2>
-        <p className="text-sm text-gray-500 mt-1">Manage and fulfill customer orders</p>
+      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-4">
+        <div>
+          <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Orders</h2>
+          <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage and fulfill customer orders</p>
+        </div>
+        <a 
+          href="/api/admin/orders/export" 
+          download 
+          className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1.5"
+        >
+          Export CSV
+        </a>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <table className="w-full text-left text-sm text-gray-600">
-          <thead className="bg-gray-50 text-gray-700 text-xs uppercase font-semibold border-b border-gray-200">
+      <div className="bg-white border border-[#B6925B]/20 relative">
+        <table className="w-full text-left text-sm text-[#4A3B2C]">
+          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
             <tr>
-              <th className="px-6 py-4">Order ID</th>
-              <th className="px-6 py-4">Customer</th>
-              <th className="px-6 py-4">Items</th>
-              <th className="px-6 py-4">Total</th>
-              <th className="px-6 py-4">Status</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Order ID</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Customer</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Items</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Total</th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-[#B6925B]/10">
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest">
                   No orders have been placed yet.
                 </td>
               </tr>
             ) : (
               orders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 font-mono text-xs text-gray-500">{order.id.split('-')[0]}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">
-                    {order.user.name || order.user.email || order.user.phoneNumber || 'Guest'}
+                <tr key={order.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                  <td className="px-6 py-4 font-mono text-[10px] text-gray-500 font-bold uppercase tracking-widest border-r border-[#B6925B]/10">{order.id.split('-')[0]}</td>
+                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">
+                    {order.user?.name || order.user?.email || order.user?.phoneNumber || 'Guest'}
                   </td>
-                  <td className="px-6 py-4">{order._count.orderItems} items</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">₹{order.totalAmount.toFixed(2)}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 border-r border-[#B6925B]/10 text-xs font-bold uppercase tracking-widest text-[#B6925B]">{order._count.orderItems} items</td>
+                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">Rs. {order.totalAmount.toFixed(2)}</td>
+                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
                     <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link href={`/admin/orders/${order.id}`} className="inline-block text-gray-400 hover:text-[#0D3B66] transition-colors p-1" title="View Details">
-                      <Eye className="w-4 h-4" />
+                    <Link href={`/admin/orders/${order.id}`} className="inline-block text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1" title="View Details">
+                      <EyeIcon className="w-5 h-5" />
                     </Link>
                   </td>
                 </tr>

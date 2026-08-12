@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full min-h-screen flex bg-white">
+    <div className="w-full min-h-screen flex bg-[#FAFAFA]">
       {/* Left side: The Form */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 relative">
         <Link href="/" className="absolute top-8 left-8">

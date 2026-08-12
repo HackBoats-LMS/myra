@@ -42,8 +42,8 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
       const publicUrl = await uploadImage(formData);
       onChange(publicUrl);
-    } catch (error: any) {
-      toast.error(error.message || "Error uploading image. Please try again.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error uploading image. Please try again.");
       console.error(error);
     } finally {
       setIsUploading(false);

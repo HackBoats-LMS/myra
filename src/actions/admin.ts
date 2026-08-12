@@ -1,173 +1,376 @@
 "use server"
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
+import { verifyAdmin } from "@/lib/auth-utils";
+import { logAudit } from "@/lib/audit";
+import { CACHE_TAGS } from "@/lib/cache";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
-async function verifyAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+interface ParsedVariantRecord {
+  id?: string;
+  sku?: string | null;
+  size?: string | null;
+  color?: string | null;
+  stockQuantity?: string | number;
+  priceOffset?: string | number;
 }
+
+function parseVariantRecords(variantsStr: string | null): ParsedVariantRecord[] {
+  if (!variantsStr) return [];
+  const parsed: unknown = JSON.parse(variantsStr);
+  if (!Array.isArray(parsed)) return [];
+  return parsed as ParsedVariantRecord[];
+}
+
+function normalizeVariant(v: ParsedVariantRecord) {
+  return {
+    ...v,
+    stockQuantity: parseInt(String(v.stockQuantity ?? 0), 10) || 0,
+    priceOffset: parseFloat(String(v.priceOffset ?? 0)) || 0,
+  };
+}
+
+import { z } from "zod";
+
+const productSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(150),
+  slug: z.string().regex(/^[a-z0-9-]+$/, "Slug must be URL-safe (lowercase, numbers, hyphens)").max(150),
+  description: z.string().max(2000, "Description is too long").optional(),
+  price: z.number().min(0, "Price must be positive"),
+  stockQuantity: z.number().int().min(0, "Stock cannot be negative"),
+  collectionId: z.string().optional(),
+  images: z.array(z.string().url()).max(5, "Max 5 images allowed"),
+  variants: z.array(z.object({
+    sku: z.string().nullable().optional(),
+    size: z.string().nullable().optional(),
+    color: z.string().nullable().optional(),
+    stockQuantity: z.number().int().min(0).default(0),
+    priceOffset: z.number().default(0),
+  })).optional()
+});
 
 export async function createProduct(formData: FormData) {
   await verifyAdmin();
 
-  const name = String(formData.get("name") || "").trim().substring(0, 150);
-  const slug = String(formData.get("slug") || "").trim().substring(0, 150);
-  const description = String(formData.get("description") || "").trim().substring(0, 2000);
-  const price = parseFloat(formData.get("price") as string);
-  const stockQuantity = parseInt(formData.get("stockQuantity") as string, 10);
-  const collectionId = formData.get("collectionId") ? String(formData.get("collectionId")).trim() : "";
-  const image = formData.get("image") ? String(formData.get("image")).trim() : "";
-
-  if (!name || !slug || isNaN(price) || isNaN(stockQuantity)) {
-    throw new Error("Invalid product data");
+  let parsedVariants: ParsedVariantRecord[] = [];
+  try {
+    const variantsStr = formData.get("variants") as string;
+    if (variantsStr) parsedVariants = parseVariantRecords(variantsStr);
+  } catch {
+    throw new Error("Invalid variants format");
   }
 
-  await prisma.product.create({
+  const rawData = {
+    name: String(formData.get("name") || "").trim(),
+    slug: String(formData.get("slug") || "").trim(),
+    description: String(formData.get("description") || "").trim(),
+    price: parseFloat(formData.get("price") as string),
+    stockQuantity: parseInt(formData.get("stockQuantity") as string, 10),
+    collectionId: formData.get("collectionId") ? String(formData.get("collectionId")).trim() : undefined,
+    images: formData.getAll("images").map((img) => String(img).trim()).filter(Boolean),
+    variants: parsedVariants.map(normalizeVariant)
+  };
+
+  const result = productSchema.safeParse(rawData);
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
+  }
+
+  const data = result.data;
+
+  const created = await prisma.product.create({
     data: {
-      name,
-      slug,
-      description,
-      price,
-      stockQuantity,
-      collectionId: collectionId || null,
-      images: image ? [image] : [],
+      name: data.name,
+      slug: data.slug,
+      description: data.description || "",
+      price: data.price,
+      stockQuantity: data.stockQuantity,
+      collectionId: data.collectionId || null,
+      images: data.images,
+      variants: {
+        create: data.variants?.map(v => ({
+          sku: v.sku || null,
+          size: v.size || null,
+          color: v.color || null,
+          stockQuantity: v.stockQuantity,
+          priceOffset: v.priceOffset,
+        })) || []
+      }
     }
   });
 
+  await logAudit("product.create", "Product", created.id, { slug: data.slug });
+
   revalidatePath("/admin/products");
+  updateTag(CACHE_TAGS.products);
 }
 
 export async function updateProduct(id: string, formData: FormData) {
   await verifyAdmin();
 
-  const name = String(formData.get("name") || "").trim().substring(0, 150);
-  const slug = String(formData.get("slug") || "").trim().substring(0, 150);
-  const description = String(formData.get("description") || "").trim().substring(0, 2000);
-  const price = parseFloat(formData.get("price") as string);
-  const stockQuantity = parseInt(formData.get("stockQuantity") as string, 10);
-  const collectionId = formData.get("collectionId") ? String(formData.get("collectionId")).trim() : "";
-  const image = formData.get("image") ? String(formData.get("image")).trim() : "";
-
-  if (!name || !slug || isNaN(price) || isNaN(stockQuantity)) {
-    throw new Error("Invalid product data");
+  let parsedVariants: ParsedVariantRecord[] = [];
+  try {
+    const variantsStr = formData.get("variants") as string;
+    if (variantsStr) parsedVariants = parseVariantRecords(variantsStr);
+  } catch {
+    throw new Error("Invalid variants format");
   }
 
-  await prisma.product.update({
-    where: { id },
-    data: {
-      name,
-      slug,
-      description,
-      price,
-      stockQuantity,
-      collectionId: collectionId || null,
-      images: image ? [image] : [],
+  const rawData = {
+    name: String(formData.get("name") || "").trim(),
+    slug: String(formData.get("slug") || "").trim(),
+    description: String(formData.get("description") || "").trim(),
+    price: parseFloat(formData.get("price") as string),
+    stockQuantity: parseInt(formData.get("stockQuantity") as string, 10),
+    collectionId: formData.get("collectionId") ? String(formData.get("collectionId")).trim() : undefined,
+    images: formData.getAll("images").map((img) => String(img).trim()).filter(Boolean),
+    variants: parsedVariants.map(normalizeVariant)
+  };
+
+  const result = productSchema.safeParse(rawData);
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
+  }
+
+  const data = result.data;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.product.update({
+      where: { id },
+      data: {
+        name: data.name,
+        slug: data.slug,
+        description: data.description || "",
+        price: data.price,
+        stockQuantity: data.stockQuantity,
+        collectionId: data.collectionId || null,
+        images: data.images,
+      }
+    });
+
+    const existingVariants = await tx.productVariant.findMany({ where: { productId: id } });
+    const incomingIds = parsedVariants.map(v => v.id).filter(Boolean);
+    
+    // Delete variants that were removed
+    const toDelete = existingVariants.filter(ev => !incomingIds.includes(ev.id));
+    for (const v of toDelete) {
+      try {
+        await tx.productVariant.delete({ where: { id: v.id } });
+      } catch {
+        // Might fail if used in an order. In a real app we'd archive it.
+      }
+    }
+
+    // Upsert variants
+    for (let i = 0; i < (data.variants || []).length; i++) {
+      const v = data.variants![i];
+      const originalId = parsedVariants[i].id; // id is not in Zod schema to avoid complexity, so grab from original
+
+      const vData = {
+        size: v.size || null,
+        color: v.color || null,
+        sku: v.sku || null,
+        stockQuantity: v.stockQuantity,
+        priceOffset: v.priceOffset,
+      };
+
+      if (originalId) {
+        await tx.productVariant.update({ where: { id: originalId }, data: vData });
+      } else {
+        await tx.productVariant.create({ data: { ...vData, productId: id } });
+      }
     }
   });
 
+  await logAudit("product.update", "Product", id, { slug: data.slug });
+
   revalidatePath("/admin/products");
+  updateTag(CACHE_TAGS.products);
 }
 
 export async function deleteProduct(id: string) {
   await verifyAdmin();
-  
+
   await prisma.product.delete({
     where: { id }
   });
 
+  await logAudit("product.delete", "Product", id);
+
   revalidatePath("/admin/products");
+  updateTag(CACHE_TAGS.products);
 }
+
+export async function bulkDeleteProducts(ids: string[]) {
+  await verifyAdmin();
+
+  await prisma.product.deleteMany({
+    where: { id: { in: ids } }
+  });
+
+  await logAudit("product.bulkDelete", "Product", undefined, { ids });
+
+  revalidatePath("/admin/products");
+  updateTag(CACHE_TAGS.products);
+}
+
+export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
+  await verifyAdmin();
+
+  await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data: { stockQuantity }
+  });
+
+  await logAudit("product.bulkUpdateStock", "Product", undefined, { ids, stockQuantity });
+
+  revalidatePath("/admin/products");
+  updateTag(CACHE_TAGS.products);
+}
+
+const collectionSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(150),
+  slug: z.string().regex(/^[a-z0-9-]+$/, "Slug must be URL-safe (lowercase, numbers, hyphens)").max(150),
+  description: z.string().max(500, "Description is too long").optional(),
+  image: z.string().url().optional().nullable(),
+});
 
 export async function createCollection(formData: FormData) {
   await verifyAdmin();
 
-  const name = String(formData.get("name") || "").trim();
-  const slug = String(formData.get("slug") || "").trim();
-  const description = String(formData.get("description") || "").trim();
+  const rawData = {
+    name: String(formData.get("name") || "").trim(),
+    slug: String(formData.get("slug") || "").trim(),
+    description: String(formData.get("description") || "").trim(),
+    image: formData.get("image") ? String(formData.get("image")).trim() : null,
+  };
 
-  if (!name || name.length < 2 || name.length > 150) {
-    throw new Error("Collection name must be between 2 and 150 characters.");
+  const result = collectionSchema.safeParse(rawData);
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
   }
 
-  if (!slug || slug.length < 2 || slug.length > 150) {
-    throw new Error("Collection slug must be between 2 and 150 characters.");
-  }
+  const { name, slug, description, image } = result.data;
 
-  const slugRegex = /^[a-z0-9-]+$/;
-  if (!slugRegex.test(slug)) {
-    throw new Error("Collection slug must be URL-safe (lowercase letters, numbers, and hyphens only).");
-  }
-
-  if (description.length > 500) {
-    throw new Error("Collection description cannot exceed 500 characters.");
-  }
-
-  await prisma.collection.create({
-    data: { name, slug, description: description || null }
+  const createdCollection = await prisma.collection.create({
+    data: { name, slug, description: description || null, image: image || null }
   });
 
+  await logAudit("collection.create", "Collection", createdCollection.id, { slug });
+
   revalidatePath("/admin/collections");
+  updateTag(CACHE_TAGS.collections);
 }
 
 export async function updateCollection(id: string, formData: FormData) {
   await verifyAdmin();
 
-  const name = String(formData.get("name") || "").trim();
-  const slug = String(formData.get("slug") || "").trim();
-  const description = String(formData.get("description") || "").trim();
+  const rawData = {
+    name: String(formData.get("name") || "").trim(),
+    slug: String(formData.get("slug") || "").trim(),
+    description: String(formData.get("description") || "").trim(),
+    image: formData.get("image") ? String(formData.get("image")).trim() : null,
+  };
 
-  if (!name || name.length < 2 || name.length > 150) {
-    throw new Error("Collection name must be between 2 and 150 characters.");
+  const result = collectionSchema.safeParse(rawData);
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
   }
 
-  if (!slug || slug.length < 2 || slug.length > 150) {
-    throw new Error("Collection slug must be between 2 and 150 characters.");
-  }
-
-  const slugRegex = /^[a-z0-9-]+$/;
-  if (!slugRegex.test(slug)) {
-    throw new Error("Collection slug must be URL-safe (lowercase letters, numbers, and hyphens only).");
-  }
-
-  if (description.length > 500) {
-    throw new Error("Collection description cannot exceed 500 characters.");
-  }
+  const { name, slug, description, image } = result.data;
 
   await prisma.collection.update({
     where: { id },
-    data: { name, slug, description: description || null }
+    data: { name, slug, description: description || null, image: image || null }
   });
 
+  await logAudit("collection.update", "Collection", id, { slug });
+
   revalidatePath("/admin/collections");
+  updateTag(CACHE_TAGS.collections);
 }
 
 export async function deleteCollection(id: string) {
   await verifyAdmin();
-  
+
   await prisma.collection.delete({
     where: { id }
   });
 
+  await logAudit("collection.delete", "Collection", id);
+
   revalidatePath("/admin/collections");
+  updateTag(CACHE_TAGS.collections);
 }
 
 export async function updateOrderStatus(id: string, status: "PENDING" | "SHIPPED" | "DELIVERED" | "CANCELLED") {
   await verifyAdmin();
-  
-  await prisma.order.update({
+
+  const order = await prisma.order.update({
     where: { id },
-    data: { status }
+    data: { status },
+    include: { user: true }
   });
-  
+
+  if (status === "SHIPPED" && order.user?.email) {
+    import("@/lib/email").then(({ sendOrderShippedEmail }) => {
+      sendOrderShippedEmail(order.user.email!, order.id).catch(console.error);
+    });
+  } else if (status === "DELIVERED" && order.user?.email) {
+    import("@/lib/email").then(({ sendOrderDeliveredEmail }) => {
+      sendOrderDeliveredEmail(order.user.email!, order.id).catch(console.error);
+    });
+  }
+
+  await logAudit("order.statusUpdate", "Order", id, { status });
+
   revalidatePath(`/admin/orders`);
   revalidatePath(`/admin/orders/${id}`);
+}
+
+const refundSchema = z.object({
+  amount: z.number().min(0.01, "Refund amount must be greater than 0"),
+  orderId: z.string().uuid("Invalid order ID"),
+});
+
+export async function processRefund(orderId: string, formData: FormData) {
+  await verifyAdmin();
+
+  const amountStr = formData.get("amount");
+  const amount = amountStr ? parseFloat(amountStr as string) : 0;
+
+  const result = refundSchema.safeParse({ amount, orderId });
+  if (!result.success) {
+    throw new Error(result.error.issues[0].message);
+  }
+
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  const totalRefundable = order.totalAmount - (order.refundedAmount || 0);
+
+  if (amount > totalRefundable) {
+    throw new Error(`Cannot refund more than the remaining refundable amount (₹${totalRefundable.toFixed(2)})`);
+  }
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      refundedAmount: {
+        increment: amount
+      }
+    }
+  });
+
+  await logAudit("order.refund", "Order", orderId, { amount });
+
+  revalidatePath(`/admin/orders`);
+  revalidatePath(`/admin/orders/${orderId}`);
 }
 
 export async function uploadImage(formData: FormData) {
@@ -214,3 +417,30 @@ export async function uploadImage(formData: FormData) {
   return `${supabaseUrl}/storage/v1/object/public/product-images/${fileName}`;
 }
 
+export async function toggleUserDisabled(userId: string, isDisabled: boolean) {
+  await verifyAdmin();
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isDisabled }
+  });
+
+  await logAudit("user.toggleDisabled", "User", userId, { isDisabled });
+
+  revalidatePath("/admin/customers");
+  revalidatePath(`/admin/customers/${userId}`);
+}
+
+export async function updateOrderInternalNotes(orderId: string, internalNotes: string) {
+  await verifyAdmin();
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { internalNotes: internalNotes || null }
+  });
+
+  await logAudit("order.notesUpdate", "Order", orderId);
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+}

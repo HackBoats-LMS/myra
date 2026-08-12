@@ -23,9 +23,10 @@ interface ReviewSectionProps {
   reviews: Review[];
   isLoggedIn: boolean;
   userReview: Review | null;
+  hasPurchased: boolean;
 }
 
-export default function ReviewSection({ productId, reviews, isLoggedIn, userReview }: ReviewSectionProps) {
+export default function ReviewSection({ productId, reviews, isLoggedIn, userReview, hasPurchased }: ReviewSectionProps) {
   const toast = useToast();
   const [rating, setRating] = useState(userReview?.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -43,8 +44,8 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
     try {
       await submitReview(productId, rating, comment);
       toast.success(userReview ? "Review updated!" : "Review submitted!");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to submit review.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit review.");
     } finally {
       setIsSubmitting(false);
     }
@@ -52,34 +53,45 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
 
   return (
     <div className="space-y-12">
-      <h3 className="text-xl md:text-2xl font-serif text-gray-900 tracking-tight border-b border-gray-100 pb-4">
-        Customer Reviews ({reviews.length})
-      </h3>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
         {/* Reviews List */}
         <div className="lg:col-span-2 space-y-8">
           {reviews.length === 0 ? (
             <p className="text-gray-500 text-sm">No reviews yet. Be the first to review this product!</p>
           ) : (
-            <div className="divide-y divide-gray-100 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {reviews.map((review) => (
-                <div key={review.id} className="pt-8 first:pt-0 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-gray-900 text-sm">
-                      {review.user.name || "Verified Buyer"}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {new Date(review.createdAt).toLocaleDateString("en-IN", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </span>
+                <div key={review.id} className="border border-[#B6925B]/20 p-5 flex flex-col gap-3 bg-white">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Placeholder Avatar */}
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                        <span className="text-gray-500 font-bold text-lg">
+                          {(review.user.name || "V").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-serif font-bold text-[#4A3B2C] text-sm">
+                          {review.user.name || "Verified Buyer"}
+                        </span>
+                        <StarRating rating={review.rating} sizeClassName="w-3.5 h-3.5 text-[#B6925B]" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-[10px] text-gray-500 font-medium">
+                        {new Date(review.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <span className="text-[9px] text-[#B6925B] font-bold uppercase tracking-widest mt-1">
+                        Verified Purchase
+                      </span>
+                    </div>
                   </div>
-                  <StarRating rating={review.rating} sizeClassName="w-3.5 h-3.5" />
                   {review.comment && (
-                    <p className="text-sm text-gray-600 leading-relaxed font-normal">
+                    <p className="text-xs text-gray-600 leading-relaxed mt-2">
                       {review.comment}
                     </p>
                   )}
@@ -90,8 +102,8 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
         </div>
 
         {/* Submit Review Form */}
-        <div className="bg-gray-50/50 border border-gray-100 p-6 rounded-lg h-fit space-y-6">
-          <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wider">
+        <div className="border border-[#B6925B]/20 p-6 bg-white h-fit space-y-6">
+          <h4 className="font-serif font-bold text-[#4A3B2C] text-lg">
             {userReview ? "Update Your Review" : "Write a Review"}
           </h4>
 
@@ -99,11 +111,15 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
             <p className="text-sm text-gray-500 leading-relaxed">
               Please sign in to leave reviews and share your feedback with other customers.
             </p>
+          ) : !hasPurchased ? (
+            <p className="text-sm text-[#B6925B] leading-relaxed bg-[#FDFBF7] p-4 border border-[#B6925B]/20">
+              You can only review products that you have successfully purchased from our store.
+            </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Star Selection */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
                   Rating
                 </label>
                 <div className="flex items-center gap-1">
@@ -114,12 +130,12 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHoverRating(star)}
                       onMouseLeave={() => setHoverRating(0)}
-                      className="text-amber-400 focus:outline-none transition-transform active:scale-95"
+                      className="text-[#B6925B] focus:outline-none transition-transform active:scale-95"
                     >
                       {star <= (hoverRating || rating) ? (
                         <StarSolid className="w-7 h-7" />
                       ) : (
-                        <StarOutline className="w-7 h-7 text-gray-300 hover:text-amber-400" />
+                        <StarOutline className="w-7 h-7 text-gray-300 hover:text-[#B6925B]" />
                       )}
                     </button>
                   ))}
@@ -127,16 +143,16 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
               </div>
 
               {/* Comment Input */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Review Comment
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
+                  Review
                 </label>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Share your thoughts about this product..."
                   rows={4}
-                  className="w-full bg-white border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-[#0D3B66] text-gray-900 placeholder-gray-400"
+                  className="w-full bg-transparent border border-gray-200 p-3 text-sm focus:outline-none focus:border-[#B6925B] text-gray-900 placeholder-gray-400 resize-none"
                 />
               </div>
 
@@ -144,7 +160,7 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#0D3B66] hover:bg-[#082a4d] text-white py-2.5 rounded-md text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white py-3 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <ArrowPathIcon className="w-4 h-4 animate-spin" />

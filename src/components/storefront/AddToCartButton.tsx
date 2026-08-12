@@ -5,38 +5,119 @@ import { ArrowPathIcon, ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
-export default function AddToCartButton({ productId, outOfStock }: { productId: string, outOfStock: boolean }) {
+interface Variant {
+  id: string;
+  size: string | null;
+  color: string | null;
+  stockQuantity: number;
+  priceOffset: number;
+}
+
+interface AddToCartProps {
+  productId: string;
+  outOfStock: boolean;
+  variants?: Variant[];
+}
+
+export default function AddToCartButton({ productId, outOfStock, variants = [] }: AddToCartProps) {
   const router = useRouter();
   const toast = useToast();
   const [isAdding, setIsAdding] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
+    variants.length === 1 ? variants[0].id : null
+  );
 
-  const handleAddToCart = async () => {
+  const hasVariants = variants && variants.length > 0;
+  const selectedVariant = variants.find(v => v.id === selectedVariantId);
+  
+  const isCurrentlyOutOfStock = hasVariants 
+    ? (selectedVariant ? selectedVariant.stockQuantity <= 0 : false) 
+    : outOfStock;
+
+  const handleAddToCart = async (redirect = false) => {
+    if (hasVariants && !selectedVariantId) {
+      toast.error("Please select a size before adding to cart.");
+      return;
+    }
+
     setIsAdding(true);
     try {
-      await addToCart(productId, 1);
-      toast.success("Added to bag!");
-      router.refresh();
-    } catch (error) {
-      toast.error("Failed to add to bag. Please try again.");
+      await addToCart(productId, quantity, selectedVariantId || undefined);
+      toast.success("Added to cart!");
+      if (redirect) {
+        router.push("/cart");
+      } else {
+        router.refresh();
+      }
+    } catch {
+      toast.error("Failed to add to cart. Please try again.");
     } finally {
       setIsAdding(false);
     }
   };
 
   return (
-    <button 
-      onClick={handleAddToCart}
-      disabled={isAdding || outOfStock}
-      className="w-full bg-[#0D3B66] hover:bg-[#082a4d] text-white px-8 py-4 rounded-none text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-50"
-    >
-      {isAdding ? (
-        <ArrowPathIcon className="w-5 h-5 animate-spin" />
-      ) : (
-        <>
-          <ShoppingBagIcon className="w-5 h-5" />
-          {outOfStock ? "Out of Stock" : "Add to Bag"}
-        </>
+    <div className="space-y-6">
+      {hasVariants && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {variants.map((v) => {
+              const isSelected = selectedVariantId === v.id;
+              const isVariantOutOfStock = v.stockQuantity <= 0;
+              
+              return (
+                <button
+                  key={v.id}
+                  onClick={() => setSelectedVariantId(v.id)}
+                  disabled={isVariantOutOfStock}
+                  className={`w-10 h-10 flex items-center justify-center text-sm font-serif border transition-all
+                    ${isSelected 
+                      ? 'border-[#B6925B] text-[#B6925B] font-bold' 
+                      : 'border-gray-200 text-gray-500 hover:border-[#B6925B] hover:text-[#B6925B]'}
+                    ${isVariantOutOfStock ? 'opacity-40 cursor-not-allowed line-through' : ''}
+                  `}
+                >
+                  {v.size || "S"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
-    </button>
+
+      {/* Quantity Selector */}
+      <div className="flex items-center w-24 h-10 border border-gray-200 rounded-sm">
+        <button 
+          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+          className="w-1/3 h-full text-gray-500 hover:text-[#B6925B]"
+        >-</button>
+        <div className="w-1/3 h-full flex items-center justify-center text-sm font-medium text-gray-700">
+          {quantity}
+        </div>
+        <button 
+          onClick={() => setQuantity(quantity + 1)}
+          className="w-1/3 h-full text-gray-500 hover:text-[#B6925B]"
+        >+</button>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col space-y-3 pt-2">
+        <button 
+          onClick={() => handleAddToCart(false)}
+          disabled={isAdding || isCurrentlyOutOfStock}
+          className="w-full bg-white border border-[#B6925B] text-[#B6925B] hover:bg-[#FDFBF7] px-8 py-3 rounded-sm text-sm font-serif font-bold transition-colors disabled:opacity-50"
+        >
+          {isAdding ? "Adding..." : (isCurrentlyOutOfStock ? "Out of Stock" : "Add To cart")}
+        </button>
+        <button 
+          onClick={() => handleAddToCart(true)}
+          disabled={isAdding || isCurrentlyOutOfStock}
+          className="w-full bg-[#B6925B] border border-[#B6925B] text-white hover:bg-[#9c7d4e] px-8 py-3 rounded-sm text-sm font-serif font-bold transition-colors disabled:opacity-50"
+        >
+          Buy
+        </button>
+      </div>
+    </div>
   );
 }

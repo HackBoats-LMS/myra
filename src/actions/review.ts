@@ -58,3 +58,27 @@ export async function submitReview(productId: string, rating: number, comment: s
 
   revalidatePath(`/products/${product.slug}`);
 }
+
+export async function deleteReview(reviewId: string) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || session.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const review = await prisma.review.findUnique({
+    where: { id: reviewId },
+    include: { product: true }
+  });
+
+  if (!review) {
+    throw new Error("Review not found.");
+  }
+
+  await prisma.review.delete({
+    where: { id: reviewId }
+  });
+
+  revalidatePath(`/admin/reviews`);
+  revalidatePath(`/products/${review.product.slug}`);
+}

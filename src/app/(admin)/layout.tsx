@@ -12,11 +12,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex">
+    <div className="w-full min-h-screen bg-[#FAFAFA] flex">
       <Sidebar />
       <div className="flex-1 ml-64 flex flex-col">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-8 shadow-sm">
-          <h1 className="text-sm font-medium text-gray-500 tracking-wider uppercase">
+        <header className="h-16 bg-white border-b border-[#B6925B]/20 flex items-center px-8 shadow-sm">
+          <h1 className="text-xs font-bold text-[#4A3B2C] tracking-widest uppercase">
             Welcome back, Admin
           </h1>
         </header>

@@ -4,6 +4,8 @@ import Pagination from "@/components/storefront/Pagination";
 import FilterControls from "@/components/storefront/FilterControls";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import type { Prisma } from "@/generated/prisma";
+import Image from "next/image";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -22,6 +24,8 @@ export async function generateMetadata(
   };
 }
 
+export const revalidate = 3600;
+
 export default async function CollectionPage({
   params,
   searchParams,
@@ -39,7 +43,7 @@ export default async function CollectionPage({
   const priceRange = resolvedSearchParams.priceRange || 'all';
 
   // Construct filters
-  const whereClause: any = {
+  const whereClause: Prisma.ProductWhereInput = {
     collection: { slug }
   };
 
@@ -56,7 +60,7 @@ export default async function CollectionPage({
   }
 
   // Construct order
-  let orderByClause: any = { createdAt: 'desc' };
+  let orderByClause: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
   if (sort === 'price-asc') {
     orderByClause = { price: 'asc' };
   } else if (sort === 'price-desc') {
@@ -74,7 +78,7 @@ export default async function CollectionPage({
       orderBy: orderByClause,
       skip: (currentPage - 1) * ITEMS_PER_PAGE,
       take: ITEMS_PER_PAGE,
-      include: { reviews: true }
+      include: { reviews: { select: { rating: true } } }
     }),
     prisma.product.count({
       where: whereClause
@@ -84,6 +88,15 @@ export default async function CollectionPage({
   if (!collection) {
     notFound();
   }
+
+  // Compute review data for each product
+  const productsWithReviews = products.map(({ reviews, ...product }) => {
+    const reviewCount = reviews?.length || 0;
+    const averageRating = reviewCount > 0 
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+      : 0;
+    return { ...product, reviewCount, averageRating };
+  });
 
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
   
@@ -95,36 +108,84 @@ export default async function CollectionPage({
   const queryString = queryParams.toString();
   const baseUrl = `/collections/${slug}${queryString ? `?${queryString}` : ''}`;
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const collectionUrl = `${appUrl}/collections/${slug}`;
+
+  const jsonLdBreadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: appUrl },
+      { "@type": "ListItem", position: 2, name: "Collections", item: `${appUrl}/collections` },
+      { "@type": "ListItem", position: 3, name: collection.name, item: collectionUrl },
+    ],
+  };
+
+  const jsonLdCollection = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: collection.name,
+    description: collection.description || undefined,
+    url: collectionUrl,
+    ...(collection.image && { image: collection.image }),
+    numberOfItems: totalProducts,
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-8 py-16 min-h-screen">
-      {/* Page Header */}
-      <div className="flex flex-col items-center justify-center text-center mb-12 space-y-4">
-        <h1 className="text-4xl md:text-5xl font-serif text-gray-900 tracking-tight capitalize">{collection.name}</h1>
-        {collection.description && (
-          <p className="text-sm text-gray-500 max-w-2xl mx-auto">{collection.description}</p>
-        )}
-      </div>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdCollection) }} />
+      <div className="w-full bg-[#FAFAFA] min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+          
+          {/* Clean Serif Header */}
+          <div className="flex flex-col items-center justify-center text-center mb-10 space-y-4">
+            <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide capitalize">{collection.name}</h1>
+            {collection.description && (
+              <p className="text-sm text-gray-500 max-w-2xl mx-auto">{collection.description}</p>
+            )}
+          </div>
 
-      {/* Filter and Sorting Controls */}
-      <FilterControls />
+          {/* Filter and Sorting Controls */}
+          <FilterControls />
 
-      {products.length === 0 ? (
-        <div className="text-center text-gray-500 py-20 border border-dashed border-gray-200 rounded-lg">
-          No products match the selected filters.
+          {productsWithReviews.length === 0 ? (
+            <div className="text-center text-gray-500 py-20 border border-dashed border-gray-200 rounded-lg bg-white">
+              No products match the selected filters.
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mt-8">
+                {productsWithReviews.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+
+              <div className="mt-16">
+                <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
+              </div>
+            </>
+          )}
+
+          {/* Similar Products (Visual Placeholder block to match screenshot) */}
+          <div className="mt-32">
+            <div className="flex items-center justify-center gap-4 md:gap-8 mb-10">
+              <div className="h-[1px] w-12 md:w-24 bg-[#B6925B]/50"></div>
+              <h2 className="text-2xl md:text-3xl font-serif text-[#B6925B] tracking-wider">Similar products</h2>
+              <div className="h-[1px] w-12 md:w-24 bg-[#B6925B]/50"></div>
+            </div>
+            {/* If we have products, show a slice, otherwise it's just visual */}
+            {productsWithReviews.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                {productsWithReviews.slice(0, 4).map(product => (
+                  <ProductCard key={product.id + 'sim'} product={product} />
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {products.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-
-          <div className="mt-12">
-            <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
-          </div>
-        </>
-      )}
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,53 +1,72 @@
 import { MetadataRoute } from "next";
-import { prisma } from "@/lib/prisma";
+import { getCachedSitemapData } from "@/lib/cache";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://myrashoppingmall.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-  // Static routes
-  const staticRoutes = [
-    "",
-    "/collections",
-    "/cart",
-    "/wishlist",
-    "/privacy",
-    "/terms",
-    "/returns",
-    "/shipping",
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: "daily" as const,
-    priority: route === "" ? 1.0 : 0.8,
+  let products: { slug: string; updatedAt: Date }[] = [];
+  let collections: { slug: string; updatedAt: Date }[] = [];
+
+  try {
+    const data = await getCachedSitemapData();
+    products = data.products;
+    collections = data.collections;
+  } catch (error) {
+    console.warn("Failed to fetch sitemap data, using empty arrays:", error);
+  }
+
+  const productUrls = products.map((product) => ({
+    url: `${baseUrl}/products/${product.slug}`,
+    lastModified: product.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
   }));
 
-  // Dynamic collections
-  let collectionRoutes: any[] = [];
-  try {
-    const collections = await prisma.collection.findMany({ select: { slug: true, updatedAt: true } });
-    collectionRoutes = collections.map((col) => ({
-      url: `${baseUrl}/collections/${col.slug}`,
-      lastModified: new Date(col.updatedAt),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    }));
-  } catch (e) {
-    console.error("Failed to fetch collections for sitemap:", e);
-  }
+  const collectionUrls = collections.map((collection) => ({
+    url: `${baseUrl}/collections/${collection.slug}`,
+    lastModified: collection.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
 
-  // Dynamic products
-  let productRoutes: any[] = [];
-  try {
-    const products = await prisma.product.findMany({ select: { slug: true, updatedAt: true } });
-    productRoutes = products.map((prod) => ({
-      url: `${baseUrl}/products/${prod.slug}`,
-      lastModified: new Date(prod.updatedAt),
+  const staticUrls = [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
       changeFrequency: "daily" as const,
-      priority: 0.6,
-    }));
-  } catch (e) {
-    console.error("Failed to fetch products for sitemap:", e);
-  }
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/collections`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/search`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+  ];
 
-  return [...staticRoutes, ...collectionRoutes, ...productRoutes];
+  return [...staticUrls, ...collectionUrls, ...productUrls];
 }

@@ -32,35 +32,18 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Main image container with Zoom capabilities */}
-      <div 
-        className="relative aspect-[3/4] w-full bg-[#f8f8f8] overflow-hidden rounded-md cursor-zoom-in border border-gray-100"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        <Image
-          src={images[selected]}
-          alt={alt}
-          fill
-          priority
-          sizes="(max-width: 768px) 100vw, 50vw"
-          style={zoomStyle}
-          className="object-cover transition-transform duration-150 ease-out"
-        />
-      </div>
-
-      {/* Thumbnail strip — only shown when more than 1 image */}
+    <div className="flex flex-col md:flex-row gap-4 h-full">
+      {/* Thumbnail strip — only shown when more than 1 image (Left side on Desktop) */}
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 mt-1">
+        <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto md:w-20 order-2 md:order-1 no-scrollbar shrink-0">
           {images.map((src, i) => (
             <button
               key={i}
               onClick={() => setSelected(i)}
               className={`
-                relative flex-shrink-0 w-16 h-20 bg-[#f8f8f8] overflow-hidden rounded-md transition-all border
+                relative flex-shrink-0 w-16 md:w-full aspect-[3/4] bg-[#f8f8f8] overflow-hidden rounded-sm transition-all border
                 ${selected === i
-                  ? "border-[#0D3B66] ring-1 ring-[#0D3B66] scale-[0.98]"
+                  ? "border-[#B6925B] ring-1 ring-[#B6925B]"
                   : "border-transparent opacity-60 hover:opacity-100"}
               `}
               aria-label={`View image ${i + 1}`}
@@ -76,6 +59,23 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
           ))}
         </div>
       )}
+
+      {/* Main image container with Zoom capabilities (Right side on Desktop) */}
+      <div 
+        className="relative flex-1 aspect-[3/4] md:aspect-auto md:h-[600px] bg-[#f8f8f8] overflow-hidden rounded-sm cursor-zoom-in border border-gray-100 order-1 md:order-2"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <Image
+          src={images[selected]}
+          alt={alt}
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 50vw"
+          style={zoomStyle}
+          className="object-cover transition-transform duration-150 ease-out"
+        />
+      </div>
     </div>
   );
 }

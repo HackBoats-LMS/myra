@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { cookies } from "next/headers";
 import { mergeGuestCart } from "@/actions/cart";
+import { mergeGuestWishlist } from "@/actions/wishlist";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -23,6 +25,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing credentials");
         }
 
+        const limitResult = rateLimit(`login_${credentials.phoneOrEmail}`, 5, 5 * 60 * 1000); // 5 attempts per 5 minutes
+        if (!limitResult.success) {
+          throw new Error(`Too many login attempts. Please try again in ${Math.ceil((limitResult.reset - Date.now()) / 1000)} seconds.`);
+        }
+
         const user = await prisma.user.findFirst({
           where: {
             OR: [
@@ -34,6 +41,14 @@ export const authOptions: NextAuthOptions = {
 
         if (!user || !user.password) {
           throw new Error("Invalid credentials");
+        }
+
+        if (user.isDisabled) {
+          throw new Error("Your account has been disabled. Please contact support.");
+        }
+
+        if (user.email && !user.emailVerified) {
+          throw new Error("Please verify your email address before logging in.");
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -69,9 +84,19 @@ export const authOptions: NextAuthOptions = {
             data: {
               email: user.email,
               name: user.name || null,
-              role: "CUSTOMER"
+              role: "CUSTOMER",
+              emailVerified: new Date()
             }
           });
+        } else if (!dbUser.emailVerified) {
+          dbUser = await prisma.user.update({
+            where: { id: dbUser.id },
+            data: { emailVerified: new Date() }
+          });
+        }
+
+        if (dbUser.isDisabled) {
+          throw new Error("Your account has been disabled. Please contact support.");
         }
 
         // Mutate the user object so NextAuth picks up the DB record ID and Role instead of OAuth values
@@ -87,6 +112,18 @@ export const authOptions: NextAuthOptions = {
           await mergeGuestCart(user.id, guestCart.value);
           // Clear the guest cookie after merge
           cookieStore.delete("guest_cart");
+        }
+      } catch {
+        // Non-fatal: don't block sign-in if merge fails
+      }
+
+      // Merge guest cookie wishlist into DB wishlist on login
+      try {
+        const cookieStore = await cookies();
+        const guestWishlist = cookieStore.get("guest_wishlist");
+        if (guestWishlist?.value && user.id) {
+          await mergeGuestWishlist(user.id, guestWishlist.value);
+          cookieStore.delete("guest_wishlist");
         }
       } catch {
         // Non-fatal: don't block sign-in if merge fails
@@ -113,5 +150,18 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
 };

@@ -19,8 +19,8 @@ export default function WishlistButton({ productId, isWishlisted = false }: { pr
       setWishlisted(result);
       toast.success(result ? "Added to wishlist!" : "Removed from wishlist.");
       router.refresh();
-    } catch (error: any) {
-      toast.error("Please log in to save items to your wishlist.");
+    } catch {
+      toast.error("Could not update wishlist. Please try again.");
     } finally {
       setIsProcessing(false);
     }
