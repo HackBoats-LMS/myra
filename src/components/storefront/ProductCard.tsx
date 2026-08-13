@@ -52,7 +52,9 @@ export default function ProductCard({
         )}
 
         <div className="flex items-center gap-2 pt-1">
-          <span className="text-sm font-bold text-[#4A3B2C]">&#8377;{product.price.toLocaleString('en-IN')}</span>
+          <span className="text-sm font-bold text-[#1a1a1a]">&#8377;{product.price.toLocaleString('en-IN')}</span>
+          <span className="text-xs text-gray-400 line-through">&#8377;{(product.price * 1.25).toLocaleString('en-IN')}</span>
+          <span className="text-[10px] font-bold text-[#4CAF50] bg-green-50 px-1 py-0.5 rounded-sm">20% OFF</span>
         </div>
       </div>
     </Link>

@@ -2,42 +2,44 @@ import Image from 'next/image';
 
 export default function HeroGrid() {
   return (
-    <section className="w-full grid grid-cols-1 lg:grid-cols-12 max-w-[1920px] mx-auto bg-white lg:min-h-[calc(100dvh-6.6rem)]">
-      {/* Main Left Banner — fills the viewport on mobile */}
-      <div className="relative lg:col-span-8 h-[calc(100dvh-6rem)] md:h-[calc(100dvh-6.6rem)] lg:h-auto overflow-hidden flex items-center justify-start">
+    <section className="w-full max-w-[1920px] mx-auto bg-white flex flex-col lg:flex-row">
+      {/* Main Left Banner */}
+      {/* 60% width, 4:3 aspect ratio. Height = 60 * 0.75 = 45% of total width */}
+      <div className="w-full lg:w-[60%] relative cursor-pointer aspect-[4/3]">
         <Image
-          src="/displaypics/hero-main-2.jpg"
-          alt="Indian bride in traditional red saree"
+          src="/displaypics/landingpage1.png"
+          alt="Sale up to 50% off"
           fill
           priority
           quality={100}
-          sizes="(max-width: 1024px) 100vw, 66vw"
-          className="object-cover absolute inset-0 z-0"
+          sizes="(max-width: 1024px) 100vw, 60vw"
+          className="object-cover object-right"
         />
       </div>
 
-      {/* Right Stacked Banners — hidden on mobile, side-by-side on desktop */}
-      <div className="hidden lg:flex lg:col-span-4 flex-col">
-        <div className="flex-1 relative min-h-[220px] overflow-hidden group cursor-pointer">
+      {/* Right Stacked Banners */}
+      {/* 40% width. Each image is 16:9 aspect ratio. Height = 40 * 0.5625 = 22.5% each. Total height = 45% */}
+      <div className="hidden lg:flex w-full lg:w-[40%] flex-col">
+        <div className="w-full relative cursor-pointer aspect-[16/9]">
           <Image
-            src="/displaypics/hero-right1-2.jpg"
-            alt="Woman in elegant red ethnic dress"
+            src="/displaypics/landingpage2.png"
+            alt="Dresses collection"
             fill
             priority
             quality={100}
-            sizes="33vw"
-            className="object-cover absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-700"
+            sizes="40vw"
+            className="object-cover object-center"
           />
         </div>
-        <div className="flex-1 relative min-h-[220px] border-t-[8px] border-white overflow-hidden group cursor-pointer">
+        <div className="w-full relative cursor-pointer aspect-[16/9]">
           <Image
-            src="/displaypics/hero-right2-2.jpg"
-            alt="Elegant woman in traditional saree"
+            src="/displaypics/landingpage3.png"
+            alt="Kids collection"
             fill
             priority
             quality={100}
-            sizes="33vw"
-            className="object-cover absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-700"
+            sizes="40vw"
+            className="object-cover object-center"
           />
         </div>
       </div>
