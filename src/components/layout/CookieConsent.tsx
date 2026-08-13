@@ -21,7 +21,7 @@ export default function CookieConsent() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 left-6 md:left-auto md:w-96 bg-white border border-[#B6925B]/20 p-6 shadow-2xl z-50 animate-slide-in-right space-y-4">
+    <div className="fixed bottom-6 right-6 left-6 md:left-auto md:w-96 bg-white border border-[#B6925B]/20 p-6 shadow-2xl z-[60] animate-slide-in-right space-y-4">
       <div className="flex items-start justify-between">
         <h4 className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest">Cookie Notice</h4>
         <button

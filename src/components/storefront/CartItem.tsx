@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { updateCartQuantity } from "@/actions/cart";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +12,7 @@ interface CartLineItem {
   variantId?: string | null;
   product: {
     id: string;
+    slug: string;
     price: number;
     name: string;
     images: string[];
@@ -38,16 +40,18 @@ export default function CartItem({ item }: { item: CartLineItem }) {
         </div>
       )}
       
-      <div className="relative w-24 h-32 md:w-32 md:h-40 bg-[#FAFAFA] flex-shrink-0 rounded-none overflow-hidden border border-[#B6925B]/20">
+      <Link href={`/products/${item.product.slug}`} className="relative w-24 h-32 md:w-32 md:h-40 bg-[#FAFAFA] flex-shrink-0 rounded-none overflow-hidden border border-[#B6925B]/20 hover:opacity-90 transition-opacity">
         {item.product.images[0] && (
-          <Image src={item.product.images[0]} alt={item.product.name} fill sizes="(max-width: 768px) 96px, 128px" className="object-cover" />
+          <Image src={item.product.images[0]} alt={item.product.name} fill quality={100} sizes="(max-width: 768px) 96px, 128px" className="object-cover" />
         )}
-      </div>
+      </Link>
       
       <div className="flex flex-col flex-1">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-base font-serif font-bold text-[#4A3B2C]">{item.product.name}</h3>
+            <Link href={`/products/${item.product.slug}`} className="hover:underline underline-offset-4">
+              <h3 className="text-base font-serif font-bold text-[#4A3B2C]">{item.product.name}</h3>
+            </Link>
             {item.product.collection && (
               <p className="text-xs text-[#B6925B] mt-1 uppercase tracking-widest">{item.product.collection.name}</p>
             )}

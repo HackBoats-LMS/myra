@@ -15,6 +15,7 @@ interface CartLineItem {
   variantId?: string | null;
   product: {
     id: string;
+    slug: string;
     price: number;
     name: string;
     images: string[];
@@ -58,7 +59,7 @@ async function getCartItems(): Promise<CartLineItem[]> {
     
     const [products, variants] = await Promise.all([
       prisma.product.findMany({
-        where: { id: { in: productIds } },
+        where: { id: { in: productIds }, deletedAt: null },
         include: { collection: true }
       }),
       prisma.productVariant.findMany({

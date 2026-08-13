@@ -17,7 +17,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const product = await prisma.product.findUnique({
-    where: { slug },
+    where: { slug, deletedAt: null },
     select: { name: true, description: true, images: true },
   });
   if (!product) return {};
@@ -38,7 +38,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
   // Fetch product with collection and variants
   const product = await prisma.product.findUnique({
-    where: { slug },
+    where: { slug, deletedAt: null },
     include: { collection: true, variants: true },
   });
 
@@ -134,7 +134,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           name: r.user?.name || "Verified Customer",
         },
         description: r.comment || undefined,
-        datePublished: r.createdAt?.toISOString(),
+        datePublished: r.createdAt ? new Date(r.createdAt).toISOString() : undefined,
       })),
     }),
   };
@@ -156,16 +156,23 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           <ImageGallery images={product.images} alt={product.name} />
 
           {/* Product Info */}
-          <div className="flex flex-col pt-2 md:pt-4">
+          <div className="flex flex-col pt-2 md:pt-4 lg:sticky lg:top-8 lg:self-start">
             
-            <h1 className="text-2xl md:text-3xl font-serif text-[#4A3B2C] tracking-wide mb-6">
+            <h1 className="text-2xl md:text-3xl font-serif text-[#4A3B2C] tracking-wide mb-4">
               {product.name}
             </h1>
 
             {/* Price Block */}
-            <div className="flex items-end gap-3 mb-8">
-              <span className="text-xl font-bold text-[#4A3B2C]">Rs. {product.price.toLocaleString('en-IN')}</span>
+            <div className="flex items-end gap-3 mb-4">
+              <span className="text-2xl font-bold text-[#4A3B2C]">₹{product.price.toLocaleString('en-IN')}</span>
             </div>
+
+            {/* Description */}
+            {product.description && (
+              <p className="text-sm text-gray-600 leading-relaxed mb-8 break-words">
+                {product.description}
+              </p>
+            )}
 
             <AddToCartButton 
               productId={product.id} 
@@ -174,37 +181,26 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             />
 
             {/* Product Specifications */}
-            <div className="mt-8 space-y-2 border-t border-[#B6925B]/20 pt-6">
-              <div className="grid grid-cols-[120px_1fr] text-xs">
+            <div className="mt-8 space-y-2.5 border-t border-[#B6925B]/20 pt-6">
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Product Type:</span>
                 <span className="text-gray-600">Anarkali Suit Set (3 Piece)</span>
               </div>
-              <div className="grid grid-cols-[120px_1fr] text-xs">
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Fabric:</span>
                 <span className="text-gray-600">Pure Silk Blend</span>
               </div>
-              <div className="grid grid-cols-[120px_1fr] text-xs">
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Pattern:</span>
                 <span className="text-gray-600">Chevron Zigzag with Gotta Patti & Mirror Work</span>
               </div>
-              <div className="grid grid-cols-[120px_1fr] text-xs">
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Bottom Wear:</span>
                 <span className="text-gray-600">Matching Orange Palazzo Pants</span>
               </div>
-              <div className="grid grid-cols-[120px_1fr] text-xs">
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Dupatta:</span>
                 <span className="text-gray-600">Yes</span>
-              </div>
-            </div>
-
-            {/* Shipping Check */}
-            <div className="mt-8">
-              <h3 className="font-bold text-[#4A3B2C] text-sm mb-3">Shipping</h3>
-              <div className="flex items-center gap-2 max-w-[200px]">
-                <div className="flex items-center border border-[#B6925B]/20 rounded-none w-full bg-white px-3 py-2 text-xs">
-                  <span className="text-gray-400 mr-2">🚚</span>
-                  <input type="text" placeholder="Check your pincode..." className="w-full bg-transparent outline-none text-[#4A3B2C]" />
-                </div>
               </div>
             </div>
           </div>
@@ -213,10 +209,10 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         {/* Ratings & Reviews Section */}
         <section className="mt-16 border-t border-[#B6925B]/20 pt-12">
           <div className="flex items-center gap-4 mb-8">
-            <h2 className="text-2xl font-serif text-[#4A3B2C]">Ratings & reviews:</h2>
+            <h2 className="text-xl md:text-2xl font-serif text-[#4A3B2C]">Ratings & reviews:</h2>
           </div>
           
-          <div className="flex items-center gap-2 mb-10">
+          <div className="flex items-center gap-2 mb-10 flex-wrap">
             <StarRating rating={averageRating || 4} sizeClassName="w-5 h-5 text-[#B6925B]" />
             <span className="text-xl text-[#4A3B2C] ml-2">
               {(averageRating || 4).toFixed(1)} out of 5

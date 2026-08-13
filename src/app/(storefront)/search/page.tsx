@@ -35,6 +35,7 @@ export default async function SearchPage({
 
   // Construct filters
   const whereClause: Prisma.ProductWhereInput = {
+    deletedAt: null,
     OR: [
       { name: { contains: query, mode: "insensitive" as const } },
       { description: { contains: query, mode: "insensitive" as const } },

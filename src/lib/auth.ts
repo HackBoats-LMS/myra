@@ -39,15 +39,19 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (!user || !user.password) {
+        if (!user) {
           throw new Error("Invalid credentials");
+        }
+
+        if (!user.password) {
+          throw new Error("This account was created with Google. Please sign in with Google.");
         }
 
         if (user.isDisabled) {
           throw new Error("Your account has been disabled. Please contact support.");
         }
 
-        if (user.email && !user.emailVerified) {
+        if (!user.phoneNumber && user.email && !user.emailVerified) {
           throw new Error("Please verify your email address before logging in.");
         }
 

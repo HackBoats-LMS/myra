@@ -19,7 +19,7 @@ export default async function AdminProductsPage({
   try {
     const results = await Promise.all([
       getProducts((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE),
-      prisma.product.count()
+      prisma.product.count({ where: { deletedAt: null } })
     ]);
     products = results[0];
     totalProducts = results[1];

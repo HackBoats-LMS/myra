@@ -35,9 +35,19 @@ function normalizeVariant(v: ParsedVariantRecord) {
 
 import { z } from "zod";
 
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "") // remove non-URL-safe chars
+    .replace(/[\s_]+/g, "-")       // spaces/underscores -> hyphens
+    .replace(/-+/g, "-")           // collapse duplicate hyphens
+    .replace(/^-+|-+$/g, "");      // trim leading/trailing hyphens
+}
+
 const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(150),
-  slug: z.string().regex(/^[a-z0-9-]+$/, "Slug must be URL-safe (lowercase, numbers, hyphens)").max(150),
+  slug: z.string().max(150).optional(),
   description: z.string().max(2000, "Description is too long").optional(),
   price: z.number().min(0, "Price must be positive"),
   stockQuantity: z.number().int().min(0, "Stock cannot be negative"),
@@ -51,6 +61,18 @@ const productSchema = z.object({
     priceOffset: z.number().default(0),
   })).optional()
 });
+
+function parseImagesField(formData: FormData): string[] {
+  const raw = formData.get("images");
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(String(raw));
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((v): v is string => typeof v === "string" && Boolean(v));
+  } catch {
+    return [];
+  }
+}
 
 export async function createProduct(formData: FormData) {
   await verifyAdmin();
@@ -70,7 +92,7 @@ export async function createProduct(formData: FormData) {
     price: parseFloat(formData.get("price") as string),
     stockQuantity: parseInt(formData.get("stockQuantity") as string, 10),
     collectionId: formData.get("collectionId") ? String(formData.get("collectionId")).trim() : undefined,
-    images: formData.getAll("images").map((img) => String(img).trim()).filter(Boolean),
+    images: parseImagesField(formData),
     variants: parsedVariants.map(normalizeVariant)
   };
 
@@ -80,6 +102,9 @@ export async function createProduct(formData: FormData) {
   }
 
   const data = result.data;
+  if (!data.slug) {
+    data.slug = slugify(data.name) || `product-${Date.now()}`;
+  }
 
   const created = await prisma.product.create({
     data: {
@@ -126,7 +151,7 @@ export async function updateProduct(id: string, formData: FormData) {
     price: parseFloat(formData.get("price") as string),
     stockQuantity: parseInt(formData.get("stockQuantity") as string, 10),
     collectionId: formData.get("collectionId") ? String(formData.get("collectionId")).trim() : undefined,
-    images: formData.getAll("images").map((img) => String(img).trim()).filter(Boolean),
+    images: parseImagesField(formData),
     variants: parsedVariants.map(normalizeVariant)
   };
 
@@ -136,6 +161,9 @@ export async function updateProduct(id: string, formData: FormData) {
   }
 
   const data = result.data;
+  if (!data.slug) {
+    data.slug = slugify(data.name) || `product-${Date.now()}`;
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.product.update({
@@ -194,8 +222,9 @@ export async function updateProduct(id: string, formData: FormData) {
 export async function deleteProduct(id: string) {
   await verifyAdmin();
 
-  await prisma.product.delete({
-    where: { id }
+  await prisma.product.update({
+    where: { id },
+    data: { deletedAt: new Date() }
   });
 
   await logAudit("product.delete", "Product", id);
@@ -207,8 +236,9 @@ export async function deleteProduct(id: string) {
 export async function bulkDeleteProducts(ids: string[]) {
   await verifyAdmin();
 
-  await prisma.product.deleteMany({
-    where: { id: { in: ids } }
+  await prisma.product.updateMany({
+    where: { id: { in: ids } },
+    data: { deletedAt: new Date() }
   });
 
   await logAudit("product.bulkDelete", "Product", undefined, { ids });
@@ -233,7 +263,7 @@ export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
 
 const collectionSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(150),
-  slug: z.string().regex(/^[a-z0-9-]+$/, "Slug must be URL-safe (lowercase, numbers, hyphens)").max(150),
+  slug: z.string().max(150).optional(),
   description: z.string().max(500, "Description is too long").optional(),
   image: z.string().url().optional().nullable(),
 });
@@ -255,11 +285,13 @@ export async function createCollection(formData: FormData) {
 
   const { name, slug, description, image } = result.data;
 
+  const resolvedSlug = slug || slugify(name) || `collection-${Date.now()}`;
+
   const createdCollection = await prisma.collection.create({
-    data: { name, slug, description: description || null, image: image || null }
+    data: { name, slug: resolvedSlug, description: description || null, image: image || null }
   });
 
-  await logAudit("collection.create", "Collection", createdCollection.id, { slug });
+  await logAudit("collection.create", "Collection", createdCollection.id, { slug: resolvedSlug });
 
   revalidatePath("/admin/collections");
   updateTag(CACHE_TAGS.collections);
@@ -282,12 +314,14 @@ export async function updateCollection(id: string, formData: FormData) {
 
   const { name, slug, description, image } = result.data;
 
+  const resolvedSlug = slug || slugify(name) || `collection-${Date.now()}`;
+
   await prisma.collection.update({
     where: { id },
-    data: { name, slug, description: description || null, image: image || null }
+    data: { name, slug: resolvedSlug, description: description || null, image: image || null }
   });
 
-  await logAudit("collection.update", "Collection", id, { slug });
+  await logAudit("collection.update", "Collection", id, { slug: resolvedSlug });
 
   revalidatePath("/admin/collections");
   updateTag(CACHE_TAGS.collections);

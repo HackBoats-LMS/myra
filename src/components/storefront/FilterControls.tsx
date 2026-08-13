@@ -24,7 +24,7 @@ export default function FilterControls() {
   };
 
   return (
-    <div className="w-full flex flex-wrap gap-6 items-center justify-between border-y border-[#B6925B]/20 py-4 mb-10 text-[10px] font-bold uppercase tracking-widest bg-[#FAFAFA] px-4">
+    <div className="w-full flex flex-wrap gap-6 items-center justify-between border-y border-[#B6925B]/20 py-4 mb-10 text-[10px] font-bold uppercase tracking-widest bg-[#FAFAFA]">
       <div className="flex flex-wrap items-center gap-6">
         {/* Availability Filter */}
         <div className="flex items-center gap-2">

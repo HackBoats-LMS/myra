@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function LoginForm() {
       });
 
       if (res?.error) {
-        setError("Invalid phone number or password");
+        setError(res.error);
       } else {
         router.push("/");
         router.refresh();
@@ -47,14 +48,14 @@ export default function LoginForm() {
         {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-none border border-red-100">{error}</div>}
         
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Phone Number</label>
+          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Phone or Email</label>
           <input
             type="text"
             required
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
-            placeholder="e.g. 9876543210"
+            placeholder="Phone number or email"
           />
         </div>
         
@@ -68,6 +69,12 @@ export default function LoginForm() {
             className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
             placeholder="••••••••"
           />
+        </div>
+
+        <div className="flex justify-end">
+          <Link href="/forgot-password" className="text-xs font-bold text-[#B6925B] hover:text-[#9c7d4e] uppercase tracking-widest transition-colors">
+            Forgot Password?
+          </Link>
         </div>
 
         <button

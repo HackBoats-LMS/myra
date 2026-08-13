@@ -1,6 +1,6 @@
 "use client";
 import { useReducer } from "react";
-import { updateUserProfile, changePassword } from "@/actions/user";
+import { updateUserProfile, changePassword, setPassword } from "@/actions/user";
 import { signOut } from "next-auth/react";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
@@ -82,12 +82,18 @@ export default function ProfileForm({ user }: { user: User }) {
     const formData = new FormData(e.currentTarget);
 
     try {
-      await changePassword(formData);
-      toast.success("Password changed successfully!");
+      if (user.password) {
+        await changePassword(formData);
+        toast.success("Password changed successfully!");
+      } else {
+        await setPassword(formData);
+        toast.success("Password set successfully! You can now login with your phone/email.");
+      }
       (e.target as HTMLFormElement).reset();
       dispatch({ type: "PASSWORD_SAVED" });
+      router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to change password.");
+      toast.error(error instanceof Error ? error.message : "Failed to update password.");
       dispatch({ type: "PASSWORD_DONE" });
     }
   };
@@ -157,20 +163,20 @@ export default function ProfileForm({ user }: { user: User }) {
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Address Line 1</label>
                 <input name="addressLine1" defaultValue={user.addressLine1 || ''} placeholder="Street address, P.O. box, etc." className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="col-span-2 md:col-span-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">City</label>
                   <input name="city" defaultValue={user.city || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
                 </div>
-                <div className="col-span-2 md:col-span-1">
+                <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">State / Province</label>
                   <input name="state" defaultValue={user.state || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
                 </div>
-                <div className="col-span-1 md:col-span-1">
+                <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Postal Code</label>
                   <input name="postalCode" defaultValue={user.postalCode || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
                 </div>
-                <div className="col-span-1 md:col-span-1">
+                <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Country</label>
                   <input name="country" defaultValue={user.country || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
                 </div>
@@ -251,26 +257,28 @@ export default function ProfileForm({ user }: { user: User }) {
         )}
       </div>
 
-      {/* Change Password Block — Only visible for users with a local password set */}
-      {user.password && (
-        <div className="bg-white border border-[#B6925B]/20 shadow-sm rounded-none">
-          <button
-            onClick={() => dispatch({ type: "TOGGLE_PASSWORD" })}
-            className="w-full p-6 flex justify-between items-center text-left focus:outline-none"
-          >
-            <div>
-              <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide">Security</h3>
-              <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">Update your account password</p>
-            </div>
-            {showPasswordSection ? (
-              <i className="ri-arrow-up-s-line text-xl text-[#B6925B]" />
-            ) : (
-              <i className="ri-arrow-down-s-line text-xl text-[#B6925B]" />
-            )}
-          </button>
+      {/* Password Block — "Set Password" for Google users, "Change Password" for others */}
+      <div className="bg-white border border-[#B6925B]/20 shadow-sm rounded-none">
+        <button
+          onClick={() => dispatch({ type: "TOGGLE_PASSWORD" })}
+          className="w-full p-6 flex justify-between items-center text-left focus:outline-none"
+        >
+          <div>
+            <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide">Security</h3>
+            <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">
+              {user.password ? "Update your account password" : "Set a password to login with phone/email"}
+            </p>
+          </div>
+          {showPasswordSection ? (
+            <i className="ri-arrow-up-s-line text-xl text-[#B6925B]" />
+          ) : (
+            <i className="ri-arrow-down-s-line text-xl text-[#B6925B]" />
+          )}
+        </button>
 
-          {showPasswordSection && (
-            <form onSubmit={handlePasswordSubmit} className="p-6 border-t border-[#B6925B]/20 space-y-4 bg-[#FAFAFA]">
+        {showPasswordSection && (
+          <form onSubmit={handlePasswordSubmit} className="p-6 border-t border-[#B6925B]/20 space-y-4 bg-[#FAFAFA]">
+            {user.password && (
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Current Password</label>
                 <input
@@ -280,37 +288,37 @@ export default function ProfileForm({ user }: { user: User }) {
                   className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
                 />
               </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">New Password</label>
-                <input
-                  required
-                  name="newPassword"
-                  type="password"
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Confirm New Password</label>
-                <input
-                  required
-                  name="confirmPassword"
-                  type="password"
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
-                />
-              </div>
-              <div className="pt-4 flex justify-end border-t border-[#B6925B]/20 mt-6">
-                <button
-                  type="submit"
-                  disabled={isChangingPassword}
-                  className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center disabled:opacity-50 rounded-none"
-                >
-                  {isChangingPassword ? <i className="ri-loader-4-line mr-2 animate-spin text-base" /> : "Update Password"}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      )}
+            )}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">{user.password ? "New Password" : "Password"}</label>
+              <input
+                required
+                name="newPassword"
+                type="password"
+                className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Confirm Password</label>
+              <input
+                required
+                name="confirmPassword"
+                type="password"
+                className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
+              />
+            </div>
+            <div className="pt-4 flex justify-end border-t border-[#B6925B]/20 mt-6">
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center disabled:opacity-50 rounded-none"
+              >
+                {isChangingPassword ? <i className="ri-loader-4-line mr-2 animate-spin text-base" /> : user.password ? "Update Password" : "Set Password"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

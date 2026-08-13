@@ -8,6 +8,22 @@ import type { Collection } from "@/generated/prisma";
 
 export default function CollectionForm({ initialData }: { initialData?: Collection }) {
   const [image, setImage] = useState<string>(initialData?.image || "");
+  const [slug, setSlug] = useState<string>(initialData?.slug || "");
+  const [slugTouched, setSlugTouched] = useState(false);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!slugTouched) {
+      setSlug(
+        e.target.value
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/[\s_]+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-+|-+$/g, "")
+      );
+    }
+  };
 
   return (
     <AdminForm
@@ -47,11 +63,11 @@ export default function CollectionForm({ initialData }: { initialData?: Collecti
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Collection Name</label>
-                <input required defaultValue={initialData?.name} name="name" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. Winter Collection" />
+                <input required defaultValue={initialData?.name} name="name" type="text" onChange={handleNameChange} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. Winter Collection" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Slug (URL friendly)</label>
-                <input required defaultValue={initialData?.slug} name="slug" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. winter-collection" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Slug (auto-generated)</label>
+                <input name="slug" type="text" value={slug} onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="auto-generated from name" />
               </div>
             </div>
 

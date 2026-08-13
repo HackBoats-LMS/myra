@@ -53,7 +53,7 @@ export default function DeleteButton({
       className={`text-gray-400 hover:text-red-600 transition-colors p-1 disabled:opacity-50 flex items-center justify-center ${className}`}
       title={`Delete ${entityName}`}
     >
-      {isDeleting ? <i className="ri-loader-4-line animate-spin text-sm" /> : <i className="ri-delete-bin-line text-sm" />}
+      {isDeleting ? <i className="ri-loader-4-line animate-spin text-lg" /> : <i className="ri-delete-bin-line text-lg" />}
     </button>
   );
 }

@@ -269,7 +269,7 @@ export default function AddressManager({ addresses }: AddressManagerProps) {
         {addresses.length === 0 ? (
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center py-6">You haven&rsquo;t saved any addresses yet.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {addresses.map((address) => (
               <div
                 key={address.id}

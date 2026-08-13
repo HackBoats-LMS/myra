@@ -100,6 +100,44 @@ export async function changePassword(formData: FormData) {
   });
 }
 
+export async function setPassword(formData: FormData) {
+  const userId = await verifyUser();
+  const newPassword = String(formData.get("newPassword") || "");
+  const confirmPassword = String(formData.get("confirmPassword") || "");
+
+  if (!newPassword || !confirmPassword) {
+    throw new Error("All fields are required.");
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new Error("Passwords do not match.");
+  }
+
+  if (newPassword.length < 6) {
+    throw new Error("Password must be at least 6 characters long.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId }
+  });
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  if (user.password) {
+    throw new Error("Password already set. Use change password instead.");
+  }
+
+  const bcrypt = await import("bcryptjs");
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword }
+  });
+}
+
 export async function cancelOrder(orderId: string) {
   const userId = await verifyUser();
 

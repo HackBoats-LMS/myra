@@ -148,7 +148,7 @@ export default function DashboardWidgets({
                       {order.user?.name || order.user?.email || "Guest User"}
                     </p>
                     <p className="text-xs text-gray-500 mt-1 font-medium">
-                      {new Date(order.createdAt).toLocaleDateString()} • Rs. {order.totalAmount.toLocaleString()}
+                      {new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} • Rs. {order.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

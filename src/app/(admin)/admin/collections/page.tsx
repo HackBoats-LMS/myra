@@ -34,8 +34,9 @@ export default async function AdminCollectionsPage() {
         </Link>
       </div>
 
-      <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
-        <table className="w-full text-left text-sm text-[#4A3B2C]">
+      <div className="bg-white border border-[#B6925B]/20 relative rounded-none overflow-hidden">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-left text-sm text-[#4A3B2C]">
           <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
             <tr>
               <th className="px-6 py-4 border-r border-[#B6925B]/10">Collection Name</th>
@@ -61,22 +62,25 @@ export default async function AdminCollectionsPage() {
                       {collection._count.products} products
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                    <Link href={`/admin/collections/${collection.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="Edit Collection">
-                      <i className="ri-edit-box-line text-lg" />
-                    </Link>
-                    <DeleteButton 
-                      id={collection.id} 
-                      entityName="Collection" 
-                      deleteAction={deleteCollection} 
-                      confirmMessage={`Are you sure you want to delete ${collection.name}? This will NOT delete the products inside it, but will remove them from the collection.`}
-                    />
+                  <td className="px-6 py-4 text-right whitespace-nowrap">
+                    <div className="inline-flex items-center justify-end gap-1">
+                      <Link href={`/admin/collections/${collection.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="Edit Collection">
+                        <i className="ri-edit-box-line text-lg" />
+                      </Link>
+                      <DeleteButton 
+                        id={collection.id} 
+                        entityName="Collection" 
+                        deleteAction={deleteCollection} 
+                        confirmMessage={`Are you sure you want to delete ${collection.name}? This will NOT delete the products inside it, but will remove them from the collection.`}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

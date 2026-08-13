@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { checkoutCart, validateCouponAction } from "@/actions/cart";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
@@ -19,9 +19,23 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
   const router = useRouter();
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAddressOpen, setIsAddressOpen] = useState(false);
+  const addressRef = useRef<HTMLDivElement>(null);
   const [selectedAddressId, setSelectedAddressId] = useState<string>(
     addresses.find((a) => a.isDefault)?.id || addresses[0]?.id || ""
   );
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (addressRef.current && !addressRef.current.contains(e.target as Node)) {
+        setIsAddressOpen(false);
+      }
+    }
+    if (isAddressOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isAddressOpen]);
+
+  const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
 
   // Coupon States
   const [couponInput, setCouponInput] = useState("");
@@ -183,17 +197,74 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
               </a>
             </div>
           ) : (
-            <select
-              value={selectedAddressId}
-              onChange={(e) => setSelectedAddressId(e.target.value)}
-              className="w-full bg-transparent border border-[#B6925B]/20 px-3 py-2.5 text-sm focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
-            >
-              {addresses.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.label} ({a.addressLine1}, {a.city})
-                </option>
-              ))}
-            </select>
+            <div ref={addressRef} className="relative">
+              {/* Dropdown trigger */}
+              <button
+                type="button"
+                onClick={() => setIsAddressOpen((o) => !o)}
+                className="w-full flex items-center justify-between gap-3 bg-[#FAFAFA] border border-[#B6925B]/30 px-3.5 py-3 text-left focus:outline-none focus:border-[#B6925B] transition-colors rounded-none"
+                aria-haspopup="listbox"
+                aria-expanded={isAddressOpen}
+              >
+                <span className="min-w-0">
+                  {selectedAddress ? (
+                    <>
+                      <span className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">{selectedAddress.label}</span>
+                        {selectedAddress.isDefault && (
+                          <span className="text-[8px] font-bold uppercase tracking-widest bg-[#4A3B2C] text-white px-1.5 py-0.5">Default</span>
+                        )}
+                      </span>
+                      <span className="block text-xs text-[#4A3B2C] truncate mt-1">
+                        {selectedAddress.addressLine1}, {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.postalCode}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-gray-500">Select a delivery address</span>
+                  )}
+                </span>
+                <i className={`ri-arrow-down-s-line text-lg text-[#B6925B] transition-transform ${isAddressOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* Dropdown panel */}
+              {isAddressOpen && (
+                <ul
+                  role="listbox"
+                  className="absolute left-0 right-0 top-full mt-2 z-20 bg-white border border-[#B6925B]/20 shadow-xl max-h-72 overflow-y-auto rounded-none"
+                >
+                  {addresses.map((a) => {
+                    const isSelected = a.id === selectedAddressId;
+                    return (
+                      <li key={a.id} role="option" aria-selected={isSelected}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedAddressId(a.id);
+                            setIsAddressOpen(false);
+                          }}
+                          className={`w-full flex items-start justify-between gap-3 px-3.5 py-3 text-left border-b border-[#B6925B]/10 last:border-b-0 transition-colors rounded-none ${isSelected ? "bg-[#B6925B]/10" : "hover:bg-[#FAFAFA]"}`}
+                        >
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">{a.label}</span>
+                              {a.isDefault && (
+                                <span className="text-[8px] font-bold uppercase tracking-widest bg-[#4A3B2C] text-white px-1.5 py-0.5">Default</span>
+                              )}
+                            </span>
+                            <span className="block text-xs text-gray-600 mt-0.5">
+                              {a.addressLine1}, {a.city}, {a.state} - {a.postalCode}
+                            </span>
+                          </span>
+                          <span className={`flex-shrink-0 mt-0.5 ${isSelected ? "text-[#B6925B]" : "text-transparent"}`}>
+                            <i className="ri-check-line text-lg" />
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           )}
         </div>
       )}

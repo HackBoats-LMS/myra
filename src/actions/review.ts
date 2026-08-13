@@ -19,7 +19,7 @@ export async function submitReview(productId: string, rating: number, comment: s
 
   // Check if product exists
   const product = await prisma.product.findUnique({
-    where: { id: productId },
+    where: { id: productId, deletedAt: null },
     select: { slug: true }
   });
 

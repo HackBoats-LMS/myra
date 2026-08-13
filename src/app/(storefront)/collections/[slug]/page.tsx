@@ -43,7 +43,8 @@ export default async function CollectionPage({
 
   // Construct filters
   const whereClause: Prisma.ProductWhereInput = {
-    collection: { slug }
+    collection: { slug },
+    deletedAt: null
   };
 
   if (stock === 'instock') {

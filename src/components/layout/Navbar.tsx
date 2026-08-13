@@ -6,24 +6,27 @@ import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
 import MobileMenu from "./MobileMenu";
 import CartButton from "./CartButton";
-import LiveSearch from "../storefront/LiveSearch";
-import type { Collection } from "@/generated/prisma";
+import WishlistButton from "./WishlistButton";
+import NavMenu from "./NavMenu";
+import { NAV_LINKS } from "@/lib/navigation";
+import { getWishlistCount } from "@/actions/wishlist";
 
 async function getCartCount(userId: string | null): Promise<number> {
   if (userId) {
-    const cart = await prisma.cart.findUnique({
-      where: { userId },
-      include: { _count: { select: { items: true } } },
+    const result = await prisma.cartItem.aggregate({
+      where: { cart: { userId } },
+      _sum: { quantity: true },
     });
-    return cart?._count.items ?? 0;
+    return result._sum.quantity ?? 0;
   }
   // Guest cart from cookie
   const cookieStore = await cookies();
   const raw = cookieStore.get("guest_cart")?.value;
   if (!raw) return 0;
   try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.length : 0;
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return 0;
+    return parsed.reduce((sum: number, item: { quantity?: number }) => sum + (item.quantity || 0), 0);
   } catch {
     return 0;
   }
@@ -33,54 +36,37 @@ export default async function Navbar() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
 
-  let collections: Collection[] = [];
   let cartCount = 0;
+  let wishlistCount = 0;
 
   try {
-    const results = await Promise.all([
-      prisma.collection.findMany({ take: 5, orderBy: { createdAt: "asc" } }),
-      getCartCount(userId),
-    ]);
-    collections = results[0];
-    cartCount = results[1];
+    cartCount = await getCartCount(userId);
+    wishlistCount = await getWishlistCount();
   } catch (error) {
     console.warn("Database unreachable in Navbar, falling back to empty state:", error);
   }
 
   return (
-    <nav className="w-full bg-white border-b border-[#B6925B]/20 flex items-center justify-between px-6 md:px-8 py-4 relative z-50">
-      {/* Logo */}
-      <Link href="/" className="flex items-center">
-        <Image
-          src="/displaypics/malllogo.png"
-          alt="Myra Shopping Mall Logo"
-          width={150}
-          height={50}
-          className="object-contain h-10 w-auto"
-        />
-      </Link>
-
-      {/* Desktop Navigation Links */}
-      <div className="hidden md:flex items-center gap-8">
-        <Link href="/collections" className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] transition-colors">
-          All Products
+    <nav className="w-full bg-white border-b border-[#B6925B]/20 flex items-center px-4 md:px-6 lg:px-8 py-3 relative z-50">
+      {/* Logo (left) */}
+      <div className="flex-1 flex items-center justify-start">
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/displaypics/malllogo.png"
+            alt="Myra Shopping Mall Logo"
+            width={150}
+            height={50}
+            priority
+            className="object-contain h-12 md:h-14 w-auto"
+          />
         </Link>
-        {collections.map((c) => (
-          <Link
-            key={c.id}
-            href={`/collections/${c.slug}`}
-            className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] transition-colors"
-          >
-            {c.name.toLowerCase()}
-          </Link>
-        ))}
       </div>
 
-      {/* Global Search Bar */}
-      <LiveSearch />
+      {/* Desktop Navigation with Dropdowns (centered) */}
+      <NavMenu links={NAV_LINKS} />
 
-      {/* Desktop Action Icons */}
-      <div className="hidden md:flex items-center gap-8">
+      {/* Desktop Action Icons (right) */}
+      <div className="flex-1 hidden md:flex items-center justify-end gap-6 lg:gap-8">
         <Link
           href={session ? "/account" : "/login"}
           className="flex flex-col items-center gap-1 text-[#4A3B2C] hover:text-[#B6925B] transition-colors"
@@ -91,17 +77,11 @@ export default async function Navbar() {
 
         <CartButton cartCount={cartCount} />
 
-        <Link
-          href="/wishlist"
-          className="flex flex-col items-center gap-1 text-[#4A3B2C] hover:text-[#B6925B] transition-colors"
-        >
-          <i className="ri-heart-line text-[22px] leading-none stroke-[1.5]" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">wishlist</span>
-        </Link>
+        <WishlistButton wishlistCount={wishlistCount} />
       </div>
 
       {/* Mobile Hamburger Menu */}
-      <MobileMenu collections={collections} isLoggedIn={!!session} cartCount={cartCount} />
+      <MobileMenu links={NAV_LINKS} isLoggedIn={!!session} cartCount={cartCount} wishlistCount={wishlistCount} />
     </nav>
   );
 }

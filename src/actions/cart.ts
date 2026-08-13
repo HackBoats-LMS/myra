@@ -238,6 +238,7 @@ export async function checkoutCart(addressId: string, couponCode?: string) {
   const lowStock = await prisma.product.findMany({
     where: {
       id: { in: result.items.map((i) => i.productId) },
+      deletedAt: null,
       stockQuantity: { lte: LOW_STOCK_THRESHOLD },
     },
     select: { name: true, stockQuantity: true },
@@ -284,7 +285,7 @@ export async function getCart() {
       const parsed = parseGuestCartCookie(cartCookie.value);
       const productIds = parsed.map(p => p.productId);
       const products = await prisma.product.findMany({
-        where: { id: { in: productIds } },
+        where: { id: { in: productIds }, deletedAt: null },
         include: { collection: true }
       });
       

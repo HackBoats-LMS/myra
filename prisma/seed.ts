@@ -23,6 +23,20 @@ async function main() {
     },
   });
 
+  // Create delivery agent
+  const deliveryPassword = await bcrypt.hash('delivery123', 10);
+  await prisma.user.upsert({
+    where: { email: 'delivery@myra.com' },
+    update: {},
+    create: {
+      email: 'delivery@myra.com',
+      phoneNumber: '8888888888',
+      password: deliveryPassword,
+      name: 'Delivery Agent',
+      role: 'DELIVERY',
+    },
+  });
+
   // Create Collections
   const womenCollection = await prisma.collection.upsert({
     where: { slug: 'women' },

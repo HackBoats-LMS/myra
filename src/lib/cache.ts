@@ -40,6 +40,7 @@ export const getCachedProducts = createCachedQuery(
   ["products", "list"],
   async (skip?: number, take?: number) => {
     return prisma.product.findMany({
+      where: { deletedAt: null },
       include: { collection: true },
       orderBy: { createdAt: "desc" },
       ...(skip !== undefined ? { skip } : {}),
@@ -53,7 +54,7 @@ export const getCachedProductBySlug = createCachedQuery(
   ["product", "slug"],
   async (slug: string) => {
     return prisma.product.findUnique({
-      where: { slug },
+      where: { slug, deletedAt: null },
       include: { collection: true, variants: true },
     });
   },
@@ -64,7 +65,7 @@ export const getCachedProductsByCollection = createCachedQuery(
   ["products", "collection"],
   async (collectionSlug: string) => {
     return prisma.product.findMany({
-      where: { collection: { slug: collectionSlug } },
+      where: { deletedAt: null, collection: { slug: collectionSlug } },
       include: { collection: true },
     });
   },
@@ -75,6 +76,7 @@ export const getCachedFeaturedProducts = createCachedQuery(
   ["products", "featured"],
   async (take: number = 4) => {
     return prisma.product.findMany({
+      where: { deletedAt: null },
       take,
       orderBy: { createdAt: "desc" },
       include: { 
@@ -90,6 +92,7 @@ export const getCachedBestSellers = createCachedQuery(
   ["products", "best-sellers"],
   async (take: number = 4) => {
     return prisma.product.findMany({
+      where: { deletedAt: null },
       take,
       orderBy: { createdAt: "asc" },
       include: { 
@@ -104,7 +107,7 @@ export const getCachedBestSellers = createCachedQuery(
 export const getCachedRelatedProducts = createCachedQuery(
   ["products", "related"],
   async (productId: string, collectionId: string | null, take: number = 4) => {
-    const where: Prisma.ProductWhereInput = { id: { not: productId } };
+    const where: Prisma.ProductWhereInput = { deletedAt: null, id: { not: productId } };
     if (collectionId) where.collectionId = collectionId;
     
     return prisma.product.findMany({
@@ -153,6 +156,7 @@ export const getCachedSearchSuggestions = createCachedQuery(
     
     return prisma.product.findMany({
       where: {
+        deletedAt: null,
         OR: [
           { name: { contains: query, mode: "insensitive" } },
           { description: { contains: query, mode: "insensitive" } },
@@ -178,7 +182,7 @@ export const getCachedSitemapData = createCachedQuery(
   ["sitemap", "data"],
   async () => {
     const [products, collections] = await Promise.all([
-      prisma.product.findMany({ select: { slug: true, updatedAt: true } }),
+      prisma.product.findMany({ where: { deletedAt: null }, select: { slug: true, updatedAt: true } }),
       prisma.collection.findMany({ select: { slug: true, updatedAt: true } }),
     ]);
     return { products, collections };

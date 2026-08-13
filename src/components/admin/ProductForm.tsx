@@ -129,14 +129,10 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div>
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Name</label>
                 <input required defaultValue={initialData?.name} name="name" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Slug (URL friendly)</label>
-                <input required defaultValue={initialData?.slug} name="slug" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
               </div>
             </div>
 

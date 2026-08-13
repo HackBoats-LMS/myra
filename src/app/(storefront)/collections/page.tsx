@@ -26,12 +26,15 @@ export default async function AllProductsPage({
 
   const [products, totalProducts] = await Promise.all([
     prisma.product.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: 'desc' },
       skip: (currentPage - 1) * ITEMS_PER_PAGE,
       take: ITEMS_PER_PAGE,
       include: { reviews: { select: { rating: true } } }
     }),
-    prisma.product.count()
+    prisma.product.count({
+      where: { deletedAt: null }
+    })
   ]);
 
   // Compute review data for each product
@@ -47,27 +50,29 @@ export default async function AllProductsPage({
   const baseUrl = '/collections';
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-16 min-h-screen">
-      <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4">
-        <h1 className="text-4xl md:text-5xl font-serif text-[#4A3B2C] tracking-wide">All Products</h1>
-        <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold">Explore our entire collection</p>
+    <div className="w-full bg-[#FAFAFA] min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+        <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4">
+          <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">All Products</h1>
+          <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold">Explore our entire collection</p>
+        </div>
+
+        {productsWithReviews.length === 0 ? (
+          <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-20">No products available at the moment.</div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+              {productsWithReviews.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            <div className="mt-12">
+              <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
+            </div>
+          </>
+        )}
       </div>
-
-      {productsWithReviews.length === 0 ? (
-        <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-20">No products available at the moment.</div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {productsWithReviews.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-
-          <div className="mt-12">
-            <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
-          </div>
-        </>
-      )}
     </div>
   );
 }

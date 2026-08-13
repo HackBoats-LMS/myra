@@ -63,7 +63,7 @@ export default async function WishlistPage() {
       const productIds = parseGuestWishlistCookie(cookieStore.get("guest_wishlist")?.value);
       if (productIds.length > 0) {
         const products = await prisma.product.findMany({
-          where: { id: { in: productIds } },
+          where: { id: { in: productIds }, deletedAt: null },
           include: { reviews: { select: { rating: true } } },
         });
         itemsWithReviews = products.map((p) => ({

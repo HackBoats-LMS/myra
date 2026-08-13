@@ -45,7 +45,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-8 py-16 min-h-screen space-y-6">
+    <div className="max-w-4xl mx-auto px-4 md:px-8 py-12 md:py-16 min-h-screen space-y-6">
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           body {
@@ -73,7 +73,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#B6925B]/20 pb-6">
         <div>
-          <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Order Details</h1>
+          <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">Order Details</h1>
           <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">Placed on {new Date(order.createdAt).toLocaleDateString("en-IN", {
             year: "numeric",
             month: "long",
@@ -98,13 +98,15 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
           <div className="divide-y divide-[#B6925B]/10">
             {order.orderItems.map((item: OrderItemWithProduct) => (
               <div key={item.id} className="p-6 flex items-center gap-4">
-                <div className="relative w-16 h-24 bg-[#FAFAFA] overflow-hidden flex-shrink-0 border border-[#B6925B]/20">
+                <Link href={`/products/${item.product.slug}`} className="relative w-20 h-28 bg-[#FAFAFA] overflow-hidden flex-shrink-0 border border-[#B6925B]/20 hover:opacity-90 transition-opacity">
                   {item.product.images[0] && (
                     <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" />
                   )}
-                </div>
+                </Link>
                 <div className="flex-1">
-                  <h4 className="font-bold text-[#4A3B2C] text-sm">{item.product.name}</h4>
+                  <Link href={`/products/${item.product.slug}`} className="hover:underline underline-offset-4">
+                    <h4 className="font-bold text-[#4A3B2C] text-sm">{item.product.name}</h4>
+                  </Link>
                   <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">Qty: {item.quantity}</p>
                 </div>
                 <div className="text-sm font-bold text-[#B6925B]">

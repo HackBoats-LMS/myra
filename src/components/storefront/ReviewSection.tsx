@@ -51,55 +51,8 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
-        {/* Reviews List */}
-        <div className="lg:col-span-2 space-y-8">
-          {reviews.length === 0 ? (
-            <p className="text-gray-500 text-sm">No reviews yet. Be the first to review this product!</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {reviews.map((review) => (
-                <div key={review.id} className="border border-[#B6925B]/20 p-5 flex flex-col gap-3 bg-white rounded-none">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      {/* Placeholder Avatar */}
-                      <div className="w-10 h-10 rounded-none border border-[#B6925B]/20 bg-[#FAFAFA] flex items-center justify-center overflow-hidden shrink-0">
-                        <span className="text-gray-500 font-bold text-lg">
-                          {(review.user.name || "V").charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-serif font-bold text-[#4A3B2C] text-sm">
-                          {review.user.name || "Verified Buyer"}
-                        </span>
-                        <StarRating rating={review.rating} sizeClassName="text-[10px] text-[#B6925B]" />
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <span className="text-[10px] text-gray-500 font-medium">
-                        {new Date(review.createdAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </span>
-                      <span className="text-[9px] text-[#B6925B] font-bold uppercase tracking-widest mt-1">
-                        Verified Purchase
-                      </span>
-                    </div>
-                  </div>
-                  {review.comment && (
-                    <p className="text-xs text-gray-600 leading-relaxed mt-2">
-                      {review.comment}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Submit Review Form */}
-        <div className="border border-[#B6925B]/20 p-6 bg-white h-fit space-y-6 rounded-none">
+        {/* Submit Review Form — shown first on mobile */}
+        <div className="border border-[#B6925B]/20 p-6 bg-white h-fit space-y-6 rounded-none order-1 lg:col-span-1">
           <h4 className="font-serif font-bold text-[#4A3B2C] text-lg">
             {userReview ? "Update Your Review" : "Write a Review"}
           </h4>
@@ -119,7 +72,7 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
                 <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
                   Rating
                 </label>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-wrap">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -168,6 +121,53 @@ export default function ReviewSection({ productId, reviews, isLoggedIn, userRevi
                 )}
               </button>
             </form>
+          )}
+        </div>
+
+        {/* Reviews List */}
+        <div className="lg:col-span-2 space-y-8 order-2">
+          {reviews.length === 0 ? (
+            <p className="text-gray-500 text-sm">No reviews yet. Be the first to review this product!</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {reviews.map((review) => (
+                <div key={review.id} className="border border-[#B6925B]/20 p-5 flex flex-col gap-3 bg-white rounded-none">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-3">
+                      {/* Placeholder Avatar */}
+                      <div className="w-10 h-10 rounded-none border border-[#B6925B]/20 bg-[#FAFAFA] flex items-center justify-center overflow-hidden shrink-0">
+                        <span className="text-gray-500 font-bold text-lg">
+                          {(review.user.name || "V").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-serif font-bold text-[#4A3B2C] text-sm">
+                          {review.user.name || "Verified Buyer"}
+                        </span>
+                        <StarRating rating={review.rating} sizeClassName="text-[10px] text-[#B6925B]" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-start md:items-end">
+                      <span className="text-[10px] text-gray-500 font-medium">
+                        {new Date(review.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <span className="text-[9px] text-[#B6925B] font-bold uppercase tracking-widest mt-1">
+                        Verified Purchase
+                      </span>
+                    </div>
+                  </div>
+                  {review.comment && (
+                    <p className="text-xs text-gray-600 leading-relaxed mt-2 break-words">
+                      {review.comment}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

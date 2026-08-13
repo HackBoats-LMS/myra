@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCartDrawer } from "@/context/CartContext";
 import { getCart, updateCartQuantity } from "@/actions/cart";
 import { toggleWishlist } from "@/actions/wishlist";
@@ -23,6 +23,8 @@ export default function CartDrawer() {
   const { isCartOpen, closeCart } = useCartDrawer();
   const [items, setItems] = useState<DrawerItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rendered, setRendered] = useState(false);
+  const [closing, setClosing] = useState(false);
   const toast = useToast();
 
   const fetchCart = async () => {
@@ -36,11 +38,31 @@ export default function CartDrawer() {
     }
   };
 
+  // Handle mount/unmount with animation
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    if (isCartOpen) {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    const raf = requestAnimationFrame(() => {
+      if (isCartOpen) {
+        setRendered(true);
+        setClosing(false);
+      } else {
+        setClosing(true);
+        closeTimer.current = setTimeout(() => {
+          setRendered(false);
+          setClosing(false);
+          closeTimer.current = null;
+        }, 300);
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isCartOpen]);
+
+  useEffect(() => {
+    if (rendered) {
       // Data fetching is async; no synchronous setState occurs in the effect body.
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      void fetchCart();
+      if (isCartOpen) void fetchCart();
       // Lock body scroll
       document.body.style.overflow = "hidden";
     } else {
@@ -49,9 +71,9 @@ export default function CartDrawer() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isCartOpen]);
+  }, [rendered, isCartOpen]);
 
-  if (!isCartOpen) return null;
+  if (!rendered) return null;
 
   const handleQuantity = async (productId: string, currentQty: number, change: number) => {
     const newQty = currentQty + change;
@@ -88,12 +110,12 @@ export default function CartDrawer() {
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+        className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${closing ? "opacity-0" : "opacity-100"}`} 
         onClick={closeCart}
       />
 
       {/* Drawer Container */}
-      <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col z-10 animate-slide-in-right rounded-none">
+      <div className={`relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col z-10 rounded-none transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${closing ? "translate-x-full" : "translate-x-0"}`}>
         {/* Header */}
         <div className="px-6 py-6 border-b border-[#B6925B]/20 flex items-center justify-between bg-[#FAFAFA]">
           <div className="flex items-center gap-2 text-[#4A3B2C]">
@@ -126,7 +148,7 @@ export default function CartDrawer() {
               </div>
               <button
                 onClick={closeCart}
-                className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors mt-4 rounded-none"
+                className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors mt-4 rounded-none"
               >
                 Continue Shopping
               </button>
@@ -142,6 +164,7 @@ export default function CartDrawer() {
                         src={item.product.images[0]}
                         alt={item.product.name}
                         fill
+                        quality={100}
                         className="object-cover"
                       />
                     ) : (
@@ -213,14 +236,14 @@ export default function CartDrawer() {
               <Link
                 href="/cart"
                 onClick={closeCart}
-                className="w-full text-center border border-[#B6925B]/30 hover:border-[#4A3B2C] text-[#4A3B2C] py-3.5 text-[10px] font-bold uppercase tracking-widest transition-colors bg-white rounded-none"
+                className="w-full text-center border border-[#B6925B]/30 hover:border-[#4A3B2C] text-[#4A3B2C] py-3 text-[10px] font-bold uppercase tracking-widest transition-colors bg-white rounded-none"
               >
                 View Full Bag
               </Link>
               <Link
                 href="/cart"
                 onClick={closeCart}
-                className="w-full text-center bg-[#4A3B2C] hover:bg-[#34291f] text-white py-3.5 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
+                className="w-full text-center bg-[#B6925B] hover:bg-[#9c7d4e] text-white py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
               >
                 Proceed to Checkout
               </Link>

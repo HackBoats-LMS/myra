@@ -148,15 +148,17 @@ export default function ProductListTable({ products }: { products: ProductWithCo
                       {product.stockQuantity} in stock
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right space-x-3 whitespace-nowrap">
-                    <Link href={`/admin/products/${product.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="Edit Product">
-                      <i className="ri-edit-box-line text-lg" />
-                    </Link>
-                    <DeleteButton 
-                      id={product.id} 
-                      entityName="Product" 
-                      deleteAction={deleteProduct} 
-                    />
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link href={`/admin/products/${product.id}`} className="flex items-center justify-center text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 rounded-none" title="Edit Product">
+                        <i className="ri-edit-box-line text-lg" />
+                      </Link>
+                      <DeleteButton 
+                        id={product.id} 
+                        entityName="Product" 
+                        deleteAction={deleteProduct} 
+                      />
+                    </div>
                   </td>
                 </tr>
               ))

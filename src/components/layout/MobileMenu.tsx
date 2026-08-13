@@ -2,23 +2,22 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useCartDrawer } from "@/context/CartContext";
-
-interface Collection {
-  id: string;
-  name: string;
-  slug: string;
-}
+import { useWishlistDrawer } from "@/context/WishlistContext";
+import type { NavLink } from "@/lib/navigation";
 
 interface MobileMenuProps {
-  collections: Collection[];
+  links: NavLink[];
   isLoggedIn: boolean;
   cartCount: number;
+  wishlistCount?: number;
 }
 
-export default function MobileMenu({ collections, isLoggedIn, cartCount }: MobileMenuProps) {
+export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount = 0 }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { openCart } = useCartDrawer();
+  const { openWishlist } = useWishlistDrawer();
 
   // Close on outside click
   useEffect(() => {
@@ -85,16 +84,54 @@ export default function MobileMenu({ collections, isLoggedIn, cartCount }: Mobil
           >
             All Products
           </Link>
-          {collections.map((c) => (
-            <Link
-              key={c.id}
-              href={`/collections/${c.slug}`}
-              onClick={() => setIsOpen(false)}
-              className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 border-b border-[#B6925B]/10 transition-colors"
-            >
-              {c.name}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const isOpenSection = openSection === link.label;
+            return (
+              <div key={link.label} className="border-b border-[#B6925B]/10">
+                <div className="flex items-center justify-between">
+                  <Link
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                  <button
+                    onClick={() => setOpenSection(isOpenSection ? null : link.label)}
+                    aria-expanded={isOpenSection}
+                    className="p-2 text-[#B6925B] hover:text-[#4A3B2C] transition-colors flex items-center justify-center"
+                  >
+                    <i className={`ri-${isOpenSection ? "subtract" : "add"}-line text-base leading-none`} />
+                  </button>
+                </div>
+                <div
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    isOpenSection ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="pl-3 pb-3 flex flex-col gap-1 border-l border-[#B6925B]/20 ml-1">
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsOpen(false)}
+                      className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] py-2 transition-colors"
+                    >
+                      View All {link.label}
+                    </Link>
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.label}
+                        href={child.href}
+                        onClick={() => setIsOpen(false)}
+                        className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-2 transition-colors"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
 
           {/* Account links */}
           <p className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mt-4 mb-1">
@@ -125,14 +162,16 @@ export default function MobileMenu({ collections, isLoggedIn, cartCount }: Mobil
             </div>
             Cart{cartCount > 0 && ` (${cartCount})`}
           </button>
-          <Link
-            href="/wishlist"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 transition-colors"
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              openWishlist();
+            }}
+            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 transition-colors w-full text-left"
           >
             <i className="ri-heart-line text-[#B6925B] text-base leading-none" />
-            Wishlist
-          </Link>
+            Wishlist{wishlistCount > 0 && ` (${wishlistCount})`}
+          </button>
         </nav>
       </div>
 

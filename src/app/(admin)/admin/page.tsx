@@ -2,7 +2,9 @@ import { prisma } from "@/lib/prisma";
 import DashboardWidgets from "@/components/admin/DashboardWidgets";
 import { Prisma } from "@/generated/prisma";
 
-type OrderAggregate = Awaited<ReturnType<typeof prisma.order.aggregate>>;
+type OrderAggregate = {
+  _sum: { totalAmount: number | null; refundedAmount: number | null } | null;
+};
 type RecentOrder = Prisma.OrderGetPayload<{
   include: { user: { select: { name: true; email: true } } };
 }>;
@@ -10,6 +12,8 @@ type LowStockProduct = Prisma.ProductGetPayload<{
   select: { id: true; name: true; stockQuantity: true; slug: true; images: true };
 }>;
 type TopSoldItem = { productId: string; _sum: { quantity: number | null } | null };
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const sevenDaysAgo = new Date();
@@ -29,17 +33,20 @@ export default async function AdminDashboard() {
   try {
     const results = await Promise.all([
       prisma.order.count(),
-      prisma.order.aggregate({ _sum: { totalAmount: true } }),
-      prisma.product.count(),
+      prisma.order.aggregate({
+        where: { status: { not: "CANCELLED" } },
+        _sum: { totalAmount: true, refundedAmount: true },
+      }),
+      prisma.product.count({ where: { deletedAt: null } }),
       prisma.user.count({ where: { role: "CUSTOMER" } }),
-      prisma.product.count({ where: { stockQuantity: { lt: 5 } } }),
+      prisma.product.count({ where: { deletedAt: null, stockQuantity: { lt: 5 } } }),
       prisma.order.findMany({ 
         take: 5, 
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { name: true, email: true } } }
       }),
       prisma.product.findMany({
-        where: { stockQuantity: { lt: 5 } },
+        where: { deletedAt: null, stockQuantity: { lt: 5 } },
         take: 5,
         orderBy: { stockQuantity: 'asc' },
         select: { id: true, name: true, stockQuantity: true, slug: true, images: true }
@@ -88,7 +95,9 @@ export default async function AdminDashboard() {
     // Silent fail to empty state
   }
 
-  const totalRevenue = revenueData._sum?.totalAmount ?? 0;
+  const grossRevenue = revenueData._sum?.totalAmount ?? 0;
+  const totalRefunded = revenueData._sum?.refundedAmount ?? 0;
+  const totalRevenue = grossRevenue - totalRefunded;
 
   const stats = [
     {
