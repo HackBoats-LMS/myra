@@ -2,12 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import AddToCartButton from "@/components/storefront/AddToCartButton";
+import ShareProductButton from "@/components/storefront/ShareProductButton";
 import ImageGallery from "@/components/storefront/ImageGallery";
 import ProductCard from "@/components/storefront/ProductCard";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import StarRating from "@/components/storefront/StarRating";
 import ReviewSection from "@/components/storefront/ReviewSection";
+import PincodeChecker from "@/components/storefront/PincodeChecker";
 import { getCachedReviews, getCachedRelatedProducts } from "@/lib/cache";
 
 export const revalidate = 3600; // 1 hour ISR
@@ -44,38 +44,16 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
   if (!product) notFound();
 
-  const session = await getServerSession(authOptions);
-  const isLoggedIn = !!session?.user?.id;
-  const currentUserId = session?.user?.id || null;
-
-  // Parallel fetch: reviews, related products, and user purchase status
-  const [reviews, related, purchase] = await Promise.all([
+  // Parallel fetch: reviews and related products
+  const [reviews, related] = await Promise.all([
     getCachedReviews(product.id),
     getCachedRelatedProducts(product.id, product.collectionId),
-    currentUserId
-      ? prisma.orderItem.findFirst({
-          where: {
-            productId: product.id,
-            order: {
-              userId: currentUserId,
-              status: { not: "CANCELLED" }
-            }
-          }
-        })
-      : Promise.resolve(null),
   ]);
 
   const reviewCount = reviews.length;
   const averageRating = reviewCount > 0 
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : 0;
-
-  // Find logged-in user's review if any
-  const userReview = currentUserId 
-    ? reviews.find(r => r.userId === currentUserId) || null
-    : null;
-
-  const hasPurchased = !!purchase;
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -155,6 +133,13 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           {/* Image Gallery */}
           <ImageGallery images={product.images} alt={product.name} />
 
+          {product.videoUrl && (
+            <div className="mt-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mb-2">Product Video</p>
+              <VideoEmbed url={product.videoUrl} />
+            </div>
+          )}
+
           {/* Product Info */}
           <div className="flex flex-col pt-2 md:pt-4 lg:sticky lg:top-8 lg:self-start">
             
@@ -162,8 +147,24 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
               {product.name}
             </h1>
 
+            {product.productType && (
+              <div className="mb-4">
+                <span className="inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-widest bg-[#FAFAFA] border border-[#B6925B]/30 text-[#B6925B]">
+                  {product.productType}
+                </span>
+              </div>
+            )}
+
             {/* Price Block */}
-            <div className="flex items-end gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4">
+              {product.originalPrice != null && product.originalPrice > product.price && (
+                <>
+                  <span className="text-lg text-gray-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-green-700 bg-green-50 border border-green-200 px-2 py-1">
+                    {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% off
+                  </span>
+                </>
+              )}
               <span className="text-2xl font-bold text-[#4A3B2C]">₹{product.price.toLocaleString('en-IN')}</span>
             </div>
 
@@ -180,11 +181,32 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
               variants={product.variants} 
             />
 
+            <div className="mt-4">
+              <ShareProductButton name={product.name} />
+            </div>
+
+            <div className="mt-6 border-t border-[#B6925B]/20 pt-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Delivery Pincode</p>
+              <PincodeChecker />
+            </div>
+
             {/* Product Specifications */}
             <div className="mt-8 space-y-2.5 border-t border-[#B6925B]/20 pt-6">
               <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
+                <span className="font-bold text-[#4A3B2C]">Product Code:</span>
+                <span className="text-gray-600">{product.code || "—"}</span>
+              </div>
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Product Type:</span>
-                <span className="text-gray-600">Anarkali Suit Set (3 Piece)</span>
+                <span className="text-gray-600">{product.productType || "—"}</span>
+              </div>
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
+                <span className="font-bold text-[#4A3B2C]">Material:</span>
+                <span className="text-gray-600">{product.material || "—"}</span>
+              </div>
+              <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
+                <span className="font-bold text-[#4A3B2C]">Weight:</span>
+                <span className="text-gray-600">{product.weight || "—"}</span>
               </div>
               <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Fabric:</span>
@@ -219,13 +241,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             </span>
           </div>
 
-          <ReviewSection 
-            productId={product.id} 
-            reviews={reviews} 
-            isLoggedIn={isLoggedIn} 
-            userReview={userReview}
-            hasPurchased={hasPurchased} 
-          />
+          <ReviewSection reviews={reviews} />
         </section>
 
         {/* Similar Products */}
@@ -245,5 +261,31 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         )}
       </div>
     </>
+  );
+}
+
+function VideoEmbed({ url }: { url: string }) {
+  const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
+
+  if (youtubeMatch) {
+    return (
+      <div className="relative aspect-video overflow-hidden border border-[#B6925B]/20 bg-black">
+        <iframe
+          src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
+          className="absolute inset-0 w-full h-full"
+          title="Product video"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  return (
+    <video controls className="w-full aspect-video border border-[#B6925B]/20 bg-black object-contain">
+      <source src={url} />
+      Your browser does not support the video tag.
+    </video>
   );
 }

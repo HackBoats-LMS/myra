@@ -92,9 +92,9 @@ export const getCachedBestSellers = createCachedQuery(
   ["products", "best-sellers"],
   async (take: number = 4) => {
     return prisma.product.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, bestSeller: true },
       take,
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
       include: { 
         collection: true,
         reviews: { select: { rating: true } }
@@ -138,7 +138,7 @@ export const getCachedReviews = createCachedQuery(
   ["reviews", "product"],
   async (productId: string) => {
     return prisma.review.findMany({
-      where: { productId },
+      where: { productId, isApproved: true },
       include: {
         user: { select: { name: true, email: true } }
       },

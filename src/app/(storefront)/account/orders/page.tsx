@@ -21,15 +21,25 @@ export const metadata: Metadata = {
   title: "My Orders | Myra Shopping Mall",
 };
 
-export default async function OrdersPage() {
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.id) {
     redirect("/login");
   }
 
+  const resolvedSearchParams = await searchParams;
+  const filter = resolvedSearchParams.status;
+
+  const VALID_STATUSES = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"];
+  const statusFilter = filter && VALID_STATUSES.includes(filter) ? filter : undefined;
+
   const orders = await prisma.order.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, ...(statusFilter ? { status: statusFilter as never } : {}) },
     orderBy: { createdAt: "desc" },
     include: {
       orderItems: {
@@ -40,7 +50,7 @@ export default async function OrdersPage() {
 
   return (
     <div className="w-full bg-[#FAFAFA] min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-16">
         <div className="mb-8">
           <Link href="/account" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors gap-1 mb-6">
             <i className="ri-arrow-left-line text-sm" />
@@ -48,6 +58,24 @@ export default async function OrdersPage() {
           </Link>
           <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">My Orders</h1>
           <p className="text-sm text-gray-500 mt-2 uppercase tracking-widest">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 mb-8">
+          <Link
+            href="/account/orders"
+            className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-colors rounded-none ${!statusFilter ? "bg-[#B6925B] text-white border-[#B6925B]" : "bg-white text-[#4A3B2C] border-[#B6925B]/30 hover:bg-[#FAFAFA]"}`}
+          >
+            All
+          </Link>
+          {VALID_STATUSES.map((s) => (
+            <Link
+              key={s}
+              href={`/account/orders?status=${s}`}
+              className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-colors rounded-none ${statusFilter === s ? "bg-[#B6925B] text-white border-[#B6925B]" : "bg-white text-[#4A3B2C] border-[#B6925B]/30 hover:bg-[#FAFAFA]"}`}
+            >
+              {s.replace(/_/g, " ")}
+            </Link>
+          ))}
         </div>
 
         {orders.length === 0 ? (
@@ -77,7 +105,7 @@ export default async function OrdersPage() {
                     <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold">Status</p>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-widest mt-1.5
                       ${order.status === "DELIVERED" ? "bg-[#FAFAFA] text-green-700 border border-[#B6925B]/20" :
-                        order.status === "SHIPPED" ? "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30" :
+                        order.status === "SHIPPED" || order.status === "READY_TO_SHIP" || order.status === "OUT_FOR_DELIVERY" ? "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30" :
                         order.status === "CANCELLED" ? "bg-red-50 text-red-700 border border-red-200" :
                         "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30"}`}>
                       {order.status}

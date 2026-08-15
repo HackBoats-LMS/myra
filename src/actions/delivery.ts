@@ -1,8 +1,6 @@
 "use server";
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 import { verifyDeliveryAgent } from "@/lib/auth-utils";
-import { logAudit } from "@/lib/audit";
 
 export async function getDeliveryOrders() {
   await verifyDeliveryAgent();
@@ -10,7 +8,7 @@ export async function getDeliveryOrders() {
   return await prisma.order.findMany({
     where: {
       status: {
-        in: ["SHIPPED", "DELIVERED", "CANCELLED"]
+        in: ["SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"]
       }
     },
     include: {
@@ -35,21 +33,4 @@ export async function getDeliveryOrders() {
     },
     orderBy: { updatedAt: "desc" }
   });
-}
-
-export async function updateDeliveryStatusAction(orderId: string, status: "DELIVERED" | "CANCELLED" | "SHIPPED") {
-  await verifyDeliveryAgent();
-
-  await prisma.order.update({
-    where: { id: orderId },
-    data: { status }
-  });
-
-  await logAudit("order.deliveryStatusUpdate", "Order", orderId, { status });
-
-  revalidatePath("/delivery");
-  revalidatePath("/account");
-  revalidatePath(`/account/orders/${orderId}`);
-  revalidatePath("/admin/orders");
-  revalidatePath(`/admin/orders/${orderId}`);
 }

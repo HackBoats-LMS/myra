@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/storefront/ProductCard";
 import Pagination from "@/components/storefront/Pagination";
-import FilterControls from "@/components/storefront/FilterControls";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
 
@@ -26,7 +25,7 @@ export default async function SearchPage({
 
   if (!query) {
     return (
-      <div className="max-w-7xl mx-auto px-8 py-24 min-h-screen text-center">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-24 min-h-screen text-center">
         <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide mb-4">Search Our Catalog</h1>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">Enter a search term in the search bar above to browse products.</p>
       </div>
@@ -98,7 +97,7 @@ export default async function SearchPage({
 
   return (
     <div className="w-full bg-[#FAFAFA] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">
         {/* Page Header */}
         <div className="flex flex-col items-center justify-center text-center mb-10 space-y-4">
           <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">
@@ -110,11 +109,8 @@ export default async function SearchPage({
           </p>
         </div>
 
-        {/* Filter and Sorting Controls */}
-        <FilterControls />
-
         {productsWithReviews.length === 0 ? (
-          <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-20 border border-dashed border-[#B6925B]/20 bg-white mt-8">
+          <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-10 md:py-10 md:py-20 border border-dashed border-[#B6925B]/20 bg-white mt-8">
             No products match your search query and filters. Try another term or loosen filters!
           </div>
         ) : (

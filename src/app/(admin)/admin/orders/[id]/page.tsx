@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
+import ShipOrderButton from "@/components/admin/ShipOrderButton";
 import PrintInvoiceButton from "@/components/admin/PrintInvoiceButton";
 import OrderInternalNotes from "@/components/admin/OrderInternalNotes";
 import RefundButton from "@/components/admin/RefundButton";
@@ -14,6 +14,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
     where: { id },
     include: {
       user: true,
+      address: true,
       orderItems: {
         include: {
           product: true
@@ -66,8 +67,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
         <div className="flex items-center gap-3">
           <PrintInvoiceButton />
           <div className="flex items-center gap-3 print:hidden">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">Update Status:</span>
-            <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
+            <ShipOrderButton orderId={order.id} shipped={Boolean(order.shipmentId)} />
           </div>
         </div>
       </div>
@@ -84,7 +84,57 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
               <p><span className="text-[#4A3B2C]">Phone:</span> {order.user.phoneNumber || 'N/A'}</p>
             </div>
           </div>
-          
+
+          <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-2">
+            <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-2">
+              {order.giftName ? "Delivery Recipient (Gift)" : "Delivery Address"}
+            </h3>
+            <div className="text-[10px] uppercase tracking-widest font-bold text-gray-500 space-y-1 pt-1">
+              {order.giftName ? (
+                <>
+                  <p><span className="text-[#4A3B2C]">Name:</span> {order.giftName}</p>
+                  <p><span className="text-[#4A3B2C]">Phone:</span> {order.giftPhone || 'N/A'}</p>
+                  <p className="normal-case tracking-normal text-[11px]">
+                    {order.giftAddressLine1}, {order.giftCity}, {order.giftState} {order.giftPostalCode}, {order.giftCountry}
+                  </p>
+                </>
+              ) : order.address ? (
+                <>
+                  {order.address.phone && (
+                    <p><span className="text-[#4A3B2C]">Phone:</span> {order.address.phone}</p>
+                  )}
+                  <p className="normal-case tracking-normal text-[11px]">
+                    {order.address.addressLine1}, {order.address.city}, {order.address.state} {order.address.postalCode},{" "}
+                    {order.address.country}
+                  </p>
+                </>
+              ) : (
+                <p>No delivery address on file.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-2">
+            <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-2">Shipment / Tracking</h3>
+            <div className="text-[10px] uppercase tracking-widest font-bold text-gray-500 space-y-1 pt-1">
+              <p><span className="text-[#4A3B2C]">Status:</span> {order.status.replace(/_/g, " ")}</p>
+              <p><span className="text-[#4A3B2C]">AWB:</span> {order.awbNumber || "Not assigned"}</p>
+              {order.courierName && <p><span className="text-[#4A3B2C]">Courier:</span> {order.courierName}</p>}
+              {order.trackingUrl && (
+                <p>
+                  <a
+                    href={order.trackingUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 normal-case tracking-normal text-[11px]"
+                  >
+                    Track on Shiprocket <i className="ri-external-link-line text-xs align-middle" />
+                  </a>
+                </p>
+              )}
+            </div>
+          </div>
+
           <OrderInternalNotes orderId={order.id} initialNotes={order.internalNotes} />
         </div>
 

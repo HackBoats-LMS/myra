@@ -1,7 +1,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-const categories = [
+interface CategoryButtonImageStyle {
+  left: string;
+  width: string;
+  height: string;
+  zIndex: number;
+}
+
+interface CategoryButton {
+  name: string;
+  href: string;
+  images: string[];
+  imgStyles?: CategoryButtonImageStyle[];
+}
+
+const categories: CategoryButton[] = [
   { 
     name: 'BRIBAL', 
     href: '/collections/bridal', 
@@ -37,8 +51,8 @@ const categories = [
 ];
 
 export default function CategoryButtons() {
-  const renderImageGroup = (cat: any) => (
-    <div className="absolute bottom-0 left-[15px] w-[145px] h-[140px] pointer-events-none z-10 origin-bottom">
+  const renderImageGroup = (cat: CategoryButton) => (
+    <div className="absolute bottom-0 left-[2px] md:left-[15px] w-[45px] md:w-[145px] h-[48px] md:h-[140px] pointer-events-none z-10 origin-bottom">
       {cat.images.length === 1 ? (
         <div className="relative w-full h-full">
           <Image
@@ -46,7 +60,7 @@ export default function CategoryButtons() {
             alt={cat.name}
             fill
             quality={100}
-            sizes="(max-width: 768px) 180px, 180px"
+            sizes="(max-width: 768px) 50px, 180px"
             className="object-contain object-bottom drop-shadow-lg"
           />
         </div>
@@ -63,7 +77,7 @@ export default function CategoryButtons() {
                 alt={cat.name}
                 fill
                 quality={100}
-                sizes="(max-width: 768px) 140px, 140px"
+                sizes="(max-width: 768px) 50px, 140px"
                 className="object-contain object-bottom drop-shadow-lg"
               />
             </div>
@@ -74,26 +88,26 @@ export default function CategoryButtons() {
   );
 
   return (
-    <section className="w-full max-w-[1400px] mx-auto px-4 md:px-8 py-20 bg-transparent">
-      <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-24">
+    <section className="w-full max-w-[1400px] mx-auto px-2 md:px-8 py-10 md:py-20 bg-transparent overflow-x-hidden">
+      <div className="flex justify-between items-center md:flex-wrap md:justify-center md:gap-x-12 gap-x-1 gap-y-24">
         {categories.map((cat) => (
           <Link
             href={cat.href}
             key={cat.name}
-            className="relative group block w-[280px] h-[85px] cursor-pointer"
+            className="relative group block w-[84px] md:w-[280px] h-[30px] md:h-[85px] cursor-pointer shrink-0"
           >
             <div className="absolute inset-0 bg-[#E8D3BA] rounded-full overflow-hidden shadow-sm">
               {renderImageGroup(cat)}
             </div>
             
             {/* Top Layer: Allows overflow on top for heads to pop out, but clips the bottom curvature */}
-            <div className="absolute inset-0 pointer-events-none" style={{ clipPath: 'inset(-100px -100px 43px -100px)' }}>
+            <div className="absolute inset-0 pointer-events-none [clip-path:inset(-100px_-100px_16px_-100px)] md:[clip-path:inset(-100px_-100px_43px_-100px)]">
               {renderImageGroup(cat)}
             </div>
 
             {/* Text Container */}
-            <div className="absolute inset-y-0 right-0 left-[150px] flex items-center justify-center pointer-events-none z-20">
-              <span className="font-serif font-bold tracking-widest text-[#1a1a1a] text-lg md:text-xl">
+            <div className="absolute inset-y-0 right-0 left-[48px] md:left-[150px] flex items-center justify-center pointer-events-none z-20">
+              <span className="font-serif font-bold tracking-widest text-[#1a1a1a] text-[8px] md:text-xl">
                 {cat.name}
               </span>
             </div>

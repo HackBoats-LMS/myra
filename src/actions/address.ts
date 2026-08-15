@@ -12,10 +12,14 @@ export async function createAddress(formData: FormData) {
   const state = String(formData.get("state") || "").trim().substring(0, 100);
   const postalCode = String(formData.get("postalCode") || "").trim().substring(0, 20);
   const country = String(formData.get("country") || "").trim().substring(0, 100);
+  const phone = String(formData.get("phone") || "").trim() || null;
   const isDefaultInput = formData.get("isDefault") === "true";
 
   if (!label || !addressLine1 || !city || !state || !postalCode || !country) {
     throw new Error("All address fields are required.");
+  }
+  if (phone && !/^\d{10}$/.test(phone)) {
+    throw new Error("Phone number must be exactly 10 digits.");
   }
 
   await prisma.$transaction(async (tx) => {
@@ -42,6 +46,7 @@ export async function createAddress(formData: FormData) {
         state,
         postalCode,
         country,
+        phone,
         isDefault: shouldBeDefault
       }
     });
@@ -59,10 +64,14 @@ export async function updateAddress(addressId: string, formData: FormData) {
   const state = String(formData.get("state") || "").trim().substring(0, 100);
   const postalCode = String(formData.get("postalCode") || "").trim().substring(0, 20);
   const country = String(formData.get("country") || "").trim().substring(0, 100);
+  const phone = String(formData.get("phone") || "").trim() || null;
   const isDefaultInput = formData.get("isDefault") === "true";
 
   if (!label || !addressLine1 || !city || !state || !postalCode || !country) {
     throw new Error("All address fields are required.");
+  }
+  if (phone && !/^\d{10}$/.test(phone)) {
+    throw new Error("Phone number must be exactly 10 digits.");
   }
 
   // Verify ownership
@@ -89,6 +98,7 @@ export async function updateAddress(addressId: string, formData: FormData) {
         state,
         postalCode,
         country,
+        phone,
         isDefault: address.isDefault ? true : isDefaultInput // Once default, remains default
       }
     });

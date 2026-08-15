@@ -133,6 +133,9 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Name</label>
                 <input required defaultValue={initialData?.name} name="name" type="text" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
+                {initialData?.code && (
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mt-1">Product Code: {initialData.code}</p>
+                )}
               </div>
             </div>
 
@@ -143,22 +146,51 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Base Price (₹)</label>
-                <input required defaultValue={initialData?.price} name="price" type="number" step="0.01" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Base Price (Original ₹)</label>
+                <input defaultValue={initialData?.originalPrice ?? ""} name="originalPrice" type="number" step="0.01" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. 1999" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Discount Price (Selling ₹)</label>
+                <input required defaultValue={initialData?.price} name="price" type="number" step="0.01" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. 1499" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Default Stock</label>
                 <input required defaultValue={initialData?.stockQuantity} name="stockQuantity" type="number" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Collection</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Category</label>
                 <select name="collectionId" defaultValue={initialData?.collectionId || ""} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]">
-                  <option value="">None</option>
+                  <option value="">Select category</option>
                   {collections.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Product Type</label>
+                <select name="productType" defaultValue={initialData?.productType || ""} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]">
+                  <option value="">Select type</option>
+                  {["Saree", "Dress", "Top", "Bottom", "Kurti / Ethnic", "Kids Wear"].map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Material / Fabric</label>
+                <input defaultValue={initialData?.material || ""} name="material" type="text" placeholder="e.g. Pure Silk" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Weight</label>
+                <input defaultValue={initialData?.weight || ""} name="weight" type="text" placeholder="e.g. 500 g" className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Video URL (optional)</label>
+              <input defaultValue={initialData?.videoUrl || ""} name="videoUrl" type="url" placeholder="https://..." className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
             </div>
             
             {/* Variants Section */}

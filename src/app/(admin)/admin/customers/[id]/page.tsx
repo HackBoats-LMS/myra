@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import DisableUserButton from "@/components/admin/DisableUserButton";
+import UserRoleSelect from "@/components/admin/UserRoleSelect";
+import WorkerCapabilitiesSelect from "@/components/admin/WorkerCapabilitiesSelect";
+import EditCustomerForm from "@/components/admin/EditCustomerForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -43,6 +46,12 @@ export default async function AdminCustomerDetailsPage({ params }: { params: Pro
             })}</p>
           </div>
           <div className="flex items-center gap-3">
+            <EditCustomerForm
+              userId={customer.id}
+              name={customer.name}
+              email={customer.email}
+              phoneNumber={customer.phoneNumber}
+            />
             <DisableUserButton userId={customer.id} initialDisabled={customer.isDisabled} />
           </div>
         </div>
@@ -64,9 +73,19 @@ export default async function AdminCustomerDetailsPage({ params }: { params: Pro
                 <span className="text-[#4A3B2C] font-semibold font-mono">{customer.phoneNumber || "No phone number"}</span>
               </div>
               <div>
-                <span className="block text-[8px] text-gray-400 uppercase tracking-widest font-bold">Role</span>
-                <span className="text-[#4A3B2C] font-bold uppercase tracking-widest text-xs">{customer.role}</span>
+                <span className="block text-[8px] text-gray-400 uppercase tracking-widest font-bold mb-1">Role</span>
+                <UserRoleSelect userId={customer.id} currentRole={customer.role} />
               </div>
+              {customer.role === "MULTI_WORKER" && (
+                <div className="md:col-span-3">
+                  <span className="block text-[8px] text-gray-400 uppercase tracking-widest font-bold mb-1">Worker Capabilities</span>
+                  <WorkerCapabilitiesSelect
+                    userId={customer.id}
+                    canInventory={customer.canManageInventory}
+                    canShipping={customer.canManageShipping}
+                  />
+                </div>
+              )}
               <div>
                 <span className="block text-[8px] text-gray-400 uppercase tracking-widest font-bold mb-1">Status</span>
                 <span className={`inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-widest

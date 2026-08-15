@@ -68,7 +68,9 @@ export default function DashboardWidgets({
 
   const statusColors: Record<OrderStatus, string> = {
     PENDING: "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30",
+    READY_TO_SHIP: "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30",
     SHIPPED: "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30",
+    OUT_FOR_DELIVERY: "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30",
     DELIVERED: "bg-[#FAFAFA] text-green-700 border border-[#B6925B]/20",
     CANCELLED: "bg-red-50 text-red-700 border border-red-200",
   };

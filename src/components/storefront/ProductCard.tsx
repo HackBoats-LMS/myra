@@ -9,9 +9,11 @@ interface ProductCardProps {
     slug: string;
     name: string;
     price: number;
+    originalPrice?: number | null;
     images: string[];
     reviewCount?: number;
     averageRating?: number;
+    stockQuantity?: number;
   };
   isWishlisted?: boolean;
 }
@@ -28,6 +30,11 @@ export default function ProductCard({
       <WishlistButton productId={product.id} isWishlisted={isWishlisted} />
       
       <div className="relative aspect-[3/4] w-full bg-[#FAFAFA] overflow-hidden rounded-none border border-[#B6925B]/10">
+        {product.stockQuantity === 0 && (
+          <span className="absolute top-2 left-2 z-10 bg-[#4A3B2C]/90 text-white px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-none">
+            Out of Stock
+          </span>
+        )}
         {product.images?.[0] ? (
           <Image 
             src={product.images[0]} 
@@ -53,8 +60,14 @@ export default function ProductCard({
 
         <div className="flex items-center gap-2 pt-1">
           <span className="text-sm font-bold text-[#1a1a1a]">&#8377;{product.price.toLocaleString('en-IN')}</span>
-          <span className="text-xs text-gray-400 line-through">&#8377;{(product.price * 1.25).toLocaleString('en-IN')}</span>
-          <span className="text-[10px] font-bold text-[#4CAF50] bg-green-50 px-1 py-0.5 rounded-sm">20% OFF</span>
+          {product.originalPrice != null && product.originalPrice > product.price && (
+            <>
+              <span className="text-xs text-gray-400 line-through">&#8377;{product.originalPrice.toLocaleString('en-IN')}</span>
+              <span className="text-[10px] font-bold text-[#4CAF50] bg-green-50 px-1 py-0.5 rounded-sm">
+                {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+              </span>
+            </>
+          )}
         </div>
       </div>
     </Link>

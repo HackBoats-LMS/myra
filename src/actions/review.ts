@@ -2,7 +2,9 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache";
+import { logAudit } from "@/lib/audit";
 
 export async function submitReview(productId: string, rating: number, comment: string) {
   const session = await getServerSession(authOptions);
@@ -57,6 +59,7 @@ export async function submitReview(productId: string, rating: number, comment: s
   }
 
   revalidatePath(`/products/${product.slug}`);
+  updateTag(CACHE_TAGS.reviews(productId));
 }
 
 export async function deleteReview(reviewId: string) {
@@ -68,7 +71,7 @@ export async function deleteReview(reviewId: string) {
 
   const review = await prisma.review.findUnique({
     where: { id: reviewId },
-    include: { product: true }
+    include: { product: true, user: true }
   });
 
   if (!review) {
@@ -79,6 +82,65 @@ export async function deleteReview(reviewId: string) {
     where: { id: reviewId }
   });
 
+  await logAudit("review.delete", `Deleted review by ${review.user?.name || "user"}`);
+
   revalidatePath(`/admin/reviews`);
   revalidatePath(`/products/${review.product.slug}`);
+}
+
+export async function setReviewApproved(reviewId: string, isApproved: boolean) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const review = await prisma.review.findUnique({
+    where: { id: reviewId },
+    include: { product: true, user: true },
+  });
+  if (!review) {
+    throw new Error("Review not found.");
+  }
+
+  await prisma.review.update({
+    where: { id: reviewId },
+    data: { isApproved },
+  });
+
+  await logAudit("review.update", `${isApproved ? "Approved" : "Hidden"} review by ${review.user?.name || "user"}`);
+
+  revalidatePath(`/admin/reviews`);
+  revalidatePath(`/products/${review.product.slug}`);
+  updateTag(CACHE_TAGS.reviews(review.productId));
+}
+
+export async function replyToReview(reviewId: string, reply: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user?.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const cleanReply = (reply || "").trim();
+  if (!cleanReply) {
+    throw new Error("Reply cannot be empty.");
+  }
+
+  const review = await prisma.review.findUnique({
+    where: { id: reviewId },
+    include: { product: true, user: true },
+  });
+  if (!review) {
+    throw new Error("Review not found.");
+  }
+
+  await prisma.review.update({
+    where: { id: reviewId },
+    data: { reply: cleanReply, repliedAt: new Date() },
+  });
+
+  await logAudit("review.reply", `Replied to review by ${review.user?.name || "user"}`);
+
+  revalidatePath(`/admin/reviews`);
+  revalidatePath(`/products/${review.product.slug}`);
+  updateTag(CACHE_TAGS.reviews(review.productId));
 }

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { deleteReview } from "@/actions/review";
+import { deleteReview, setReviewApproved, replyToReview } from "@/actions/review";
 import { useToast } from "@/components/ui/Toast";
 import type { Prisma } from "@/generated/prisma";
 
@@ -15,13 +15,15 @@ type ReviewWithRelations = Prisma.ReviewGetPayload<{
 
 export default function AdminReviewList({ initialReviews }: { initialReviews: ReviewWithRelations[] }) {
   const [reviews, setReviews] = useState(initialReviews);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [replyingId, setReplyingId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
   const toast = useToast();
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this review?")) return;
-    
-    setDeletingId(id);
+
+    setBusyId(id);
     try {
       await deleteReview(id);
       setReviews(reviews.filter((r) => r.id !== id));
@@ -29,7 +31,39 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete review");
     } finally {
-      setDeletingId(null);
+      setBusyId(null);
+    }
+  };
+
+  const handleToggle = async (review: ReviewWithRelations) => {
+    setBusyId(review.id);
+    try {
+      await setReviewApproved(review.id, !review.isApproved);
+      setReviews(reviews.map((r) => (r.id === review.id ? { ...r, isApproved: !r.isApproved } : r)));
+      toast.success(review.isApproved ? "Review hidden from storefront." : "Review approved and published.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update review.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReply = async (id: string) => {
+    if (!replyText.trim()) {
+      toast.error("Reply cannot be empty.");
+      return;
+    }
+    setBusyId(id);
+    try {
+      await replyToReview(id, replyText);
+      setReviews(reviews.map((r) => (r.id === id ? { ...r, reply: replyText.trim() } : r)));
+      setReplyingId(null);
+      setReplyText("");
+      toast.success("Reply saved.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save reply.");
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -50,7 +84,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
             <th className="p-4 border-r border-[#B6925B]/10">Rating</th>
             <th className="p-4 border-r border-[#B6925B]/10">Comment</th>
             <th className="p-4 border-r border-[#B6925B]/10">Customer</th>
-            <th className="p-4 border-r border-[#B6925B]/10">Date</th>
+            <th className="p-4 border-r border-[#B6925B]/10">Status</th>
             <th className="p-4 text-right">Actions</th>
           </tr>
         </thead>
@@ -76,24 +110,76 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
                 </div>
               </td>
               <td className="p-4 max-w-xs border-r border-[#B6925B]/10">
-                <p className="truncate text-[#4A3B2C] text-xs">{review.comment || <span className="italic text-gray-400">No comment</span>}</p>
+                <p className="text-[#4A3B2C] text-xs">{review.comment || <span className="italic text-gray-400">No comment</span>}</p>
+                {review.reply ? (
+                  <div className="mt-2 pl-3 border-l-2 border-[#B6925B]/30 text-[11px] text-[#B6925B]">
+                    <span className="font-bold uppercase tracking-widest text-[9px]">Store reply:</span> {review.reply}
+                  </div>
+                ) : null}
+                {replyingId === review.id ? (
+                  <div className="mt-2 space-y-2">
+                    <textarea
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      rows={2}
+                      placeholder="Write a reply..."
+                      className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 rounded-none focus:outline-none focus:border-[#B6925B]"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleReply(review.id)}
+                        disabled={busyId === review.id}
+                        className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-[#4A3B2C] text-white disabled:opacity-50 rounded-none"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => { setReplyingId(null); setReplyText(""); }}
+                        className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-[#B6925B]/30 text-[#4A3B2C] rounded-none"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  !review.reply && (
+                    <button
+                      onClick={() => { setReplyingId(review.id); setReplyText(""); }}
+                      className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C]"
+                    >
+                      Reply
+                    </button>
+                  )
+                )}
               </td>
               <td className="p-4 border-r border-[#B6925B]/10">
                 <div className="text-[#4A3B2C] font-bold text-xs uppercase tracking-widest">{review.user.name || "Customer"}</div>
                 <div className="text-xs font-medium text-gray-500 mt-0.5">{review.user.email || "No email"}</div>
               </td>
-              <td className="p-4 text-[#B6925B] text-[10px] font-bold uppercase tracking-widest whitespace-nowrap border-r border-[#B6925B]/10">
-                {new Date(review.createdAt).toLocaleDateString()}
+              <td className="p-4 border-r border-[#B6925B]/10">
+                <span className={`inline-flex items-center px-2 py-1 text-[9px] font-bold uppercase tracking-widest border rounded-none ${review.isApproved ? "bg-green-50 text-green-700 border-green-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>
+                  {review.isApproved ? "Approved" : "Hidden"}
+                </span>
               </td>
-              <td className="p-4 text-right">
-                <button
-                  onClick={() => handleDelete(review.id)}
-                  disabled={deletingId === review.id}
-                  className="text-red-700 hover:text-red-900 p-2 hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center rounded-none"
-                  title="Delete Review"
-                >
-                  <i className="ri-delete-bin-line text-lg" />
-                </button>
+              <td className="p-4 text-right whitespace-nowrap">
+                <div className="flex items-center justify-end gap-1">
+                  <button
+                    onClick={() => handleToggle(review)}
+                    disabled={busyId === review.id}
+                    className={review.isApproved ? "text-amber-600 hover:text-amber-800 p-2 hover:bg-amber-50 transition-colors disabled:opacity-50 rounded-none" : "text-green-600 hover:text-green-800 p-2 hover:bg-green-50 transition-colors disabled:opacity-50 rounded-none"}
+                    title={review.isApproved ? "Hide from storefront" : "Approve / publish"}
+                  >
+                    <i className={review.isApproved ? "ri-eye-off-line text-lg" : "ri-eye-line text-lg"} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(review.id)}
+                    disabled={busyId === review.id}
+                    className="text-red-700 hover:text-red-900 p-2 hover:bg-red-50 transition-colors disabled:opacity-50 rounded-none"
+                    title="Delete Review"
+                  >
+                    <i className="ri-delete-bin-line text-lg" />
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

@@ -6,7 +6,6 @@ import { prisma } from "./prisma";
 import { cookies } from "next/headers";
 import { mergeGuestCart } from "@/actions/cart";
 import { mergeGuestWishlist } from "@/actions/wishlist";
-import { rateLimit } from "@/lib/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -23,11 +22,6 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.phoneOrEmail || !credentials?.password) {
           throw new Error("Missing credentials");
-        }
-
-        const limitResult = rateLimit(`login_${credentials.phoneOrEmail}`, 5, 5 * 60 * 1000); // 5 attempts per 5 minutes
-        if (!limitResult.success) {
-          throw new Error(`Too many login attempts. Please try again in ${Math.ceil((limitResult.reset - Date.now()) / 1000)} seconds.`);
         }
 
         const user = await prisma.user.findFirst({
@@ -69,6 +63,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          canManageInventory: user.canManageInventory,
+          canManageShipping: user.canManageShipping,
         };
       },
     }),
@@ -138,6 +134,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.canManageInventory = user.canManageInventory;
+        token.canManageShipping = user.canManageShipping;
       }
       return token;
     },
@@ -145,6 +143,8 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.canManageInventory = token.canManageInventory;
+        session.user.canManageShipping = token.canManageShipping;
       }
       return session;
     },

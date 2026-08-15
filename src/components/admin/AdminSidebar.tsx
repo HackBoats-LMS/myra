@@ -11,14 +11,45 @@ export default function AdminSidebar({ onNavigate }: SidebarProps) {
     await signOut({ callbackUrl: "/admin/login" });
   };
 
-  const links = [
-    { href: "/admin", icon: "ri-dashboard-3-line", label: "Dashboard" },
-    { href: "/admin/products", icon: "ri-archive-line", label: "Products" },
-    { href: "/admin/collections", icon: "ri-folder-open-line", label: "Collections" },
-    { href: "/admin/orders", icon: "ri-shopping-cart-2-line", label: "Orders" },
-    { href: "/admin/customers", icon: "ri-group-line", label: "Customers" },
-    { href: "/admin/reviews", icon: "ri-star-line", label: "Reviews" },
-    { href: "/admin/audit-logs", icon: "ri-file-list-3-line", label: "Audit Logs" },
+  const sections: { title: string; links: { href: string; icon: string; label: string }[] }[] = [
+    {
+      title: "Overview",
+      links: [
+        { href: "/admin", icon: "ri-dashboard-3-line", label: "Dashboard" },
+      ],
+    },
+    {
+      title: "Catalog",
+      links: [
+        { href: "/admin/products", icon: "ri-archive-line", label: "Products" },
+        { href: "/admin/collections", icon: "ri-folder-open-line", label: "Collections" },
+        { href: "/admin/reviews", icon: "ri-star-line", label: "Reviews" },
+      ],
+    },
+    {
+      title: "Sales & Fulfilment",
+      links: [
+        { href: "/admin/orders", icon: "ri-shopping-cart-2-line", label: "Orders" },
+        { href: "/admin/returns", icon: "ri-refund-2-line", label: "Returns & Replacements" },
+        { href: "/admin/coupons", icon: "ri-ticket-2-line", label: "Coupons & Offers" },
+        { href: "/admin/shipping", icon: "ri-truck-line", label: "Shipping" },
+        { href: "/admin/pincodes", icon: "ri-map-pin-line", label: "Pincodes" },
+      ],
+    },
+    {
+      title: "Customers",
+      links: [
+        { href: "/admin/customers", icon: "ri-group-line", label: "Customers" },
+        { href: "/admin/workers", icon: "ri-tools-line", label: "Workers" },
+      ],
+    },
+    {
+      title: "System",
+      links: [
+        { href: "/admin/audit-logs", icon: "ri-file-list-3-line", label: "Audit Logs" },
+        { href: "/admin/settings", icon: "ri-settings-3-line", label: "Settings" },
+      ],
+    },
   ];
 
   return (
@@ -39,17 +70,24 @@ export default function AdminSidebar({ onNavigate }: SidebarProps) {
         )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 mt-4">
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            onClick={onNavigate}
-            className="flex items-center gap-3 px-4 py-3 rounded-none hover:bg-[#B6925B] transition-colors text-xs font-bold uppercase tracking-widest"
-          >
-            <i className={`${link.icon} text-sm opacity-70`} />
-            {link.label}
-          </Link>
+      <nav className="flex-1 p-4 mt-4 overflow-y-auto">
+        {sections.map((section) => (
+          <div key={section.title} className="mb-5">
+            <p className="px-4 mb-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#B6925B]">{section.title}</p>
+            <div className="space-y-0.5">
+              {section.links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={onNavigate}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-none hover:bg-[#B6925B] transition-colors text-xs font-bold uppercase tracking-widest"
+                >
+                  <i className={`${link.icon} text-sm opacity-70`} />
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 

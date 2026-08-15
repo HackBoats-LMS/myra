@@ -86,14 +86,14 @@ export default async function WishlistPage() {
 
   return (
     <div className="w-full bg-[#FAFAFA] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4">
           <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">Wishlist</h1>
           <p className="text-sm text-gray-500 uppercase tracking-widest">{itemsWithReviews.length} items saved</p>
         </div>
 
         {itemsWithReviews.length === 0 ? (
-          <div className="text-center text-[#B6925B] text-[10px] uppercase font-bold tracking-widest py-20 bg-white border border-[#B6925B]/20 rounded-none">You haven&rsquo;t saved any items yet.</div>
+          <div className="text-center text-[#B6925B] text-[10px] uppercase font-bold tracking-widest py-10 md:py-10 md:py-20 bg-white border border-[#B6925B]/20 rounded-none">You haven&rsquo;t saved any items yet.</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {itemsWithReviews.map((item) => (

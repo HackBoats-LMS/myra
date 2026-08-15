@@ -176,3 +176,88 @@ export async function sendOrderDeliveredEmail(email: string, orderId: string) {
     react: OrderDeliveredEmail({ orderId })
   });
 }
+
+interface AdminOrderSummary {
+  orderId: string;
+  customerName: string;
+  totalAmount: number;
+  paymentMethod?: string;
+  itemCount: number;
+}
+
+export async function sendAdminNewOrderEmail(order: AdminOrderSummary) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) return;
+
+  const shortOrderId = order.orderId.split('-')[0].toUpperCase();
+  const rows = [
+    `Order ID: #${shortOrderId}`,
+    `Customer: ${order.customerName}`,
+    `Items: ${order.itemCount}`,
+    `Payment: ${order.paymentMethod || "N/A"}`,
+    `Total: ₹${order.totalAmount.toFixed(2)}`,
+  ].join("\n");
+
+  if (!resend) {
+    console.log("📧 [NEW ORDER] Notifying admin:");
+    console.log(rows);
+    return;
+  }
+
+  await retry(() =>
+    resend.emails.send({
+      from: "Myra Shopping Mall <noreply@myra.com>",
+      to: adminEmail,
+      subject: `New order #${shortOrderId} — Myra Shopping Mall`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #B6925B; padding: 24px; border-top: 4px solid #4A3B2C;">
+          <h2 style="font-family: serif; color: #4A3B2C;">New Order Received</h2>
+          <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/orders/${order.orderId}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">View Order</a>
+          </div>
+        </div>
+      `,
+    })
+  );
+}
+
+export async function sendAdminNewReturnEmail(input: {
+  requestId: string;
+  itemName: string;
+  reason: string;
+  customerName: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!adminEmail) return;
+
+  const rows = [
+    `Request ID: #${input.requestId.split('-')[0].toUpperCase()}`,
+    `Customer: ${input.customerName}`,
+    `Item: ${input.itemName}`,
+    `Reason: ${input.reason}`,
+  ].join("\n");
+
+  if (!resend) {
+    console.log("📧 [NEW RETURN] Notifying admin:");
+    console.log(rows);
+    return;
+  }
+
+  await retry(() =>
+    resend.emails.send({
+      from: "Myra Shopping Mall <noreply@myra.com>",
+      to: adminEmail,
+      subject: `New return/replacement request — Myra Shopping Mall`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #B6925B; padding: 24px; border-top: 4px solid #4A3B2C;">
+          <h2 style="font-family: serif; color: #4A3B2C;">New Return Request</h2>
+          <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/returns/${input.requestId}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Review Request</a>
+          </div>
+        </div>
+      `,
+    })
+  );
+}

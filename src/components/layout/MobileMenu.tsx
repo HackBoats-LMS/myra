@@ -61,18 +61,6 @@ export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount
         `}
       >
         <nav className="flex flex-col px-6 py-4 gap-1">
-          {/* Mobile Search Bar */}
-          <form action="/search" method="GET" onSubmit={() => setIsOpen(false)} className="relative w-full mb-4 mt-2">
-            <input
-              name="q"
-              placeholder="Search products..."
-              className="w-full bg-[#FAFAFA] border border-[#B6925B]/20 rounded-none py-2 pl-4 pr-10 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:border-[#B6925B] focus:bg-white focus:ring-1 focus:ring-[#B6925B] transition-all text-[#4A3B2C] placeholder-gray-400"
-            />
-            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B6925B] hover:text-[#4A3B2C] flex items-center justify-center">
-              <i className="ri-search-line text-base leading-none" />
-            </button>
-          </form>
-
           {/* Shop links */}
           <p className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mt-2 mb-1">
             Shop

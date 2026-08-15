@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import NewsletterForm from "./NewsletterForm";
 
 export default function Footer() {
   return (
@@ -41,6 +42,11 @@ export default function Footer() {
           <span>123 Elite Avenue, Chennai</span>
           <span>+91 98765 43210 &middot; support@myrashoppingmall.com</span>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto mt-6 flex flex-col md:flex-row items-center justify-between gap-3 pt-4 border-t border-white/20">
+        <span className="text-[11px] text-white/80 uppercase tracking-widest font-bold">Subscribe to our newsletter</span>
+        <NewsletterForm />
       </div>
 
       <div className="max-w-7xl mx-auto mt-4 pt-3 border-t border-white/20 text-center text-[11px] text-white/60">

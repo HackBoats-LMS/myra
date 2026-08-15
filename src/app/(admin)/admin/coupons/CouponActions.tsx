@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { toggleCouponStatus, deleteCoupon } from "@/actions/coupons";
 import { useToast } from "@/components/ui/Toast";
 
@@ -35,6 +36,13 @@ export default function CouponActions({ couponId, initialStatus }: { couponId: s
 
   return (
     <div className="flex items-center justify-end gap-2">
+      <Link
+        href={`/admin/coupons/${couponId}`}
+        className="p-1.5 text-[#B6925B] hover:text-[#4A3B2C] hover:bg-[#FAFAFA] border border-[#B6925B]/20 rounded-none transition-colors flex items-center justify-center"
+        title="Edit"
+      >
+        <i className="ri-pencil-line text-lg" />
+      </Link>
       <button
         onClick={handleToggle}
         disabled={loading}

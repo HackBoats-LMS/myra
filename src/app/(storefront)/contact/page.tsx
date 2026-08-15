@@ -1,25 +1,30 @@
 "use client";
 import { useState } from "react";
+import { sendContactMessage } from "@/actions/contact";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ContactPage() {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
+    const formData = new FormData(e.currentTarget);
+    try {
+      await sendContactMessage(formData);
       toast.success("Thank you! Your message has been sent successfully.");
-      (e.target as HTMLFormElement).reset();
-    }, 1200);
+      e.currentTarget.reset();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send your message.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="w-full bg-[#FAFAFA] min-h-screen rounded-none">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-16 md:py-24 space-y-12">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-10 md:py-24 space-y-12">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-serif text-[#4A3B2C] tracking-wide">Contact Us</h1>
           <p className="text-sm text-gray-500 uppercase tracking-widest">Get in touch with our team</p>
@@ -61,6 +66,7 @@ export default function ContactPage() {
                   <input
                     required
                     type="text"
+                    name="name"
                     className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
                   />
                 </div>
@@ -71,6 +77,7 @@ export default function ContactPage() {
                   <input
                     required
                     type="email"
+                    name="email"
                     className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
                   />
                 </div>
@@ -83,6 +90,7 @@ export default function ContactPage() {
                 <input
                   required
                   type="text"
+                  name="subject"
                   className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
                 />
               </div>
@@ -93,6 +101,7 @@ export default function ContactPage() {
                 </label>
                 <textarea
                   required
+                  name="message"
                   rows={5}
                   className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
                 />

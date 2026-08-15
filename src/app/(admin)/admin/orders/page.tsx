@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import OrderStatusSelect from '@/components/admin/OrderStatusSelect';
 import { Prisma } from '@/generated/prisma';
 
 export default async function AdminOrdersPage() {
@@ -71,7 +70,9 @@ export default async function AdminOrdersPage() {
                   <td className="px-6 py-4 border-r border-[#B6925B]/10 text-xs font-bold uppercase tracking-widest text-[#B6925B]">{order._count.orderItems} items</td>
                   <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">Rs. {order.totalAmount.toFixed(2)}</td>
                   <td className="px-6 py-4 border-r border-[#B6925B]/10">
-                    <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
+                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest bg-[#FAFAFA] border border-[#B6925B]/30 text-[#4A3B2C]">
+                      {order.status}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link href={`/admin/orders/${order.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="View Details">

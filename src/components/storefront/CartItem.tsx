@@ -16,6 +16,7 @@ interface CartLineItem {
     price: number;
     name: string;
     images: string[];
+    stockQuantity?: number;
     collection?: { name: string | null } | null;
   };
   variant?: { priceOffset: number; size?: string | null; color?: string | null } | null;
@@ -25,7 +26,11 @@ export default function CartItem({ item }: { item: CartLineItem }) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const maxQty = item.product.stockQuantity ?? Infinity;
+  const atStockLimit = item.quantity >= maxQty;
+
   const handleUpdate = async (newQty: number) => {
+    if (newQty > maxQty) return;
     setIsUpdating(true);
     await updateCartQuantity(item.product.id, newQty, item.variantId ?? undefined);
     router.refresh();
@@ -68,16 +73,21 @@ export default function CartItem({ item }: { item: CartLineItem }) {
         
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center w-24 h-8 border border-[#B6925B]/30 rounded-none bg-white">
-            <button onClick={() => handleUpdate(item.quantity - 1)} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center">
+            <button onClick={() => handleUpdate(item.quantity - 1)} disabled={isUpdating || item.quantity <= 1} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
               <i className="ri-subtract-line text-sm" />
             </button>
             <div className="w-1/3 h-full flex items-center justify-center text-xs font-bold text-[#4A3B2C]">
               {item.quantity}
             </div>
-            <button onClick={() => handleUpdate(item.quantity + 1)} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center">
+            <button onClick={() => handleUpdate(item.quantity + 1)} disabled={isUpdating || atStockLimit} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
               <i className="ri-add-line text-sm" />
             </button>
           </div>
+          {atStockLimit && item.product.stockQuantity != null && (
+            <span className="text-[9px] font-bold uppercase tracking-widest text-red-600">
+              Only {item.product.stockQuantity} in stock
+            </span>
+          )}
           
           <button onClick={() => handleUpdate(0)} className="p-2 text-gray-400 hover:text-red-600 transition-colors">
             <i className="ri-delete-bin-line text-base" />

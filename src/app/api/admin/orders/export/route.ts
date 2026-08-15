@@ -26,7 +26,11 @@ export async function GET() {
     // Helper to sanitize CSV fields
     const escapeCsv = (str: string | null | undefined) => {
       if (!str) return '""';
-      const clean = str.replace(/"/g, '""');
+      // Neutralize spreadsheet formula injection (fields beginning with =, +, -, @).
+      const clean = str.replace(/["]/g, '""');
+      if (/^[=+\-@]/.test(clean.trim())) {
+        return `"'${clean}"`;
+      }
       return `"${clean}"`;
     };
 

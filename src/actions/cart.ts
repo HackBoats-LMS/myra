@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { updateTag } from "next/cache";
 import { sendEmail } from "@/lib/email";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
+import { isPincodeDeliverable } from "@/actions/pincode";
 import { 
   upsertCartItem, 
   updateCartItemQuantity, 
@@ -15,9 +16,93 @@ import {
   parseGuestCartCookie 
 } from "@/lib/cart-service";
 import { CACHE_TAGS } from "@/lib/cache";
-import { rateLimit } from "@/lib/rate-limit";
+import type { Coupon, Prisma, $Enums } from "@/generated/prisma";
 
 const LOW_STOCK_THRESHOLD = 5;
+
+// Types eligible for automatic application at checkout (best value wins).
+const AUTO_APPLY_TYPES: $Enums.CouponType[] = ["FIRST_ORDER", "SINGLE_USE", "FESTIVAL"];
+
+async function loadShippingConfig(tx: Prisma.TransactionClient) {
+  const config = await tx.shippingConfig.findUnique({ where: { id: "global" } });
+  return config || { flatRate: 49, freeShippingThreshold: 999 };
+}
+
+async function isCouponAllowedForUser(
+  tx: Prisma.TransactionClient,
+  coupon: Coupon,
+  userId: string
+): Promise<boolean> {
+  if (coupon.type === "FIRST_ORDER") {
+    const orderCount = await tx.order.count({ where: { userId } });
+    if (orderCount > 0) return false;
+  }
+  if (coupon.maxUsesPerUser) {
+    const usage = await tx.couponUsage.count({
+      where: { couponId: coupon.id, userId },
+    });
+    if (usage >= coupon.maxUsesPerUser) return false;
+  }
+  return true;
+}
+
+function estimateDiscount(coupon: Coupon, subtotal: number): number {
+  if (coupon.discountType === "FIXED") return coupon.discountValue;
+  return subtotal * (coupon.discountValue / 100);
+}
+
+/**
+ * Resolve the coupon to apply. If a code is provided it is validated for the
+ * user (including per-user rules). Otherwise the best automatically-eligible
+ * offer (FIRST_ORDER / SINGLE_USE / FESTIVAL) is selected.
+ */
+async function resolveCheckoutCoupon(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  couponCode: string | undefined,
+  subtotal: number
+): Promise<{ coupon: Coupon | null }> {
+  if (couponCode) {
+    const code = couponCode.trim().toUpperCase();
+    const dbCoupon = await tx.coupon.findUnique({ where: { code } });
+    if (!dbCoupon || !dbCoupon.isActive) {
+      throw new Error("Invalid or inactive coupon code.");
+    }
+    if (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date()) {
+      throw new Error("This coupon code has expired.");
+    }
+    if (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses) {
+      throw new Error("This coupon code has reached its usage limit.");
+    }
+    if (subtotal < dbCoupon.minOrderAmount) {
+      throw new Error(`This coupon requires a minimum purchase of ₹${dbCoupon.minOrderAmount.toFixed(2)}.`);
+    }
+    if (!(await isCouponAllowedForUser(tx, dbCoupon, userId))) {
+      throw new Error("This coupon is not applicable to your account.");
+    }
+    return { coupon: dbCoupon };
+  }
+
+  // Auto-apply the best eligible offer.
+  const candidates = await tx.coupon.findMany({
+    where: { type: { in: AUTO_APPLY_TYPES }, isActive: true },
+  });
+
+  let best: Coupon | null = null;
+  let bestValue = -1;
+  for (const c of candidates) {
+    if (c.expiresAt && new Date(c.expiresAt) < new Date()) continue;
+    if (c.maxUses && c.timesUsed >= c.maxUses) continue;
+    if (subtotal < c.minOrderAmount) continue;
+    if (!(await isCouponAllowedForUser(tx, c, userId))) continue;
+    const value = estimateDiscount(c, subtotal);
+    if (value > bestValue) {
+      bestValue = value;
+      best = c;
+    }
+  }
+  return { coupon: best };
+}
 
 export async function addToCart(productId: string, quantity: number = 1, variantId?: string) {
   const session = await getServerSession(authOptions);
@@ -83,23 +168,86 @@ export async function updateCartQuantity(productId: string, quantity: number, va
   revalidatePath("/");
 }
 
-export async function checkoutCart(addressId: string, couponCode?: string) {
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user?.id) {
-    throw new Error("You must be logged in to checkout.");
+export interface GiftDetails {
+  name: string;
+  phone: string;
+  addressLine1: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+// Read-only estimate of the final checkout total. Used to create the Razorpay
+// order before any DB order / stock side effects happen.
+export async function estimateCheckoutTotal(opts: {
+  userId: string;
+  couponCode?: string;
+}): Promise<{ finalAmount: number }> {
+  const cart = await prisma.cart.findUnique({
+    where: { userId: opts.userId },
+    include: { items: { include: { product: true, variant: true } } },
+  });
+
+  if (!cart || cart.items.length === 0) {
+    throw new Error("Your cart is empty.");
   }
 
-  const userId = session.user.id;
-  const userEmail = session.user.email;
-  const userName = session.user.name || "Customer";
+  const items = cart.items.map((item) => ({
+    price: item.product.price + (item.variant?.priceOffset || 0),
+    quantity: item.quantity,
+  }));
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shippingConfig = await loadShippingConfig(prisma as Prisma.TransactionClient);
+  const { coupon: dbCoupon } = await resolveCheckoutCoupon(prisma as Prisma.TransactionClient, opts.userId, opts.couponCode, subtotal);
+  const { calculateOrderTotal } = await import("@/lib/pricing");
+  const pricing = calculateOrderTotal(
+    items,
+    dbCoupon
+      ? {
+          type: dbCoupon.type,
+          isActive: dbCoupon.isActive,
+          expiresAt: dbCoupon.expiresAt,
+          maxUses: dbCoupon.maxUses,
+          timesUsed: dbCoupon.timesUsed,
+          minOrderAmount: dbCoupon.minOrderAmount,
+          discountType: dbCoupon.discountType,
+          discountValue: dbCoupon.discountValue,
+        }
+      : null,
+    shippingConfig
+  );
+  return { finalAmount: pricing.finalAmount };
+}
 
-  const limitResult = rateLimit(`checkout_${userId}`, 5, 60 * 1000);
-  if (!limitResult.success) {
-    throw new Error("Too many checkout attempts. Please try again in a minute.");
-  }
-  
-  const result = await prisma.$transaction(async (tx) => {
+interface CreateOrderOptions {
+  userId: string;
+  addressId: string;
+  gift?: GiftDetails;
+  couponCode?: string;
+  phone?: string;
+  paymentMethod: $Enums.PaymentMethod;
+  paymentStatus?: $Enums.PaymentStatus;
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
+  razorpaySignature?: string | null;
+}
+
+export interface CheckoutResult {
+  orderId: string;
+  finalAmount: number;
+  subtotal: number;
+  discountAmount: number;
+  shippingAmount: number;
+  appliedCouponCode: string | null;
+  items: { productId: string; name: string; quantity: number; price: number }[];
+}
+
+export async function createOrderTransaction(opts: CreateOrderOptions): Promise<CheckoutResult> {
+  const { userId, addressId, gift, couponCode, phone } = opts;
+  const giftMode = Boolean(gift && Object.values(gift).some((v) => v !== undefined));
+
+  return prisma.$transaction(async (tx) => {
     const cart = await tx.cart.findUnique({
       where: { userId },
       include: { items: { include: { product: true, variant: true } } }
@@ -109,11 +257,62 @@ export async function checkoutCart(addressId: string, couponCode?: string) {
       throw new Error("Your cart is empty.");
     }
 
-    const address = await tx.address.findUnique({
-      where: { id: addressId }
-    });
-    if (!address || address.userId !== userId) {
-      throw new Error("Invalid delivery address selected.");
+    let orderAddressId: string | null = addressId;
+
+    if (giftMode && gift) {
+      const g = gift;
+      if (!g.name?.trim()) throw new Error("Please provide the recipient's name.");
+      if (!/^\d{10}$/.test((g.phone || "").trim())) {
+        throw new Error("Please provide a valid 10-digit recipient phone number.");
+      }
+      if (!g.addressLine1?.trim() || !g.city?.trim() || !g.state?.trim() || !g.postalCode?.trim() || !g.country?.trim()) {
+        throw new Error("Please provide the complete recipient delivery address.");
+      }
+      orderAddressId = null;
+    } else {
+      const address = await tx.address.findUnique({
+        where: { id: addressId }
+      });
+      if (!address || address.userId !== userId) {
+        throw new Error("Invalid delivery address selected.");
+      }
+
+      const contactPhone = (phone || "").trim();
+      if (!/^\d{10}$/.test(contactPhone)) {
+        throw new Error("A valid 10-digit phone number is required to place your order.");
+      }
+
+      const checkoutUser = await tx.user.findUnique({
+        where: { id: userId },
+        select: { phoneNumber: true, phoneNumber2: true },
+      });
+      const hasAnyAccountPhone = Boolean(checkoutUser?.phoneNumber || checkoutUser?.phoneNumber2);
+
+      if (!hasAnyAccountPhone) {
+        const phoneConflict = await tx.user.findFirst({
+          where: {
+            OR: [{ phoneNumber: contactPhone }, { phoneNumber2: contactPhone }],
+            id: { not: userId },
+          },
+        });
+        if (phoneConflict) {
+          throw new Error("This phone number is already linked to another account.");
+        }
+        await tx.user.update({
+          where: { id: userId },
+          data: { phoneNumber: contactPhone },
+        });
+      }
+
+      await tx.address.update({
+        where: { id: address.id },
+        data: { phone: contactPhone },
+      });
+    }
+
+    const deliveryPincode = giftMode && gift ? gift.postalCode?.trim() : orderAddressId ? (await tx.address.findUnique({ where: { id: orderAddressId } }))?.postalCode : null;
+    if (deliveryPincode && !(await isPincodeDeliverable(deliveryPincode))) {
+      throw new Error(`Delivery is not available to pincode ${deliveryPincode}. Please use a different address or contact support.`);
     }
 
     const items = cart.items.map(item => ({
@@ -121,59 +320,72 @@ export async function checkoutCart(addressId: string, couponCode?: string) {
       quantity: item.quantity
     }));
 
-    let discountAmount = 0;
-    let finalAmount = 0;
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const shippingConfig = await loadShippingConfig(tx);
+    const { coupon: dbCoupon } = await resolveCheckoutCoupon(tx, userId, couponCode, subtotal);
 
-    if (couponCode) {
-      const code = couponCode.trim().toUpperCase();
-      const dbCoupon = await tx.coupon.findUnique({ where: { code } });
-      
-      if (!dbCoupon || !dbCoupon.isActive) {
-        throw new Error("Invalid or inactive coupon code.");
-      }
-      
-      if (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date()) {
-        throw new Error("This coupon code has expired.");
-      }
+    const { calculateOrderTotal } = await import("@/lib/pricing");
+    const pricing = calculateOrderTotal(
+      items,
+      dbCoupon
+        ? {
+            type: dbCoupon.type,
+            isActive: dbCoupon.isActive,
+            expiresAt: dbCoupon.expiresAt,
+            maxUses: dbCoupon.maxUses,
+            timesUsed: dbCoupon.timesUsed,
+            minOrderAmount: dbCoupon.minOrderAmount,
+            discountType: dbCoupon.discountType,
+            discountValue: dbCoupon.discountValue,
+          }
+        : null,
+      shippingConfig
+    );
 
-      if (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses) {
-        throw new Error("This coupon code has reached its usage limit.");
-      }
+    const discountAmount = pricing.discountAmount;
+    const shippingAmount = pricing.shippingAmount;
+    const finalAmount = pricing.finalAmount;
+    const appliedCouponCode = dbCoupon ? dbCoupon.code : null;
 
-      const { calculateOrderTotal } = await import("@/lib/pricing");
-      const pricing = calculateOrderTotal(items, {
-        isActive: dbCoupon.isActive,
-        expiresAt: dbCoupon.expiresAt,
-        maxUses: dbCoupon.maxUses,
-        timesUsed: dbCoupon.timesUsed,
-        minOrderAmount: dbCoupon.minOrderAmount,
-        discountType: dbCoupon.discountType,
-        discountValue: dbCoupon.discountValue
-      });
-      
-      discountAmount = pricing.discountAmount;
-      finalAmount = pricing.finalAmount;
-
+    if (dbCoupon) {
       await tx.coupon.update({
         where: { id: dbCoupon.id },
         data: { timesUsed: { increment: 1 } }
       });
-    } else {
-      const { calculateOrderTotal } = await import("@/lib/pricing");
-      const pricing = calculateOrderTotal(items);
-      discountAmount = pricing.discountAmount;
-      finalAmount = pricing.finalAmount;
+      if (dbCoupon.maxUsesPerUser || dbCoupon.type === "FIRST_ORDER" || dbCoupon.type === "SINGLE_USE") {
+        await tx.couponUsage.upsert({
+          where: { couponId_userId: { couponId: dbCoupon.id, userId } },
+          create: { couponId: dbCoupon.id, userId },
+          update: {},
+        });
+      }
     }
 
     const order = await tx.order.create({
       data: {
         userId,
-        addressId,
+        addressId: orderAddressId,
         totalAmount: finalAmount,
-        couponCode: couponCode || null,
+        couponCode: appliedCouponCode,
         discountAmount,
+        shippingAmount,
         status: 'PENDING',
-        paymentMethod: 'CASH_ON_DELIVERY',
+        paymentMethod: opts.paymentMethod,
+        paymentStatus: opts.paymentStatus || 'UNPAID',
+        razorpayOrderId: opts.razorpayOrderId || null,
+        razorpayPaymentId: opts.razorpayPaymentId || null,
+        razorpaySignature: opts.razorpaySignature || null,
+        ...(giftMode && gift
+          ? {
+              giftName: gift.name.trim(),
+              giftPhone: gift.phone.trim(),
+              giftAddressLine1: gift.addressLine1.trim(),
+              giftCity: gift.city.trim(),
+              giftState: gift.state.trim(),
+              giftPostalCode: gift.postalCode.trim(),
+              giftCountry: gift.country.trim(),
+            }
+          : {}),
         orderItems: {
           create: cart.items.map(item => ({
             productId: item.productId,
@@ -212,6 +424,10 @@ export async function checkoutCart(addressId: string, couponCode?: string) {
     return {
       orderId: order.id,
       finalAmount,
+      subtotal,
+      discountAmount,
+      shippingAmount,
+      appliedCouponCode,
       items: cart.items.map(item => ({
         productId: item.productId,
         name: `${item.product.name}${item.variant ? ` (${item.variant.size}/${item.variant.color})` : ''}`,
@@ -219,6 +435,28 @@ export async function checkoutCart(addressId: string, couponCode?: string) {
         price: item.product.price + (item.variant?.priceOffset || 0)
       }))
     };
+  });
+}
+
+export async function checkoutCart(addressId: string, couponCode?: string, phone?: string, gift?: GiftDetails) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to checkout.");
+  }
+
+  const userId = session.user.id;
+  const userEmail = session.user.email;
+  const userName = session.user.name || "Customer";
+
+  const result = await createOrderTransaction({
+    userId,
+    addressId,
+    couponCode,
+    phone,
+    gift,
+    paymentMethod: 'CASH_ON_DELIVERY',
+    paymentStatus: 'UNPAID',
   });
 
   if (userEmail) {
@@ -232,6 +470,18 @@ export async function checkoutCart(addressId: string, couponCode?: string) {
         items: result.items
       })
     });
+  }
+
+  // Notify admin of the new order.
+  {
+    const { sendAdminNewOrderEmail } = await import("@/lib/email");
+    sendAdminNewOrderEmail({
+      orderId: result.orderId,
+      customerName: userName,
+      totalAmount: result.finalAmount,
+      paymentMethod: "Cash on Delivery",
+      itemCount: result.items.reduce((sum, i) => sum + i.quantity, 0),
+    }).catch(console.error);
   }
 
   // Alert admin if any ordered product dropped to low stock
@@ -319,9 +569,23 @@ export async function validateCouponAction(code: string, cartTotal: number) {
     throw new Error(`This coupon requires a minimum purchase of ₹${dbCoupon.minOrderAmount.toFixed(2)}.`);
   }
 
+  // Per-user rules require a logged-in user.
+  const session = await getServerSession(authOptions);
+  if (session?.user?.id) {
+    const allowed = await isCouponAllowedForUser(prisma, dbCoupon, session.user.id);
+    if (!allowed) {
+      throw new Error(
+        dbCoupon.type === "FIRST_ORDER"
+          ? "This offer is valid for first orders only."
+          : "You have already used this coupon."
+      );
+    }
+  }
+
   return {
     code: dbCoupon.code,
     type: dbCoupon.discountType,
+    couponType: dbCoupon.type,
     value: dbCoupon.discountValue
   };
 }

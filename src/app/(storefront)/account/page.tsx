@@ -65,7 +65,7 @@ export default async function AccountPage() {
 
   return (
     <div className="w-full bg-[#FAFAFA] min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-12 md:py-16">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-16">
         <div className="mb-12 text-center md:text-left">
           <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">My Account</h1>
           <p className="text-sm text-gray-500 mt-2 uppercase tracking-widest">Welcome back, {user.name || user.phoneNumber}</p>

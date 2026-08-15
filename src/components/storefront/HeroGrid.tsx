@@ -18,8 +18,8 @@ export default function HeroGrid() {
       </div>
 
       {/* Right Stacked Banners */}
-      {/* 40% width. Each image is 16:9 aspect ratio. Height = 40 * 0.5625 = 22.5% each. Total height = 45% */}
-      <div className="hidden lg:flex w-full lg:w-[40%] flex-col">
+      {/* 40% width on desktop, 100% on mobile. Each image is 16:9 aspect ratio. Height = 40 * 0.5625 = 22.5% each. Total height = 45% */}
+      <div className="flex w-full lg:w-[40%] flex-col">
         <div className="w-full relative cursor-pointer aspect-[16/9]">
           <Image
             src="/displaypics/landingpage2.png"
@@ -27,7 +27,7 @@ export default function HeroGrid() {
             fill
             priority
             quality={100}
-            sizes="40vw"
+            sizes="(max-width: 1024px) 100vw, 40vw"
             className="object-cover object-center"
           />
         </div>
@@ -38,7 +38,7 @@ export default function HeroGrid() {
             fill
             priority
             quality={100}
-            sizes="40vw"
+            sizes="(max-width: 1024px) 100vw, 40vw"
             className="object-cover object-center"
           />
         </div>

@@ -11,6 +11,7 @@ interface Address {
   state: string;
   postalCode: string;
   country: string;
+  phone?: string | null;
   isDefault: boolean;
 }
 
@@ -169,6 +170,22 @@ export default function AddressManager({ addresses }: AddressManagerProps) {
                 />
               </div>
 
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+                  Phone Number (10 digits)
+                </label>
+                <input
+                  name="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  defaultValue={editingAddress?.phone || ""}
+                  placeholder="e.g. 9876543210"
+                  className="w-full bg-white border border-[#B6925B]/20 rounded-none px-3 py-2 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] transition-all"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">Used as the contact number for this delivery address.</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
@@ -290,6 +307,9 @@ export default function AddressManager({ addresses }: AddressManagerProps) {
                   <div className="text-sm text-[#4A3B2C] space-y-1">
                     <p>{address.addressLine1}</p>
                     <p>{address.city}, {address.state} - {address.postalCode}</p>
+                    {address.phone && (
+                      <p className="font-mono text-[#B6925B]">{address.phone}</p>
+                    )}
                     <p className="uppercase tracking-widest text-[10px] text-gray-500 font-bold mt-2">{address.country}</p>
                   </div>
                 </div>

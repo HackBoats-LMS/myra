@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { checkoutCart, validateCouponAction } from "@/actions/cart";
+import { initiateRazorpayPayment, confirmRazorpayPayment } from "@/actions/payment";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
@@ -12,13 +13,29 @@ interface Address {
   state: string;
   postalCode: string;
   country: string;
+  phone?: string | null;
   isDefault: boolean;
 }
 
-export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { isLoggedIn: boolean; addresses: Address[]; subtotal: number }) {
+type RazorpayConstructor = new (options: Record<string, unknown>) => {
+  open: () => void;
+};
+
+interface RazorpayWindow {
+  Razorpay?: RazorpayConstructor;
+}
+
+export default function CheckoutButton({ isLoggedIn, addresses, subtotal, shipping, phones = [] }: {
+  isLoggedIn: boolean;
+  addresses: Address[];
+  subtotal: number;
+  shipping: { flatRate: number; freeShippingThreshold: number };
+  phones: string[];
+}) {
   const router = useRouter();
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "RAZORPAY">("COD");
   const [isAddressOpen, setIsAddressOpen] = useState(false);
   const addressRef = useRef<HTMLDivElement>(null);
   const [selectedAddressId, setSelectedAddressId] = useState<string>(
@@ -38,10 +55,34 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
 
   // Coupon States
-  const [couponInput, setCouponInput] = useState("");
+  const [selectedPhone, setSelectedPhone] = useState(phones[0] || "");
+  const [phoneError, setPhoneError] = useState("");
+  const [isGift, setIsGift] = useState(false);
+  const [gift, setGift] = useState({
+    name: "",
+    phone: "",
+    addressLine1: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "",
+  });
+  const [giftError, setGiftError] = useState("");
+  const [couponInput, setCouponInput] = useState(() => {
+    try {
+      return localStorage.getItem("myra_coupon") || "";
+    } catch {
+      return "";
+    }
+  });
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [appliedCouponType, setAppliedCouponType] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
+  // Shipping: free when subtotal meets threshold or a shipping coupon is applied.
+  const freeShipping = appliedCouponType === "SHIPPING" || subtotal >= shipping.freeShippingThreshold;
+  const shippingAmount = freeShipping ? 0 : shipping.flatRate;
 
   const handleApplyCoupon = async () => {
     const code = couponInput.trim().toUpperCase();
@@ -50,16 +91,24 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
     setIsValidatingCoupon(true);
     try {
       const result = await validateCouponAction(code, subtotal);
-      
+
       let calculatedDiscount = 0;
-      if (result.type === "FIXED") {
+      if (result.couponType === "SHIPPING") {
+        calculatedDiscount = 0; // discount handled via free shipping
+      } else if (result.type === "FIXED") {
         calculatedDiscount = result.value;
       } else {
         calculatedDiscount = subtotal * (result.value / 100);
       }
-      
+
       setDiscountAmount(calculatedDiscount);
+      setAppliedCouponType(result.couponType || null);
       setAppliedCoupon(result.code);
+      try {
+        localStorage.setItem("myra_coupon", result.code);
+      } catch {
+        /* ignore */
+      }
       toast.success(`Coupon ${result.code} applied successfully!`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Invalid coupon code.");
@@ -70,9 +119,75 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
+    setAppliedCouponType(null);
     setDiscountAmount(0);
     setCouponInput("");
+    try {
+      localStorage.removeItem("myra_coupon");
+    } catch {
+      /* ignore */
+    }
     toast.success("Coupon removed.");
+  };
+
+  const loadRazorpayScript = (): Promise<void> =>
+    new Promise((resolve) => {
+      if (typeof (window as RazorpayWindow).Razorpay !== "undefined") return resolve();
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve();
+      script.onerror = () => resolve();
+      document.body.appendChild(script);
+    });
+
+  const openRazorpayModal = async (options: {
+    keyId: string;
+    amount: number;
+    currency: string;
+    razorpayOrderId: string;
+    orderId: string;
+  }) => {
+    await loadRazorpayScript();
+    const Rzr = (window as RazorpayWindow).Razorpay;
+    if (!Rzr) {
+      setIsProcessing(false);
+      toast.error("Payment gateway failed to load. Please try again.");
+      return;
+    }
+
+    const rzp = new Rzr({
+      key: options.keyId,
+      amount: options.amount,
+      currency: options.currency,
+      name: "Myra",
+      description: `Order #${options.orderId.substring(0, 8)}`,
+      order_id: options.razorpayOrderId,
+      prefill: {
+        name: isGift ? gift.name : undefined,
+        email: undefined,
+        contact: isGift ? gift.phone : selectedPhone.trim(),
+      },
+      theme: { color: "#B6925B" },
+      handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+        try {
+          const { orderId } = await confirmRazorpayPayment({
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+          });
+          toast.success("Payment successful! Order placed.");
+          router.push(`/order-confirmation/${orderId}`);
+        } catch (error) {
+          setIsProcessing(false);
+          toast.error(error instanceof Error ? error.message : "Payment could not be confirmed.");
+        }
+      },
+      modal: {
+        ondismiss: () => setIsProcessing(false),
+      },
+    });
+
+    rzp.open();
   };
 
   const handleCheckout = async () => {
@@ -81,14 +196,71 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
       return;
     }
 
-    if (!selectedAddressId) {
+    if (!isGift && !selectedAddressId) {
       toast.error("Please select a delivery address.");
       return;
     }
 
+    let giftPayload;
+    if (isGift) {
+      const g = {
+        name: gift.name.trim(),
+        phone: gift.phone.trim(),
+        addressLine1: gift.addressLine1.trim(),
+        city: gift.city.trim(),
+        state: gift.state.trim(),
+        postalCode: gift.postalCode.trim(),
+        country: gift.country.trim(),
+      };
+      if (!/^\d{10}$/.test(g.phone)) {
+        setGiftError("Please enter a valid 10-digit recipient phone number.");
+        toast.error("A valid recipient phone number is required.");
+        return;
+      }
+      if (!g.name || !g.addressLine1 || !g.city || !g.state || !g.postalCode || !g.country) {
+        setGiftError("Please fill in all recipient details and address fields.");
+        toast.error("Please complete the recipient details and address.");
+        return;
+      }
+      setGiftError("");
+      giftPayload = g;
+    } else {
+      const phone = selectedPhone.trim();
+      if (!/^\d{10}$/.test(phone)) {
+        setPhoneError("Please enter a valid 10-digit phone number.");
+        toast.error("A valid phone number is required to place your order.");
+        return;
+      }
+      setPhoneError("");
+    }
+
     setIsProcessing(true);
     try {
-      const result = await checkoutCart(selectedAddressId, appliedCoupon || undefined);
+      const deliveryPhone = isGift ? undefined : selectedPhone.trim() || undefined;
+
+      if (paymentMethod === "RAZORPAY") {
+        const payment = await initiateRazorpayPayment({
+          addressId: isGift ? "" : selectedAddressId,
+          couponCode: appliedCoupon || undefined,
+          phone: deliveryPhone,
+          gift: giftPayload,
+        });
+        await openRazorpayModal({
+          keyId: payment.keyId,
+          amount: payment.amount,
+          currency: payment.currency,
+          razorpayOrderId: payment.razorpayOrderId,
+          orderId: payment.orderId,
+        });
+        return;
+      }
+
+      const result = await checkoutCart(
+        isGift ? "" : selectedAddressId,
+        appliedCoupon || undefined,
+        deliveryPhone,
+        giftPayload
+      );
       toast.success("Order placed successfully!");
       router.push(`/order-confirmation/${result.orderId}`);
     } catch (error) {
@@ -99,7 +271,7 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
 
   // Calculations
   const gstAmount = subtotal * 0.18; // 18% inclusive GST
-  const finalTotal = Math.max(subtotal - discountAmount, 0);
+  const finalTotal = Math.max(subtotal - discountAmount + shippingAmount, 0);
 
   const getDeliveryDateRange = () => {
     const today = new Date();
@@ -130,12 +302,22 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
         </div>
         <div className="flex justify-between">
           <span>Shipping</span>
-          <span className="uppercase tracking-widest text-[10px] font-bold text-green-700">Complimentary</span>
+          {shippingAmount === 0 ? (
+            <span className="uppercase tracking-widest text-[10px] font-bold text-green-700">Free</span>
+          ) : (
+            <span>Rs. {shippingAmount.toLocaleString('en-IN')}</span>
+          )}
         </div>
         {discountAmount > 0 && (
           <div className="flex justify-between text-green-700 font-medium">
             <span>Discount ({appliedCoupon})</span>
             <span>-Rs. {discountAmount.toLocaleString('en-IN')}</span>
+          </div>
+        )}
+        {appliedCouponType === "SHIPPING" && shippingAmount === 0 && (
+          <div className="flex justify-between text-green-700 font-medium">
+            <span>Free Shipping ({appliedCoupon})</span>
+            <span>-Rs. {shipping.flatRate.toLocaleString('en-IN')}</span>
           </div>
         )}
       </div>
@@ -182,8 +364,147 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
         </div>
       )}
       
-      {/* Shipping Address Selector */}
+      {/* Ship to someone else / Gift toggle */}
       {isLoggedIn && (
+        <div className="pt-4 border-t border-[#B6925B]/20">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isGift}
+              onChange={(e) => {
+                setIsGift(e.target.checked);
+                setGiftError("");
+              }}
+              className="w-4 h-4 accent-[#B6925B]"
+            />
+            <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
+              This is a gift — ship to someone else
+            </span>
+          </label>
+        </div>
+      )}
+
+      {isLoggedIn && isGift && (
+        <div className="pt-4 border-t border-[#B6925B]/20 text-left space-y-3">
+          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
+            Recipient Details *
+          </label>
+          <input
+            type="text"
+            placeholder="Recipient name"
+            value={gift.name}
+            onChange={(e) => setGift({ ...gift, name: e.target.value })}
+            className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
+          />
+          <input
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
+            placeholder="Recipient phone (10 digits)"
+            value={gift.phone}
+            onChange={(e) => setGift({ ...gift, phone: e.target.value.replace(/\D/g, "") })}
+            className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
+          />
+          <input
+            type="text"
+            placeholder="Address line"
+            value={gift.addressLine1}
+            onChange={(e) => setGift({ ...gift, addressLine1: e.target.value })}
+            className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              placeholder="City"
+              value={gift.city}
+              onChange={(e) => setGift({ ...gift, city: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
+            />
+            <input
+              type="text"
+              placeholder="State"
+              value={gift.state}
+              onChange={(e) => setGift({ ...gift, state: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
+            />
+            <input
+              type="text"
+              placeholder="Postal code"
+              value={gift.postalCode}
+              onChange={(e) => setGift({ ...gift, postalCode: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
+            />
+            <input
+              type="text"
+              placeholder="Country"
+              value={gift.country}
+              onChange={(e) => setGift({ ...gift, country: e.target.value })}
+              className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
+            />
+          </div>
+          <p className="text-[10px] text-gray-500 leading-relaxed">
+            Your order will be delivered to this recipient&rsquo;s address. This address is not saved to your account.
+          </p>
+          {giftError && <p className="text-[11px] text-red-600 font-medium">{giftError}</p>}
+        </div>
+      )}
+
+      {/* Delivery contact number */}
+      {isLoggedIn && !isGift && (
+        <div className="pt-4 border-t border-[#B6925B]/20 text-left space-y-3">
+          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
+            Delivery Contact *
+          </label>
+          {phones.length > 0 ? (
+            <div className="space-y-2">
+              {phones.map((ph, idx) => (
+                <label
+                  key={ph}
+                  className={`flex items-center justify-between gap-3 px-3 py-2 border cursor-pointer transition-colors rounded-none ${
+                    selectedPhone === ph ? "border-[#B6925B] bg-[#B6925B]/5" : "border-[#B6925B]/30 bg-white"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="delivery-phone"
+                      value={ph}
+                      checked={selectedPhone === ph}
+                      onChange={() => {
+                        setSelectedPhone(ph);
+                        setPhoneError("");
+                      }}
+                      className="accent-[#B6925B]"
+                    />
+                    <span className="text-xs font-mono text-[#4A3B2C]">{ph}</span>
+                  </span>
+                  {idx === 0 && <span className="text-[9px] uppercase tracking-widest text-gray-400 font-bold">Primary</span>}
+                </label>
+              ))}
+            </div>
+          ) : (
+            <input
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
+              value={selectedPhone}
+              onChange={(e) => {
+                setSelectedPhone(e.target.value.replace(/\D/g, ""));
+                setPhoneError("");
+              }}
+              placeholder="e.g. 9876543210"
+              className={`w-full px-3 py-2 text-xs focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none border ${phoneError ? "border-red-400" : "border-[#B6925B]/30"}`}
+            />
+          )}
+          <p className="text-[10px] text-gray-500 leading-relaxed">
+            We use this number to confirm and deliver your order.
+          </p>
+          {phoneError && <p className="text-[11px] text-red-600 font-medium">{phoneError}</p>}
+        </div>
+      )}
+
+      {/* Shipping Address Selector */}
+      {isLoggedIn && !isGift && (
         <div className="pt-4 border-t border-[#B6925B]/20 text-left space-y-3">
           <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
             Shipping Address
@@ -218,6 +539,11 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
                       <span className="block text-xs text-[#4A3B2C] truncate mt-1">
                         {selectedAddress.addressLine1}, {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.postalCode}
                       </span>
+                      {selectedAddress.phone && (
+                        <span className="block text-[10px] text-[#B6925B] font-mono mt-0.5">
+                          {selectedAddress.phone}
+                        </span>
+                      )}
                     </>
                   ) : (
                     <span className="text-xs text-gray-500">Select a delivery address</span>
@@ -254,6 +580,9 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
                             <span className="block text-xs text-gray-600 mt-0.5">
                               {a.addressLine1}, {a.city}, {a.state} - {a.postalCode}
                             </span>
+                            {a.phone && (
+                              <span className="block text-[10px] text-[#B6925B] font-mono mt-0.5">{a.phone}</span>
+                            )}
                           </span>
                           <span className={`flex-shrink-0 mt-0.5 ${isSelected ? "text-[#B6925B]" : "text-transparent"}`}>
                             <i className="ri-check-line text-lg" />
@@ -268,6 +597,56 @@ export default function CheckoutButton({ isLoggedIn, addresses, subtotal }: { is
           )}
         </div>
       )}
+
+      {/* Payment Method */}
+      <div className="pt-4 border-t border-[#B6925B]/20 text-left space-y-3">
+        <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
+          Payment Method
+        </label>
+        <div className="space-y-2">
+          <label
+            className={`flex items-center justify-between gap-3 px-3 py-2.5 border cursor-pointer transition-colors rounded-none ${
+              paymentMethod === "COD" ? "border-[#B6925B] bg-[#B6925B]/5" : "border-[#B6925B]/30 bg-white"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="payment-method"
+                value="COD"
+                checked={paymentMethod === "COD"}
+                onChange={() => setPaymentMethod("COD")}
+                className="accent-[#B6925B]"
+              />
+              <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">Cash on Delivery</span>
+            </span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pay at doorstep</span>
+          </label>
+
+          <label
+            className={`flex items-center justify-between gap-3 px-3 py-2.5 border cursor-pointer transition-colors rounded-none ${
+              paymentMethod === "RAZORPAY" ? "border-[#B6925B] bg-[#B6925B]/5" : "border-[#B6925B]/30 bg-white"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="payment-method"
+                value="RAZORPAY"
+                checked={paymentMethod === "RAZORPAY"}
+                onChange={() => setPaymentMethod("RAZORPAY")}
+                className="accent-[#B6925B]"
+              />
+              <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
+                Online Payment <span className="text-[#B6925B]">(Razorpay)</span>
+              </span>
+            </span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+              UPI / Card / NetBanking
+            </span>
+          </label>
+        </div>
+      </div>
 
       {/* Final Total and Action */}
       <div className="border-t border-[#B6925B]/20 pt-6 flex justify-between items-end">

@@ -5,12 +5,17 @@ import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CancelOrderButton from "@/components/storefront/CancelOrderButton";
+import ReorderButton from "@/components/storefront/ReorderButton";
 import PrintInvoiceButton from "@/components/admin/PrintInvoiceButton";
+import OrderTrackingTimeline from "@/components/storefront/OrderTrackingTimeline";
+import ChangeOrderAddressButton from "@/components/storefront/ChangeOrderAddressButton";
+import OrderItemReview from "@/components/storefront/OrderItemReview";
+import OrderItemReturn from "@/components/storefront/OrderItemReturn";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
 
 type OrderItemWithProduct = Prisma.OrderItemGetPayload<{
-  include: { product: true };
+  include: { product: true; returnRequests: true };
 }>;
 
 export const metadata: Metadata = {
@@ -35,6 +40,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
       orderItems: {
         include: {
           product: true,
+          returnRequests: true,
         },
       },
     },
@@ -44,8 +50,33 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
     notFound();
   }
 
+  const savedAddresses = await prisma.address.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      label: true,
+      addressLine1: true,
+      city: true,
+      state: true,
+      postalCode: true,
+      country: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const canChangeAddress = order.status !== "DELIVERED" && order.status !== "CANCELLED";
+
+  const productIds = order.orderItems.map((item) => item.productId);
+  const userReviews = await prisma.review.findMany({
+    where: { userId, productId: { in: productIds } },
+    select: { productId: true, rating: true, comment: true },
+  });
+  const reviewByProduct = new Map(userReviews.map((r) => [r.productId, r]));
+
+  const canReview = order.status === "DELIVERED";
+
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-8 py-12 md:py-16 min-h-screen space-y-6">
+    <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-16 min-h-screen space-y-6">
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           body {
@@ -83,11 +114,20 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
 
         <div className="flex items-center gap-3">
           <PrintInvoiceButton />
+          {order.status !== "CANCELLED" && (
+            <ReorderButton orderId={order.id} />
+          )}
           {order.status === "PENDING" && (
             <CancelOrderButton orderId={order.id} />
           )}
+          {canChangeAddress && (
+            <ChangeOrderAddressButton orderId={order.id} addresses={savedAddresses} />
+          )}
         </div>
       </div>
+
+      {/* Tracking Timeline */}
+      <OrderTrackingTimeline status={order.status} order={order} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Column: Items */}
@@ -97,21 +137,36 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
           </div>
           <div className="divide-y divide-[#B6925B]/10">
             {order.orderItems.map((item: OrderItemWithProduct) => (
-              <div key={item.id} className="p-6 flex items-center gap-4">
-                <Link href={`/products/${item.product.slug}`} className="relative w-20 h-28 bg-[#FAFAFA] overflow-hidden flex-shrink-0 border border-[#B6925B]/20 hover:opacity-90 transition-opacity">
-                  {item.product.images[0] && (
-                    <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" />
-                  )}
-                </Link>
-                <div className="flex-1">
-                  <Link href={`/products/${item.product.slug}`} className="hover:underline underline-offset-4">
-                    <h4 className="font-bold text-[#4A3B2C] text-sm">{item.product.name}</h4>
+              <div key={item.id} className="p-6">
+                <div className="flex items-center gap-4">
+                  <Link href={`/products/${item.product.slug}`} className="relative w-20 h-28 bg-[#FAFAFA] overflow-hidden flex-shrink-0 border border-[#B6925B]/20 hover:opacity-90 transition-opacity">
+                    {item.product.images[0] && (
+                      <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" />
+                    )}
                   </Link>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">Qty: {item.quantity}</p>
+                  <div className="flex-1">
+                    <Link href={`/products/${item.product.slug}`} className="hover:underline underline-offset-4">
+                      <h4 className="font-bold text-[#4A3B2C] text-sm">{item.product.name}</h4>
+                    </Link>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">Qty: {item.quantity}</p>
+                  </div>
+                  <div className="text-sm font-bold text-[#B6925B]">
+                    ₹{(item.price * item.quantity).toFixed(2)}
+                  </div>
                 </div>
-                <div className="text-sm font-bold text-[#B6925B]">
-                  ₹{(item.price * item.quantity).toFixed(2)}
-                </div>
+                {canReview && (
+                  <OrderItemReview
+                    productId={item.productId}
+                    productName={item.product.name}
+                    existingReview={reviewByProduct.get(item.productId) || null}
+                  />
+                )}
+                <OrderItemReturn
+                  orderItemId={item.id}
+                  productName={item.product.name}
+                  orderStatus={order.status}
+                  existingRequests={item.returnRequests}
+                />
               </div>
             ))}
           </div>
@@ -130,7 +185,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
               <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-2">Status</span>
               <span className={`inline-flex items-center px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest
                 ${order.status === 'DELIVERED' ? 'bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30' : 
-                  order.status === 'SHIPPED' ? 'bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30' : 
+                  order.status === 'SHIPPED' || order.status === 'READY_TO_SHIP' || order.status === 'OUT_FOR_DELIVERY' ? 'bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30' : 
                   order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-200' : 
                   'bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30'}`}>
                 {order.status}
@@ -142,8 +197,41 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
             </div>
             <div>
               <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">Payment Method</span>
-              <span className="text-sm font-bold text-[#4A3B2C]">Cash on Delivery</span>
+              <span className="text-sm font-bold text-[#4A3B2C]">
+                {order.paymentMethod === "RAZORPAY" ? "Online (Razorpay)" : "Cash on Delivery"}
+                {order.paymentStatus === "PAID" && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-green-50 text-green-700 border border-green-200">
+                    Paid
+                  </span>
+                )}
+                {order.paymentStatus === "UNPAID" && order.paymentMethod === "RAZORPAY" && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-yellow-50 text-yellow-700 border border-yellow-200">
+                    Unpaid
+                  </span>
+                )}
+                {order.paymentStatus === "REFUNDED" && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200">
+                    Refunded
+                  </span>
+                )}
+              </span>
             </div>
+            {order.awbNumber && (
+              <div>
+                <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">AWB / Tracking</span>
+                <span className="text-sm font-mono text-[#4A3B2C]">{order.awbNumber}</span>
+                {order.trackingUrl && (
+                  <a
+                    href={order.trackingUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors"
+                  >
+                    Track on Shiprocket <i className="ri-external-link-line text-xs" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Delivery Address */}

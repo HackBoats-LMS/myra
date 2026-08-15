@@ -1,7 +1,4 @@
 "use client";
-import { useReducer } from "react";
-import { updateDeliveryStatusAction } from "@/actions/delivery";
-import { useToast } from "@/components/ui/Toast";
 
 interface Order {
   id: string;
@@ -21,7 +18,15 @@ interface Order {
     state: string;
     postalCode: string;
     country: string;
+    phone?: string | null;
   } | null;
+  giftName: string | null;
+  giftPhone: string | null;
+  giftAddressLine1: string | null;
+  giftCity: string | null;
+  giftState: string | null;
+  giftPostalCode: string | null;
+  giftCountry: string | null;
   orderItems: {
     id: string;
     quantity: number;
@@ -33,56 +38,10 @@ interface Order {
   }[];
 }
 
-interface DashboardState {
-  orders: Order[];
-  loadingOrderId: string | null;
-}
-
-type DashboardAction =
-  | { type: "UPDATE_STATUS"; orderId: string; status: "DELIVERED" | "CANCELLED" | "SHIPPED" }
-  | { type: "LOADING"; orderId: string }
-  | { type: "DONE" };
-
-function dashboardReducer(state: DashboardState, action: DashboardAction): DashboardState {
-  switch (action.type) {
-    case "LOADING":
-      return { ...state, loadingOrderId: action.orderId };
-    case "DONE":
-      return { ...state, loadingOrderId: null };
-    case "UPDATE_STATUS":
-      return {
-        ...state,
-        loadingOrderId: null,
-        orders: state.orders.map(o =>
-          o.id === action.orderId ? { ...o, status: action.status, updatedAt: new Date() } : o
-        ),
-      };
-    default:
-      return state;
-  }
-}
-
 export default function DeliveryDashboard({ initialOrders }: { initialOrders: Order[] }) {
-  const [state, dispatch] = useReducer(dashboardReducer, {
-    orders: initialOrders,
-    loadingOrderId: null,
-  });
-  const { orders, loadingOrderId } = state;
-  const toast = useToast();
+  const orders = initialOrders;
 
-  const handleUpdateStatus = async (orderId: string, status: "DELIVERED" | "CANCELLED" | "SHIPPED") => {
-    dispatch({ type: "LOADING", orderId });
-    try {
-      await updateDeliveryStatusAction(orderId, status);
-      dispatch({ type: "UPDATE_STATUS", orderId, status });
-      toast.success(`Order status updated to ${status}!`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update status.");
-      dispatch({ type: "DONE" });
-    }
-  };
-
-  const activeOrders = orders.filter(o => o.status === "SHIPPED");
+  const activeOrders = orders.filter(o => o.status === "SHIPPED" || o.status === "OUT_FOR_DELIVERY");
   const completedOrders = orders.filter(o => o.status === "DELIVERED" || o.status === "CANCELLED");
 
   return (
@@ -143,7 +102,14 @@ export default function DeliveryDashboard({ initialOrders }: { initialOrders: Or
                   {/* Delivery Address */}
                   <div>
                     <span className="block text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-2">Delivery Address</span>
-                    {order.address ? (
+                    {order.giftName ? (
+                      <div className="text-[10px] uppercase tracking-widest font-bold text-gray-500 space-y-1.5 leading-relaxed">
+                        <p className="font-bold text-[#4A3B2C] text-sm tracking-normal capitalize mb-2">{order.giftName}</p>
+                        <p className="text-[8px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">Gift Recipient</p>
+                        <p className="normal-case text-gray-600 font-semibold">{order.giftAddressLine1}</p>
+                        <p className="normal-case text-gray-600 font-semibold">{order.giftCity}, {order.giftState} - {order.giftPostalCode}</p>
+                      </div>
+                    ) : order.address ? (
                       <div className="text-[10px] uppercase tracking-widest font-bold text-gray-500 space-y-1.5 leading-relaxed">
                         <p className="font-bold text-[#4A3B2C] text-sm tracking-normal capitalize mb-2">{order.user.name}</p>
                         <p className="text-[8px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">({order.address.label} Address)</p>
@@ -156,17 +122,22 @@ export default function DeliveryDashboard({ initialOrders }: { initialOrders: Or
                   </div>
 
                   {/* Customer Contact */}
-                  {order.user.phoneNumber && (
-                    <div className="flex items-center gap-2 pt-1">
-                      <a
-                        href={`tel:${order.user.phoneNumber}`}
-                        className="inline-flex items-center gap-1.5 bg-[#FAFAFA] hover:bg-white text-[#B6925B] hover:text-[#4A3B2C] px-3 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all border border-[#B6925B]/20"
-                      >
-                        <i className="ri-phone-line text-xs" />
-                        <span>Call Customer: {order.user.phoneNumber}</span>
-                      </a>
-                    </div>
-                  )}
+                  {(() => {
+                    const contactPhone = order.giftPhone || order.address?.phone || order.user.phoneNumber;
+                    if (!contactPhone) return null;
+                    const label = order.giftName ? "Call Recipient" : (order.address?.phone ? "Call Delivery Contact" : "Call Customer");
+                    return (
+                      <div className="flex items-center gap-2 pt-1">
+                        <a
+                          href={`tel:${contactPhone}`}
+                          className="inline-flex items-center gap-1.5 bg-[#FAFAFA] hover:bg-white text-[#B6925B] hover:text-[#4A3B2C] px-3 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all border border-[#B6925B]/20"
+                        >
+                          <i className="ri-phone-line text-xs" />
+                          <span>{label}: {contactPhone}</span>
+                        </a>
+                      </div>
+                    );
+                  })()}
 
                   {/* Order Items list */}
                   <div className="border-t border-[#B6925B]/10 pt-3">
@@ -179,29 +150,19 @@ export default function DeliveryDashboard({ initialOrders }: { initialOrders: Or
                   </div>
                 </div>
 
-                {/* Quick Action footer */}
-                <div className="border-t border-[#B6925B]/10 p-4 bg-[#FAFAFA] flex gap-3">
-                  <button
-                    onClick={() => handleUpdateStatus(order.id, "DELIVERED")}
-                    disabled={loadingOrderId === order.id}
-                    className="flex-1 bg-[#4A3B2C] hover:bg-[#34291f] text-white py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                  >
-                    {loadingOrderId === order.id ? (
-                      <i className="ri-loader-4-line animate-spin text-sm" />
-                    ) : (
-                      <i className="ri-check-line text-sm" />
-                    )}
-                    <span>Delivered</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleUpdateStatus(order.id, "CANCELLED")}
-                    disabled={loadingOrderId === order.id}
-                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                  >
-                    <i className="ri-close-line text-sm" />
-                    <span>Failed</span>
-                  </button>
+                {/* Status footer */}
+                <div className="border-t border-[#B6925B]/10 p-4 bg-[#FAFAFA] flex items-center justify-between gap-3">
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border rounded-none ${
+                    order.status === "OUT_FOR_DELIVERY"
+                      ? "bg-[#FAFAFA] text-[#B6925B] border-[#B6925B]/30"
+                      : "bg-[#FAFAFA] text-[#4A3B2C] border-[#B6925B]/30"
+                  }`}>
+                    <i className={`${order.status === "OUT_FOR_DELIVERY" ? "ri-truck-line" : "ri-box-3-line"} text-xs`} />
+                    {order.status.replace(/_/g, " ")}
+                  </span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                    Updated {new Date(order.updatedAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </span>
                 </div>
 
               </div>

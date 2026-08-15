@@ -2,7 +2,7 @@ import { ProductCardSkeleton } from "@/components/storefront/Skeletons";
 
 export default function ProductDetailsLoading() {
   return (
-    <div className="max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-20 min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-10 md:py-20 min-h-screen">
       {/* 2-Column Product Layout Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
         

@@ -2,13 +2,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import DeleteButton from "./DeleteButton";
-import { bulkDeleteProducts, bulkUpdateStock, deleteProduct } from "@/actions/admin";
+import { bulkDeleteProducts, bulkUpdateStock, deleteProduct, restoreProduct, bulkRestoreProducts } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
 import type { Prisma } from "@/generated/prisma";
 
 type ProductWithCollection = Prisma.ProductGetPayload<{ include: { collection: true } }>;
 
-export default function ProductListTable({ products }: { products: ProductWithCollection[] }) {
+export default function ProductListTable({
+  products,
+  basePath = "/admin/products",
+  archived = false,
+}: {
+  products: ProductWithCollection[];
+  basePath?: string;
+  archived?: boolean;
+}) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const toast = useToast();
@@ -39,6 +47,19 @@ export default function ProductListTable({ products }: { products: ProductWithCo
       setSelectedIds([]);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete products.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleBulkRestore = async () => {
+    setIsProcessing(true);
+    try {
+      await bulkRestoreProducts(selectedIds);
+      toast.success(`Successfully restored ${selectedIds.length} products.`);
+      setSelectedIds([]);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to restore products.");
     } finally {
       setIsProcessing(false);
     }
@@ -75,20 +96,32 @@ export default function ProductListTable({ products }: { products: ProductWithCo
             {selectedIds.length} item(s) selected
           </span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleBulkUpdateStock}
-              disabled={isProcessing}
-              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors rounded-none"
-            >
-              Update Stock
-            </button>
-            <button
-              onClick={handleBulkDelete}
-              disabled={isProcessing}
-              className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 transition-colors rounded-none"
-            >
-              Delete
-            </button>
+            {archived ? (
+              <button
+                onClick={handleBulkRestore}
+                disabled={isProcessing}
+                className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50 transition-colors rounded-none"
+              >
+                Restore
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleBulkUpdateStock}
+                  disabled={isProcessing}
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors rounded-none"
+                >
+                  Update Stock
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={isProcessing}
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 transition-colors rounded-none"
+                >
+                  Delete
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -111,6 +144,7 @@ export default function ProductListTable({ products }: { products: ProductWithCo
                   onChange={handleSelectAll}
                 />
               </th>
+              <th className="px-6 py-4 border-r border-[#B6925B]/10">Product Code</th>
               <th className="px-6 py-4 border-r border-[#B6925B]/10">Product Name</th>
               <th className="px-6 py-4 border-r border-[#B6925B]/10">Collection</th>
               <th className="px-6 py-4 border-r border-[#B6925B]/10">Price</th>
@@ -121,7 +155,7 @@ export default function ProductListTable({ products }: { products: ProductWithCo
           <tbody className="divide-y divide-[#B6925B]/10">
             {products.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
                   No products found. Click &ldquo;Add Product&rdquo; to create one.
                 </td>
               </tr>
@@ -135,6 +169,11 @@ export default function ProductListTable({ products }: { products: ProductWithCo
                       checked={selectedIds.includes(product.id)}
                       onChange={() => handleSelect(product.id)}
                     />
+                  </td>
+                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
+                    <span className="inline-flex items-center font-mono text-[10px] font-bold tracking-widest text-[#B6925B]">
+                      {product.code || "—"}
+                    </span>
                   </td>
                   <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">{product.name}</td>
                   <td className="px-6 py-4 border-r border-[#B6925B]/10">
@@ -150,14 +189,31 @@ export default function ProductListTable({ products }: { products: ProductWithCo
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
-                      <Link href={`/admin/products/${product.id}`} className="flex items-center justify-center text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 rounded-none" title="Edit Product">
+                      <Link href={`${basePath}/${product.id}`} className="flex items-center justify-center text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 rounded-none" title="Edit Product">
                         <i className="ri-edit-box-line text-lg" />
                       </Link>
-                      <DeleteButton 
-                        id={product.id} 
-                        entityName="Product" 
-                        deleteAction={deleteProduct} 
-                      />
+                      {archived ? (
+                        <button
+                          onClick={async () => {
+                            try {
+                              await restoreProduct(product.id);
+                              toast.success("Product restored.");
+                            } catch (error) {
+                              toast.error(error instanceof Error ? error.message : "Failed to restore product.");
+                            }
+                          }}
+                          className="flex items-center justify-center text-green-600 hover:text-green-800 transition-colors p-1 rounded-none"
+                          title="Restore Product"
+                        >
+                          <i className="ri-refresh-line text-lg" />
+                        </button>
+                      ) : (
+                        <DeleteButton 
+                          id={product.id} 
+                          entityName="Product" 
+                          deleteAction={deleteProduct} 
+                        />
+                      )}
                     </div>
                   </td>
                 </tr>

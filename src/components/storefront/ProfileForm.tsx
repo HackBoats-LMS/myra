@@ -154,6 +154,19 @@ export default function ProfileForm({ user }: { user: User }) {
                     }`} 
                   />
                 </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+                    Second Phone Number (Optional)
+                  </label>
+                  <input 
+                    name="phoneNumber2"
+                    inputMode="numeric"
+                    maxLength={10}
+                    defaultValue={user.phoneNumber2 || ''} 
+                    placeholder="e.g. 9876543211"
+                    className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" 
+                  />
+                </div>
               </div>
             </div>
 
@@ -229,6 +242,15 @@ export default function ProfileForm({ user }: { user: User }) {
                     <span className="text-sm font-medium text-[#4A3B2C]">{user.phoneNumber || "Not set"}</span>
                   </div>
                 </div>
+                {user.phoneNumber2 && (
+                  <div className="flex items-center gap-3">
+                    <i className="ri-phone-fill text-lg text-[#B6925B] flex-shrink-0" />
+                    <div>
+                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">Second Phone</span>
+                      <span className="text-sm font-medium text-[#4A3B2C]">{user.phoneNumber2}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
