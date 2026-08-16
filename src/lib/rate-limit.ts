@@ -1,76 +1,101 @@
-type RateLimitInfo = {
-  count: number;
-  resetAt: number;
-};
+import { prisma } from "@/lib/prisma";
 
-// In-memory store with periodic cleanup
-// Note: In serverless (Vercel), this resets on cold starts
-// For production, consider using Redis via @upstash/redis or similar
-const store = new Map<string, RateLimitInfo>();
-
-// Cleanup interval
-let cleanupInterval: NodeJS.Timeout | null = null;
-
-function startCleanup() {
-  if (cleanupInterval) return;
-  cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [key, info] of store.entries()) {
-      if (now > info.resetAt) {
-        store.delete(key);
-      }
-    }
-  }, 60000);
-}
-
-function stopCleanup() {
-  if (cleanupInterval) {
-    clearInterval(cleanupInterval);
-    cleanupInterval = null;
+export class RateLimitError extends Error {
+  retryAfterSeconds: number;
+  constructor(retryAfterSeconds: number) {
+    super("Too many attempts. Please try again later.");
+    this.name = "RateLimitError";
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
-export function rateLimit(
-  identifier: string,
-  limit: number = 5,
-  windowMs: number = 60000
-): { success: boolean; remaining: number; reset: number } {
-  startCleanup();
-  
+export interface RateLimitOptions {
+  bucket: string;
+  key: string;
+  limit: number;
+  windowSeconds: number;
+}
+
+/**
+ * Fixed-window rate limiter backed by the database.
+ * Throws RateLimitError when the caller has exceeded `limit` attempts within `windowSeconds`.
+ * Safe to use in server actions, route handlers, and NextAuth authorize.
+ */
+export async function checkRateLimit({ bucket, key, limit, windowSeconds }: RateLimitOptions): Promise<void> {
+  if (limit <= 0) return;
+
   const now = Date.now();
-  let info = store.get(identifier);
+  const id = `${bucket}:${key}`;
+  const windowStartMs = now - windowSeconds * 1000;
 
-  if (!info || now > info.resetAt) {
-    info = { count: 0, resetAt: now + windowMs };
+  const existing = await prisma.rateLimit.findUnique({ where: { id } });
+
+  if (!existing) {
+    try {
+      await prisma.rateLimit.create({
+        data: { id, bucket, key, count: 1, windowStart: new Date(now) },
+      });
+    } catch {
+      // Concurrent create race — fall through to the read/increment path below.
+    }
+    return;
   }
 
-  info.count += 1;
-  store.set(identifier, info);
+  if (existing.windowStart.getTime() < windowStartMs) {
+    // Window expired — reset atomically.
+    await prisma.rateLimit.update({
+      where: { id },
+      data: { count: 1, windowStart: new Date(now) },
+    });
+    return;
+  }
 
-  return {
-    success: info.count <= limit,
-    remaining: Math.max(0, limit - info.count),
-    reset: info.resetAt,
+  const remainingMs = existing.windowStart.getTime() + windowSeconds * 1000 - now;
+  if (existing.count >= limit) {
+    throw new RateLimitError(Math.ceil(remainingMs / 1000));
+  }
+
+  const updated = await prisma.rateLimit.updateMany({
+    where: { id, count: { lt: limit } },
+    data: { count: { increment: 1 } },
+  });
+  if (updated.count === 0) {
+    throw new RateLimitError(Math.ceil(remainingMs / 1000));
+  }
+}
+
+/** Extract the best-effort client IP from an incoming request. */
+export function getClientIp(req: { headers?: unknown }): string {
+  const headers = req.headers as
+    | { get?(name: string): string | null; [key: string]: unknown }
+    | undefined;
+  if (!headers) return "unknown";
+
+  const get = (name: string): string | null => {
+    const lower = name.toLowerCase();
+    if (typeof headers.get === "function") {
+      return headers.get(name);
+    }
+    const raw = headers[lower];
+    return typeof raw === "string" ? raw : null;
   };
-}
 
-// For testing or manual reset
-export function resetRateLimit(identifier?: string) {
-  if (identifier) {
-    store.delete(identifier);
-  } else {
-    store.clear();
+  // Client-supplied forwarding headers (x-forwarded-for, x-real-ip) are fully
+  // spoofable and must only be trusted when this app is explicitly deployed
+  // behind a proxy that overwrites them. Otherwise an attacker could rotate
+  // them to bypass the per-IP rate-limit bucket.
+  const trustProxy = process.env.TRUST_PROXY === "true";
+  if (!trustProxy) {
+    const cf = get("cf-connecting-ip");
+    if (cf) return cf;
+    return "unknown";
   }
-}
 
-// Export store for testing/inspection
-export function getRateLimitStore() {
-  return store;
-}
-
-// Cleanup on process exit (for long-running servers)
-if (typeof process !== "undefined") {
-  process.on("exit", stopCleanup);
-  process.on("SIGINT", stopCleanup);
-  process.on("SIGTERM", stopCleanup);
+  const xff = get("x-forwarded-for");
+  if (xff) {
+    return xff.split(",")[0].trim();
+  }
+  const real = get("x-real-ip");
+  if (real) return real;
+  return "unknown";
 }

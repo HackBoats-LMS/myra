@@ -149,6 +149,7 @@ export async function updateCoupon(id: string, formData: FormData) {
   await logAudit("coupon.update", "Coupon", id, { code, type: couponType, discountType: type, discountValue: value });
 
   revalidatePath("/admin/coupons");
+  revalidatePath(`/admin/coupons/${id}`);
 }
 
 export async function updateShippingConfig(formData: FormData) {

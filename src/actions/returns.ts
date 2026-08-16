@@ -7,21 +7,29 @@ import { verifyAdmin } from "@/lib/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { shiprocketConfigured, createReturnOrder, assignAwbAndScheduleReturnPickup } from "@/lib/shiprocket";
 import { refundRazorpayPayment, razorpayConfigured } from "@/lib/razorpay";
+import { detectImageType } from "@/lib/image-upload";
+import { createReturnImageSignedUrl } from "@/lib/return-images";
 
 const REQUESTABLE_STATUSES = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"] as const;
 
-const RETURN_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const RETURN_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
-export async function uploadReturnImage(file: File): Promise<string> {
+export async function uploadReturnImage(file: File): Promise<{ path: string; previewUrl: string }> {
+  // Only authenticated customers may upload return evidence.
+  await requireCustomer();
+
   if (!file) {
     throw new Error("No file provided.");
   }
-  if (!RETURN_IMAGE_MIME_TYPES.includes(file.type)) {
-    throw new Error("Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.");
-  }
   if (file.size > RETURN_IMAGE_MAX_BYTES) {
     throw new Error("File is too large. Maximum size is 5 MB.");
+  }
+
+  // Sniff the actual content so a spoofed MIME/extension can't smuggle non-images.
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const detected = detectImageType(bytes);
+  if (!detected) {
+    throw new Error("Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.");
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -30,14 +38,13 @@ export async function uploadReturnImage(file: File): Promise<string> {
     throw new Error("Storage is not configured.");
   }
 
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
+  const fileName = `${crypto.randomUUID()}.${detected.ext}`;
 
   const res = await fetch(`${supabaseUrl}/storage/v1/object/return-images/${fileName}`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${serviceRoleKey}`,
-      "Content-Type": file.type,
+      "Content-Type": detected.mime,
     },
     body: file,
   });
@@ -47,7 +54,10 @@ export async function uploadReturnImage(file: File): Promise<string> {
     throw new Error(`Failed to upload: ${err}`);
   }
 
-  return `${supabaseUrl}/storage/v1/object/public/return-images/${fileName}`;
+  // Store the object path, not a public URL. The bucket is private; reads use signed URLs.
+  const path = `return-images/${fileName}`;
+  const previewUrl = await createReturnImageSignedUrl(path);
+  return { path, previewUrl };
 }
 
 async function requireCustomer() {
@@ -325,43 +335,77 @@ export async function issueReturnRefund(requestId: string, amount: number) {
     throw new Error("Please enter a valid refund amount.");
   }
 
-  const remaining = request.order.totalAmount - (request.order.refundedAmount || 0);
-  const itemLineTotal = request.orderItem.price * request.orderItem.quantity;
-  const maxRefundable = Math.min(itemLineTotal, remaining);
-  if (amount > maxRefundable) {
-    throw new Error(`Cannot refund more than ₹${maxRefundable.toFixed(2)} for this item.`);
+  const prevRequestStatus = request.status;
+  const isOnlineRefund =
+    request.order.paymentMethod === "RAZORPAY" && !!request.order.razorpayPaymentId;
+
+  if (isOnlineRefund && !razorpayConfigured()) {
+    throw new Error("Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env to issue online refunds.");
   }
 
-  // Push the refund to Razorpay when the order was paid online.
-  if (request.order.paymentMethod === "RAZORPAY" && request.order.razorpayPaymentId) {
-    if (!razorpayConfigured()) {
-      throw new Error("Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env to issue online refunds.");
+  let gatewayRefund = false;
+
+  try {
+    // 1. Reserve the refund atomically (guarded) so concurrent refunds can't over-refund.
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({ where: { id: request.orderId } });
+      if (!order) throw new Error("Order not found.");
+
+      const remaining = order.totalAmount - (order.refundedAmount || 0);
+      const itemLineTotal = request.orderItem.price * request.orderItem.quantity;
+      const maxRefundable = Math.min(itemLineTotal, remaining);
+      if (amount > maxRefundable) {
+        throw new Error(`Cannot refund more than ₹${maxRefundable.toFixed(2)} for this item.`);
+      }
+
+      const updateResult = await tx.order.updateMany({
+        where: { id: order.id, refundedAmount: { lte: order.totalAmount - amount } },
+        data: { refundedAmount: { increment: amount } },
+      });
+      if (updateResult.count !== 1) {
+        throw new Error("Refund could not be applied atomically. Please retry.");
+      }
+
+      const newRefundedAmount = (order.refundedAmount || 0) + amount;
+      const nextStatus = newRefundedAmount >= order.totalAmount ? "REFUNDED" : "PARTIALLY_REFUNDED";
+
+      await tx.order.update({
+        where: { id: request.orderId },
+        data: { paymentStatus: nextStatus },
+      });
+
+      await tx.returnRequest.update({
+        where: { id: requestId },
+        data: {
+          status: "REFUNDED",
+          refundAmount: amount,
+          refundedAt: new Date(),
+          adminId: await setAdminId(),
+        },
+      });
+    });
+
+    // 2. After the DB commit, push the refund to Razorpay for online orders.
+    if (isOnlineRefund) {
+      gatewayRefund = true;
+      await refundRazorpayPayment(request.order.razorpayPaymentId!, amount * 100);
     }
-    await refundRazorpayPayment(request.order.razorpayPaymentId, amount * 100);
+  } catch (err) {
+    // If the DB was updated but the money could not be sent, revert the reservation.
+    if (gatewayRefund) {
+      await prisma.$transaction(async (tx) => {
+        await tx.order.updateMany({
+          where: { id: request.orderId, refundedAmount: { gte: amount } },
+          data: { refundedAmount: { decrement: amount } },
+        });
+        await tx.returnRequest.update({
+          where: { id: requestId },
+          data: { status: prevRequestStatus, refundAmount: null, refundedAt: null },
+        });
+      });
+    }
+    throw err;
   }
-
-  const newRefundedAmount = (request.order.refundedAmount || 0) + amount;
-  const nextStatus = newRefundedAmount >= request.order.totalAmount ? "REFUNDED" : "PARTIALLY_REFUNDED";
-
-  await prisma.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: request.orderId },
-      data: {
-        refundedAmount: { increment: amount },
-        paymentStatus: request.order.paymentMethod === "RAZORPAY" ? nextStatus : request.order.paymentStatus,
-      },
-    });
-
-    await tx.returnRequest.update({
-      where: { id: requestId },
-      data: {
-        status: "REFUNDED",
-        refundAmount: amount,
-        refundedAt: new Date(),
-        adminId: await setAdminId(),
-      },
-    });
-  });
 
   await logAudit("return.refund", "ReturnRequest", requestId, { amount });
 

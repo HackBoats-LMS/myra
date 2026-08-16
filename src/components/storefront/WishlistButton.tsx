@@ -29,7 +29,7 @@ export default function WishlistButton({ productId, isWishlisted = false }: { pr
     <button 
       onClick={handleToggle}
       disabled={isProcessing}
-      className="absolute top-4 right-4 z-20 p-2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full shadow-sm transition-all"
+      className="w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white backdrop-blur-sm shadow-sm transition-all rounded-full"
     >
       {isProcessing ? (
         <i className="ri-loader-4-line animate-spin text-base text-gray-500 leading-none" />

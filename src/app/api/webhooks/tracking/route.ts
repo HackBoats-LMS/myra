@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 import { mapShiprocketStatus } from "@/lib/shiprocket";
+import { CACHE_TAGS } from "@/lib/cache";
 
 interface TrackingWebhookPayload {
   awb?: string;
@@ -63,7 +65,7 @@ export async function POST(req: NextRequest) {
     let newStatus: string | null = null;
     if (mapped) {
       // Monotonicity guard: never regress to an earlier stage (stale/duplicate webhooks).
-      const statusOrder = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
+      const statusOrder = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"];
       const currentRank = statusOrder.indexOf(order.status);
       const incomingRank = statusOrder.indexOf(mapped.status);
       if (incomingRank < 0 || incomingRank < currentRank) {
@@ -75,6 +77,10 @@ export async function POST(req: NextRequest) {
     }
 
     await prisma.order.update({ where: { id: order.id }, data });
+
+    // Status changed -> refresh the worker/delivery dashboards immediately.
+    revalidateTag(CACHE_TAGS.workerOrders, { expire: 0 });
+    revalidateTag(CACHE_TAGS.deliveryOrders, { expire: 0 });
 
     if (newStatus && order.user?.email) {
       if (newStatus === "SHIPPED") {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
@@ -8,6 +9,22 @@ export async function POST(req: Request) {
 
     if (!phoneNumber || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Rate-limit signup by IP and by identifier to prevent account flooding/brute force.
+    const ip = getClientIp(req);
+    try {
+      await checkRateLimit({ bucket: "register:ip", key: ip, limit: 10, windowSeconds: 900 });
+      const identifier = String(phoneNumber ?? email ?? "").toLowerCase();
+      await checkRateLimit({ bucket: "register:id", key: identifier, limit: 5, windowSeconds: 900 });
+    } catch (error) {
+      if (error instanceof RateLimitError) {
+        return NextResponse.json(
+          { error: error.message, retryAfterSeconds: error.retryAfterSeconds },
+          { status: 429 }
+        );
+      }
+      throw error;
     }
 
     const existingUser = await prisma.user.findFirst({

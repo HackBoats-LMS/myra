@@ -21,7 +21,7 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<"RETURN" | "REPLACEMENT">("RETURN");
   const [reason, setReason] = useState("");
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<{ path: string; previewUrl: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -33,11 +33,11 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
     if (files.length === 0) return;
     setUploading(true);
     try {
-      const urls: string[] = [];
+      const urls: { path: string; previewUrl: string }[] = [];
       for (const file of files) {
         if (images.length + urls.length >= 5) break;
-        const url = await uploadReturnImage(file);
-        urls.push(url);
+        const { path, previewUrl } = await uploadReturnImage(file);
+        urls.push({ path, previewUrl });
       }
       setImages((prev) => [...prev, ...urls].slice(0, 5));
     } catch (err) {
@@ -56,7 +56,7 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
     }
     setLoading(true);
     try {
-      await requestReturn(orderItemId, type, reason, images);
+      await requestReturn(orderItemId, type, reason, images.map((i) => i.path));
       toast.success(`${type === "RETURN" ? "Return" : "Replacement"} request submitted!`);
       setOpen(false);
       setReason("");
@@ -175,9 +175,9 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
                 </label>
                 {images.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {images.map((src, idx) => (
-                      <div key={src} className="relative w-16 h-16 border border-[#B6925B]/30 overflow-hidden rounded-none">
-                        <Image src={src} alt={`Return photo ${idx + 1}`} fill className="object-cover" />
+                    {images.map((img, idx) => (
+                      <div key={img.path} className="relative w-16 h-16 border border-[#B6925B]/30 overflow-hidden rounded-none">
+                        <Image src={img.previewUrl} alt={`Return photo ${idx + 1}`} fill className="object-cover" />
                         <button
                           type="button"
                           onClick={() => setImages(images.filter((_, i) => i !== idx))}

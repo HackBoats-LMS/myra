@@ -4,6 +4,7 @@ import Pagination from "@/components/storefront/Pagination";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
+import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -92,7 +93,9 @@ export default async function CollectionPage({
     notFound();
   }
 
-  const productsWithReviews = products.map(({ reviews, ...product }) => {
+  const sales = await getActiveFlashSales();
+
+  const productsWithReviews = applyFlashToProductList(products, sales).map(({ reviews, ...product }) => {
     const reviewCount = reviews?.length || 0;
     const averageRating = reviewCount > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
@@ -100,7 +103,7 @@ export default async function CollectionPage({
     return { ...product, reviewCount, averageRating };
   });
 
-  const bestSellersWithReviews = bestSellers.map(({ reviews, ...product }) => {
+  const bestSellersWithReviews = applyFlashToProductList(bestSellers, sales).map(({ reviews, ...product }) => {
     const reviewCount = reviews?.length || 0;
     const averageRating = reviewCount > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount

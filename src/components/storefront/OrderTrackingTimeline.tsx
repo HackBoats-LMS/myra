@@ -38,11 +38,11 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
       </h3>
 
       <div className="mt-6">
-        <div className="flex items-center">
+        <div className="grid grid-cols-5">
           {steps.map((step, i) => {
             const reached = i <= currentIndex;
             return (
-              <div key={step.key} className="flex-1 flex flex-col items-center relative">
+              <div key={step.key} className="flex flex-col items-center relative">
                 {i > 0 && (
                   <div
                     className={`absolute top-4 -left-1/2 w-full h-0.5 -z-0 ${

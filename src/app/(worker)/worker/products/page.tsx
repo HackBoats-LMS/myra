@@ -1,11 +1,25 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { getProducts } from "@/services/products";
 import Pagination from "@/components/storefront/Pagination";
 import { prisma } from "@/lib/prisma";
 import ProductListTable from "@/components/admin/ProductListTable";
 import { requireWorkerModule } from "@/lib/worker";
+import { CACHE_TAGS } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
+
+const getCachedWorkerProducts = unstable_cache(
+  async (skip: number, take: number) => {
+    const [products, totalProducts] = await Promise.all([
+      getProducts(skip, take),
+      prisma.product.count({ where: { deletedAt: null } }),
+    ]);
+    return { products, totalProducts };
+  },
+  ["worker", "products"],
+  { tags: [CACHE_TAGS.workerProducts], revalidate: 30 }
+);
 
 export default async function WorkerProductsPage({
   searchParams,
@@ -21,12 +35,9 @@ export default async function WorkerProductsPage({
   let totalProducts = 0;
 
   try {
-    const results = await Promise.all([
-      getProducts((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE),
-      prisma.product.count({ where: { deletedAt: null } }),
-    ]);
-    products = results[0];
-    totalProducts = results[1];
+    const result = await getCachedWorkerProducts((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+    products = result.products;
+    totalProducts = result.totalProducts;
   } catch (error) {
     console.warn("Database unreachable in WorkerProductsPage:", error);
   }

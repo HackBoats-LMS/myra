@@ -42,7 +42,11 @@ export default function AddToCartButton({ productId, outOfStock, variants = [] }
 
     setIsAdding(true);
     try {
-      await addToCart(productId, quantity, selectedVariantId || undefined);
+      const res = await addToCart(productId, quantity, selectedVariantId || undefined);
+      if (!res.added) {
+        toast.error(res.message || "Unable to add item to cart.");
+        return;
+      }
       toast.success("Added to cart!");
       if (redirect) {
         router.push("/cart");

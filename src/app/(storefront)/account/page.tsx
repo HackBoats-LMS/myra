@@ -106,7 +106,7 @@ export default async function AccountPage() {
                         className="flex items-center justify-between gap-4 px-6 py-5 hover:bg-[#FAFAFA] transition-colors"
                       >
                         <div className="flex items-center gap-4 min-w-0">
-                          <div className="relative w-14 h-18 bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0">
+                          <div className="relative w-14 h-[72px] bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0">
                             {order.orderItems[0]?.product.images[0] && (
                               <Image src={order.orderItems[0].product.images[0]} alt={order.orderItems[0].product.name} fill quality={100} className="object-cover" />
                             )}

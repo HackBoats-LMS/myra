@@ -1,36 +1,54 @@
 "use server";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 import { verifyDeliveryAgent } from "@/lib/auth-utils";
+import { CACHE_TAGS } from "@/lib/cache";
+import type { Prisma } from "@/generated/prisma";
 
-export async function getDeliveryOrders() {
-  await verifyDeliveryAgent();
+type DeliveryOrderRow = Prisma.OrderGetPayload<{
+  include: {
+    user: { select: { name: true; email: true; phoneNumber: true } };
+    address: true;
+    orderItems: { include: { product: { select: { name: true; images: true } } } };
+  };
+}>;
 
-  return await prisma.order.findMany({
-    where: {
-      status: {
-        in: ["SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"]
-      }
-    },
-    include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
-          phoneNumber: true,
+const getCachedDeliveryOrders = unstable_cache(
+  async () => {
+    return prisma.order.findMany({
+      where: {
+        status: {
+          in: ["SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"]
         }
       },
-      address: true,
-      orderItems: {
-        include: {
-          product: {
-            select: {
-              name: true,
-              images: true,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            phoneNumber: true,
+          }
+        },
+        address: true,
+        orderItems: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                images: true,
+              }
             }
           }
         }
-      }
-    },
-    orderBy: { updatedAt: "desc" }
-  });
+      },
+      orderBy: { updatedAt: "desc" }
+    }) as Promise<DeliveryOrderRow[]>;
+  },
+  ["delivery", "orders"],
+  { tags: [CACHE_TAGS.deliveryOrders], revalidate: 30 }
+);
+
+export async function getDeliveryOrders() {
+  await verifyDeliveryAgent();
+  return getCachedDeliveryOrders();
 }

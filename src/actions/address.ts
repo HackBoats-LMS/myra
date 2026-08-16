@@ -163,3 +163,12 @@ export async function setDefaultAddress(addressId: string) {
 
   revalidatePath("/account");
 }
+
+/** Return the current user's saved addresses (used to refresh checkout after an inline add). */
+export async function getUserAddresses() {
+  const userId = await verifyUser();
+  return prisma.address.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  });
+}

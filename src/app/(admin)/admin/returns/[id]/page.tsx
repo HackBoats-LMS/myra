@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import AdminReturnProcessor from "@/components/admin/AdminReturnProcessor";
+import { createReturnImageSignedUrls } from "@/lib/return-images";
 
 export const dynamic = "force-dynamic";
 
@@ -24,15 +25,11 @@ export default async function AdminReturnDetailPage({ params }: { params: Promis
     notFound();
   }
 
+  const returnImageUrls = await createReturnImageSignedUrls(request.images);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 rounded-none">
-      <Link
-        href="/admin/returns"
-        className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors gap-1"
-      >
-        <i className="ri-arrow-left-line text-xs" />
-        Back to Returns
-      </Link>
+
 
       <div className="border-b border-[#B6925B]/20 pb-4 flex items-center justify-between">
         <div>
@@ -67,7 +64,7 @@ export default async function AdminReturnDetailPage({ params }: { params: Promis
               <div>
                 <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mb-2">Customer Photos ({request.images.length})</h4>
                 <div className="grid grid-cols-3 gap-3">
-                  {request.images.map((src, idx) => (
+                  {returnImageUrls.map((src, idx) => (
                     <div key={src} className="relative aspect-square border border-[#B6925B]/20 overflow-hidden rounded-none">
                       <Image src={src} alt={`Return photo ${idx + 1}`} fill className="object-cover" />
                     </div>

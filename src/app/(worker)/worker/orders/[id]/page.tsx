@@ -26,10 +26,7 @@ export default async function WorkerOrderDetailsPage({ params }: { params: Promi
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 rounded-none">
-      <Link href="/worker/orders" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors rounded-none gap-1">
-        <i className="ri-arrow-left-line text-xs" />
-        Back to Shipping
-      </Link>
+
 
       <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-6">
         <div>

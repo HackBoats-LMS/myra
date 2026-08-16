@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 
 interface WishlistContextType {
   isWishlistOpen: boolean;
@@ -9,11 +9,24 @@ interface WishlistContextType {
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
-export function WishlistProvider({ children }: { children: React.ReactNode }) {
-  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+type WishlistAction = { type: "OPEN" } | { type: "CLOSE" };
 
-  const openWishlist = () => setIsWishlistOpen(true);
-  const closeWishlist = () => setIsWishlistOpen(false);
+function wishlistReducer(state: boolean, action: WishlistAction): boolean {
+  switch (action.type) {
+    case "OPEN":
+      return true;
+    case "CLOSE":
+      return false;
+    default:
+      return state;
+  }
+}
+
+export function WishlistProvider({ children }: { children: React.ReactNode }) {
+  const [isWishlistOpen, dispatch] = useReducer(wishlistReducer, false);
+
+  const openWishlist = () => dispatch({ type: "OPEN" });
+  const closeWishlist = () => dispatch({ type: "CLOSE" });
 
   return (
     <WishlistContext.Provider value={{ isWishlistOpen, openWishlist, closeWishlist }}>

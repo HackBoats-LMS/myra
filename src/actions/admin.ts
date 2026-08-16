@@ -6,9 +6,9 @@ import { verifyAdmin, verifyWorkerCapability } from "@/lib/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { CACHE_TAGS } from "@/lib/cache";
 import { refundRazorpayPayment, razorpayConfigured } from "@/lib/razorpay";
+import { detectImageType } from "@/lib/image-upload";
 import bcrypt from "bcryptjs";
 
-const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 interface ParsedVariantRecord {
@@ -177,10 +177,16 @@ export async function createProduct(formData: FormData) {
 
   revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
 }
 
 export async function updateProduct(id: string, formData: FormData) {
   await verifyWorkerCapability("inventory");
+
+  const prev = await prisma.product.findUnique({
+    where: { id },
+    select: { stockQuantity: true, slug: true },
+  });
 
   let parsedVariants: ParsedVariantRecord[] = [];
   try {
@@ -272,13 +278,24 @@ export async function updateProduct(id: string, formData: FormData) {
 
   await logAudit("product.update", "Product", id, { slug: data.slug });
 
-  revalidatePath("/admin/products");
+  // If the product just went from out-of-stock to in-stock, notify subscribers.
+  const wasOutOfStock = (prev?.stockQuantity ?? 0) <= 0;
+  if (wasOutOfStock && data.stockQuantity > 0) {
+    const { notifyStockSubscribers } = await import("@/actions/stock-alert");
+    await notifyStockSubscribers(id);
+  }
+
+revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
+  if (prev?.slug) updateTag(CACHE_TAGS.product(prev.slug));
+  if (data.slug !== prev?.slug) updateTag(CACHE_TAGS.product(data.slug));
 }
 
 export async function deleteProduct(id: string) {
   await verifyWorkerCapability("inventory");
 
+  const prev = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
   await prisma.product.update({
     where: { id },
     data: { deletedAt: new Date() }
@@ -288,11 +305,14 @@ export async function deleteProduct(id: string) {
 
   revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
+  if (prev?.slug) updateTag(CACHE_TAGS.product(prev.slug));
 }
 
 export async function restoreProduct(id: string) {
   await verifyWorkerCapability("inventory");
 
+  const prev = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
   await prisma.product.update({
     where: { id },
     data: { deletedAt: null }
@@ -302,6 +322,8 @@ export async function restoreProduct(id: string) {
 
   revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
+  if (prev?.slug) updateTag(CACHE_TAGS.product(prev.slug));
 }
 
 export async function bulkDeleteProducts(ids: string[]) {
@@ -316,6 +338,7 @@ export async function bulkDeleteProducts(ids: string[]) {
 
   revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
 }
 
 export async function bulkRestoreProducts(ids: string[]) {
@@ -330,6 +353,7 @@ export async function bulkRestoreProducts(ids: string[]) {
 
   revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
 }
 
 export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
@@ -344,6 +368,7 @@ export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
 
   revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
 }
 
 const collectionSchema = z.object({
@@ -385,6 +410,7 @@ export async function createCollection(formData: FormData) {
 
   revalidatePath("/admin/collections");
   updateTag(CACHE_TAGS.collections);
+  updateTag(CACHE_TAGS.workerCollections);
 }
 
 export async function updateCollection(id: string, formData: FormData) {
@@ -420,6 +446,7 @@ export async function updateCollection(id: string, formData: FormData) {
 
   revalidatePath("/admin/collections");
   updateTag(CACHE_TAGS.collections);
+  updateTag(CACHE_TAGS.workerCollections);
 }
 
 export async function deleteCollection(id: string) {
@@ -433,6 +460,7 @@ export async function deleteCollection(id: string) {
 
   revalidatePath("/admin/collections");
   updateTag(CACHE_TAGS.collections);
+  updateTag(CACHE_TAGS.workerCollections);
 }
 
 export async function toggleBestSeller(productId: string, bestSeller: boolean) {
@@ -456,6 +484,7 @@ export async function toggleBestSeller(productId: string, bestSeller: boolean) {
   }
   revalidatePath("/admin/collections");
   updateTag(CACHE_TAGS.products);
+  updateTag(CACHE_TAGS.workerProducts);
 }
 
 const refundSchema = z.object({
@@ -485,18 +514,16 @@ export async function processRefund(orderId: string, formData: FormData) {
     throw new Error(`Cannot refund more than the remaining refundable amount (₹${totalRefundable.toFixed(2)})`);
   }
 
-  // If the order was paid online, push the refund to the Razorpay gateway.
-  if (order.paymentMethod === "RAZORPAY" && order.razorpayPaymentId) {
-    if (!razorpayConfigured()) {
-      throw new Error("Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env to issue online refunds.");
-    }
-    await refundRazorpayPayment(order.razorpayPaymentId, amount * 100);
+  const isOnlineRefund = order.paymentMethod === "RAZORPAY" && !!order.razorpayPaymentId;
+  if (isOnlineRefund && !razorpayConfigured()) {
+    throw new Error("Razorpay is not configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env to issue online refunds.");
   }
 
-  const nextStatus = (order.refundedAmount || 0) + amount >= order.totalAmount ? "REFUNDED" : "PARTIALLY_REFUNDED";
+  const prevPaymentStatus = order.paymentStatus;
 
   // Atomic, concurrency-safe claim of the refund amount. Guards against two
   // simultaneous refunds collectively exceeding the remaining balance.
+  const nextStatus = (order.refundedAmount || 0) + amount >= order.totalAmount ? "REFUNDED" : "PARTIALLY_REFUNDED";
   const refundResult = await prisma.order.updateMany({
     where: {
       id: orderId,
@@ -504,11 +531,25 @@ export async function processRefund(orderId: string, formData: FormData) {
     },
     data: {
       refundedAmount: { increment: amount },
-      paymentStatus: order.paymentMethod === "RAZORPAY" ? nextStatus : order.paymentStatus,
+      paymentStatus: isOnlineRefund ? nextStatus : order.paymentStatus,
     },
   });
   if (refundResult.count === 0) {
     throw new Error("Refund could not be applied. The remaining refundable amount may have already been refunded.");
+  }
+
+  // Push the refund to the Razorpay gateway only after the DB claim succeeds.
+  // If the money cannot be sent, revert the claim so DB and gateway stay consistent.
+  try {
+    if (isOnlineRefund) {
+      await refundRazorpayPayment(order.razorpayPaymentId!, amount * 100);
+    }
+  } catch (err) {
+    await prisma.order.updateMany({
+      where: { id: orderId, refundedAmount: { gte: amount } },
+      data: { refundedAmount: { decrement: amount }, paymentStatus: prevPaymentStatus },
+    });
+    throw err;
   }
 
   await logAudit("order.refund", "Order", orderId, { amount });
@@ -523,14 +564,16 @@ export async function uploadImage(formData: FormData) {
   const file = formData.get("file") as File;
   if (!file) throw new Error("No file provided.");
 
-  // Server-side MIME type validation
-  if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    throw new Error("Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.");
-  }
-
   // Server-side file size validation
   if (file.size > MAX_FILE_SIZE_BYTES) {
     throw new Error("File is too large. Maximum size is 5 MB.");
+  }
+
+  // Sniff the actual content so a spoofed MIME/extension can't smuggle non-images.
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const detected = detectImageType(bytes);
+  if (!detected) {
+    throw new Error("Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.");
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -540,15 +583,14 @@ export async function uploadImage(formData: FormData) {
     throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY in .env");
   }
 
-  const fileExt = file.name.split(".").pop();
   // Use crypto.randomUUID() — cryptographically strong, no Math.random()
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
+  const fileName = `${crypto.randomUUID()}.${detected.ext}`;
 
   const res = await fetch(`${supabaseUrl}/storage/v1/object/product-images/${fileName}`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${serviceRoleKey}`,
-      "Content-Type": file.type,
+      "Content-Type": detected.mime,
     },
     body: file,
   });
@@ -786,6 +828,8 @@ export async function shipOrder(orderId: string) {
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath(`/account/orders/${orderId}`);
   revalidatePath(`/account/orders`);
+  updateTag(CACHE_TAGS.workerOrders);
+  updateTag(CACHE_TAGS.deliveryOrders);
 }
 
 export async function updateOrderInternalNotes(orderId: string, internalNotes: string) {

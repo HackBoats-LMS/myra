@@ -179,9 +179,13 @@ export function buildAdhocPayload(order: NonNullable<OrderForShipment>): AdhocOr
       units: item.quantity,
       selling_price: Math.round(item.price),
     })),
-    payment_method: "COD",
+    payment_method: order.paymentMethod === "RAZORPAY" && order.paymentStatus === "PAID" ? "Prepaid" : "COD",
     shipping_charges: Math.round(order.shippingAmount || 0),
-    sub_total: Math.round(order.totalAmount),
+    // Shiprocket computes the grand total as sub_total + shipping_charges, so
+    // sub_total must be the items-only subtotal (shipping/tax are excluded here).
+    sub_total: Math.round(
+      order.orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0)
+    ),
     length: dim,
     breadth: dim,
     height: dim,

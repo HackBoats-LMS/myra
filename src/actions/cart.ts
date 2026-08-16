@@ -16,9 +16,23 @@ import {
   parseGuestCartCookie 
 } from "@/lib/cart-service";
 import { CACHE_TAGS } from "@/lib/cache";
+import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
+import { normalizeIndianPhone } from "@/lib/phone";
 import type { Coupon, Prisma, $Enums } from "@/generated/prisma";
 
 const LOW_STOCK_THRESHOLD = 5;
+
+type FlashSaleShape = Parameters<typeof applyFlashDiscount>[2];
+
+/** Unit price after applying any active flash sale plus the variant offset. */
+function flashUnitPrice(
+  product: { price: number; originalPrice: number | null; collectionId?: string | null },
+  variantOffset: number,
+  sales: FlashSaleShape
+): number {
+  const flash = applyFlashDiscount(product.price, product.originalPrice, sales, product.collectionId ?? null);
+  return (flash.discounted ? flash.price : product.price) + variantOffset;
+}
 
 // Types eligible for automatic application at checkout (best value wins).
 const AUTO_APPLY_TYPES: $Enums.CouponType[] = ["FIRST_ORDER", "SINGLE_USE", "FESTIVAL"];
@@ -38,10 +52,10 @@ async function isCouponAllowedForUser(
     if (orderCount > 0) return false;
   }
   if (coupon.maxUsesPerUser) {
-    const usage = await tx.couponUsage.count({
-      where: { couponId: coupon.id, userId },
+    const usage = await tx.couponUsage.findUnique({
+      where: { couponId_userId: { couponId: coupon.id, userId } },
     });
-    if (usage >= coupon.maxUsesPerUser) return false;
+    if (usage && usage.count >= coupon.maxUsesPerUser) return false;
   }
   return true;
 }
@@ -60,7 +74,8 @@ async function resolveCheckoutCoupon(
   tx: Prisma.TransactionClient,
   userId: string,
   couponCode: string | undefined,
-  subtotal: number
+  subtotal: number,
+  allowAutoApply: boolean = true
 ): Promise<{ coupon: Coupon | null }> {
   if (couponCode) {
     const code = couponCode.trim().toUpperCase();
@@ -83,7 +98,9 @@ async function resolveCheckoutCoupon(
     return { coupon: dbCoupon };
   }
 
-  // Auto-apply the best eligible offer.
+  // Auto-apply the best eligible offer (unless the user removed it).
+  if (!allowAutoApply) return { coupon: null };
+
   const candidates = await tx.coupon.findMany({
     where: { type: { in: AUTO_APPLY_TYPES }, isActive: true },
   });
@@ -104,12 +121,18 @@ async function resolveCheckoutCoupon(
   return { coupon: best };
 }
 
-export async function addToCart(productId: string, quantity: number = 1, variantId?: string) {
+export async function addToCart(
+  productId: string,
+  quantity: number = 1,
+  variantId?: string
+): Promise<{ added: boolean; message?: string }> {
+  const qty = Math.max(1, Math.min(quantity, 99));
   const session = await getServerSession(authOptions);
   
   if (session?.user?.id) {
     const cart = await getOrCreateCart(session.user.id);
-    await upsertCartItem(cart.id, productId, quantity, variantId);
+    await upsertCartItem(cart.id, productId, qty, variantId);
+    updateTag(CACHE_TAGS.cart(session.user.id));
   } else {
     const cookieStore = await cookies();
     const cartCookie = cookieStore.get('guest_cart');
@@ -120,26 +143,31 @@ export async function addToCart(productId: string, quantity: number = 1, variant
     );
     
     if (existingItemIndex > -1) {
-      cartItems[existingItemIndex].quantity = Math.min(cartItems[existingItemIndex].quantity + quantity, 99);
+      cartItems[existingItemIndex].quantity = Math.min(cartItems[existingItemIndex].quantity + qty, 99);
     } else {
-      if (cartItems.length < 50) {
-        cartItems.push({ productId, quantity: Math.min(quantity, 99), variantId });
+      if (cartItems.length >= 50) {
+        return { added: false, message: "Your cart is full. Please complete this order or remove an item to add more." };
       }
+      cartItems.push({ productId, quantity: qty, variantId });
     }
     
     cookieStore.set('guest_cart', JSON.stringify(cartItems), { maxAge: 60 * 60 * 24 * 30 });
   }
 
   revalidatePath("/");
+  return { added: true };
 }
 
 export async function updateCartQuantity(productId: string, quantity: number, variantId?: string) {
   const session = await getServerSession(authOptions);
+  // Cap to a sane maximum regardless of caller input.
+  const qty = Math.max(0, Math.min(Math.round(quantity), 99));
   
   if (session?.user?.id) {
     const cart = await prisma.cart.findUnique({ where: { userId: session.user.id } });
     if (cart) {
-      await updateCartItemQuantity(cart.id, productId, quantity, variantId);
+      await updateCartItemQuantity(cart.id, productId, qty, variantId);
+      updateTag(CACHE_TAGS.cart(session.user.id));
     }
   } else {
     const cookieStore = await cookies();
@@ -147,7 +175,7 @@ export async function updateCartQuantity(productId: string, quantity: number, va
     if (cartCookie) {
       try {
         let parsed = parseGuestCartCookie(cartCookie.value);
-        if (quantity <= 0) {
+        if (qty <= 0) {
           parsed = parsed.filter(i => 
             !(i.productId === productId && (i.variantId || null) === (variantId || null))
           );
@@ -156,7 +184,7 @@ export async function updateCartQuantity(productId: string, quantity: number, va
             i.productId === productId && (i.variantId || null) === (variantId || null)
           );
           if (index > -1) {
-            parsed[index].quantity = quantity;
+            parsed[index].quantity = qty;
           }
         }
         cookieStore.set('guest_cart', JSON.stringify(parsed), { maxAge: 60 * 60 * 24 * 30 });
@@ -181,11 +209,17 @@ export interface GiftDetails {
 // Read-only estimate of the final checkout total. Used to create the Razorpay
 // order before any DB order / stock side effects happen.
 export async function estimateCheckoutTotal(opts: {
-  userId: string;
   couponCode?: string;
-}): Promise<{ finalAmount: number }> {
+  allowAutoApply?: boolean;
+}): Promise<{ finalAmount: number; appliedCouponCode: string | null; discountAmount: number }> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to checkout.");
+  }
+  const userId = session.user.id;
+
   const cart = await prisma.cart.findUnique({
-    where: { userId: opts.userId },
+    where: { userId },
     include: { items: { include: { product: true, variant: true } } },
   });
 
@@ -193,13 +227,18 @@ export async function estimateCheckoutTotal(opts: {
     throw new Error("Your cart is empty.");
   }
 
+  const sales = await getActiveFlashSales();
   const items = cart.items.map((item) => ({
-    price: item.product.price + (item.variant?.priceOffset || 0),
+    price: flashUnitPrice(item.product, item.variant?.priceOffset || 0, sales),
     quantity: item.quantity,
   }));
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingConfig = await loadShippingConfig(prisma as Prisma.TransactionClient);
-  const { coupon: dbCoupon } = await resolveCheckoutCoupon(prisma as Prisma.TransactionClient, opts.userId, opts.couponCode, subtotal);
+  const [{ getStoreSettings }] = await Promise.all([import("@/lib/settings")]);
+  const [shippingConfig, settings] = await Promise.all([
+    loadShippingConfig(prisma as Prisma.TransactionClient),
+    getStoreSettings(),
+  ]);
+  const { coupon: dbCoupon } = await resolveCheckoutCoupon(prisma as Prisma.TransactionClient, userId, opts.couponCode, subtotal, opts.allowAutoApply !== false);
   const { calculateOrderTotal } = await import("@/lib/pricing");
   const pricing = calculateOrderTotal(
     items,
@@ -215,13 +254,17 @@ export async function estimateCheckoutTotal(opts: {
           discountValue: dbCoupon.discountValue,
         }
       : null,
-    shippingConfig
+    shippingConfig,
+    settings.taxPercent
   );
-  return { finalAmount: pricing.finalAmount };
+  return {
+    finalAmount: pricing.finalAmount,
+    appliedCouponCode: dbCoupon?.code ?? null,
+    discountAmount: pricing.discountAmount,
+  };
 }
 
 interface CreateOrderOptions {
-  userId: string;
   addressId: string;
   gift?: GiftDetails;
   couponCode?: string;
@@ -231,6 +274,12 @@ interface CreateOrderOptions {
   razorpayOrderId?: string | null;
   razorpayPaymentId?: string | null;
   razorpaySignature?: string | null;
+  /**
+   * When false, no coupon is auto-applied (used when the user removed an
+   * auto-applied offer). Defaults to true so explicit-code and normal checkouts
+   * keep the current auto-apply behavior.
+   */
+  allowAutoApply?: boolean;
 }
 
 export interface CheckoutResult {
@@ -244,7 +293,12 @@ export interface CheckoutResult {
 }
 
 export async function createOrderTransaction(opts: CreateOrderOptions): Promise<CheckoutResult> {
-  const { userId, addressId, gift, couponCode, phone } = opts;
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to checkout.");
+  }
+  const userId = session.user.id;
+  const { addressId, gift, couponCode, phone } = opts;
   const giftMode = Boolean(gift && Object.values(gift).some((v) => v !== undefined));
 
   return prisma.$transaction(async (tx) => {
@@ -256,6 +310,10 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
     if (!cart || cart.items.length === 0) {
       throw new Error("Your cart is empty.");
     }
+
+    const sales = await getActiveFlashSales();
+    const unitPrice = (item: { product: { price: number; originalPrice: number | null }; variant?: { priceOffset: number } | null }) =>
+      flashUnitPrice(item.product, item.variant?.priceOffset || 0, sales);
 
     let orderAddressId: string | null = addressId;
 
@@ -277,7 +335,7 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
         throw new Error("Invalid delivery address selected.");
       }
 
-      const contactPhone = (phone || "").trim();
+      const contactPhone = normalizeIndianPhone(phone);
       if (!/^\d{10}$/.test(contactPhone)) {
         throw new Error("A valid 10-digit phone number is required to place your order.");
       }
@@ -316,13 +374,23 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
     }
 
     const items = cart.items.map(item => ({
-      price: item.product.price + (item.variant?.priceOffset || 0),
+      price: unitPrice(item),
       quantity: item.quantity
     }));
 
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const shippingConfig = await loadShippingConfig(tx);
-    const { coupon: dbCoupon } = await resolveCheckoutCoupon(tx, userId, couponCode, subtotal);
+    const [{ getStoreSettings }] = await Promise.all([import("@/lib/settings")]);
+    const [shippingConfig, settings] = await Promise.all([
+      loadShippingConfig(tx),
+      getStoreSettings(),
+    ]);
+    const { coupon: dbCoupon } = await resolveCheckoutCoupon(
+      tx,
+      userId,
+      couponCode,
+      subtotal,
+      opts.allowAutoApply !== false
+    );
 
     const { calculateOrderTotal } = await import("@/lib/pricing");
     const pricing = calculateOrderTotal(
@@ -339,7 +407,8 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
             discountValue: dbCoupon.discountValue,
           }
         : null,
-      shippingConfig
+      shippingConfig,
+      settings.taxPercent
     );
 
     const discountAmount = pricing.discountAmount;
@@ -348,6 +417,11 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
     const appliedCouponCode = dbCoupon ? dbCoupon.code : null;
 
     if (dbCoupon) {
+      // Coupon usage is reserved here (order creation) so a coupon cannot be
+      // over-consumed by concurrent checkouts. If the order is later cancelled,
+      // `cancelOrder` decrements `timesUsed` and the per-user usage. Abandoned
+      // UNPAID orders are cleaned up (stock + coupon restored) by the periodic
+      // stale-order job, so the reservation is not permanent.
       await tx.coupon.update({
         where: { id: dbCoupon.id },
         data: { timesUsed: { increment: 1 } }
@@ -355,8 +429,8 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
       if (dbCoupon.maxUsesPerUser || dbCoupon.type === "FIRST_ORDER" || dbCoupon.type === "SINGLE_USE") {
         await tx.couponUsage.upsert({
           where: { couponId_userId: { couponId: dbCoupon.id, userId } },
-          create: { couponId: dbCoupon.id, userId },
-          update: {},
+          create: { couponId: dbCoupon.id, userId, count: 1 },
+          update: { count: { increment: 1 } },
         });
       }
     }
@@ -391,7 +465,7 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
             productId: item.productId,
             variantId: item.variantId || null,
             quantity: item.quantity,
-            price: item.product.price + (item.variant?.priceOffset || 0)
+            price: unitPrice(item)
           }))
         }
       }
@@ -432,13 +506,19 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
         productId: item.productId,
         name: `${item.product.name}${item.variant ? ` (${item.variant.size}/${item.variant.color})` : ''}`,
         quantity: item.quantity,
-        price: item.product.price + (item.variant?.priceOffset || 0)
+        price: unitPrice(item)
       }))
     };
   });
 }
 
-export async function checkoutCart(addressId: string, couponCode?: string, phone?: string, gift?: GiftDetails) {
+export async function checkoutCart(
+  addressId: string,
+  couponCode?: string,
+  phone?: string,
+  gift?: GiftDetails,
+  allowAutoApply: boolean = true
+) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
@@ -450,13 +530,13 @@ export async function checkoutCart(addressId: string, couponCode?: string, phone
   const userName = session.user.name || "Customer";
 
   const result = await createOrderTransaction({
-    userId,
     addressId,
     couponCode,
     phone,
     gift,
     paymentMethod: 'CASH_ON_DELIVERY',
     paymentStatus: 'UNPAID',
+    allowAutoApply,
   });
 
   if (userEmail) {
@@ -510,22 +590,37 @@ export async function mergeGuestCart(userId: string, cookieValue: string | undef
   if (guestItems.length === 0) return;
   
   await mergeGuestCartItems(userId, guestItems);
+  updateTag(CACHE_TAGS.cart(userId));
 }
 
 export async function getCart() {
   const session = await getServerSession(authOptions);
-  
+  const sales = await getActiveFlashSales();
+  const apply = (product: { price: number; originalPrice: number | null; collectionId?: string | null }) =>
+    applyFlashDiscount(product.price, product.originalPrice, sales, product.collectionId ?? null);
+
   if (session?.user?.id) {
     const cart = await prisma.cart.findUnique({
       where: { userId: session.user.id },
       include: {
         items: {
-          include: { product: { include: { collection: true } } },
+          include: { product: { include: { collection: true } }, variant: true },
           orderBy: { createdAt: 'desc' }
         }
       }
     });
-    return cart?.items || [];
+    return (cart?.items || []).map((item) => {
+      const flash = apply(item.product);
+      return {
+        ...item,
+        product: {
+          ...item.product,
+          price: flash.price,
+          originalPrice: flash.discounted ? flash.originalPrice : item.product.originalPrice,
+          flashPercent: flash.discounted ? flash.percent : undefined,
+        },
+      };
+    });
   } else {
     const cookieStore = await cookies();
     const cartCookie = cookieStore.get('guest_cart');
@@ -534,14 +629,31 @@ export async function getCart() {
     try {
       const parsed = parseGuestCartCookie(cartCookie.value);
       const productIds = parsed.map(p => p.productId);
-      const products = await prisma.product.findMany({
-        where: { id: { in: productIds }, deletedAt: null },
-        include: { collection: true }
-      });
+      const variantIds = parsed.map(p => p.variantId).filter((id): id is string => Boolean(id));
+      const [products, variants] = await Promise.all([
+        prisma.product.findMany({
+          where: { id: { in: productIds }, deletedAt: null },
+          include: { collection: true }
+        }),
+        prisma.productVariant.findMany({ where: { id: { in: variantIds } } }),
+      ]);
       
-      return parsed.map(p => {
+      return parsed.map((p) => {
         const prod = products.find(prod => prod.id === p.productId);
-        return prod ? { ...p, product: prod, id: `guest-${prod.id}` } : null;
+        if (!prod) return null;
+        const vrnt = p.variantId ? variants.find((v) => v.id === p.variantId) : null;
+        const flash = apply(prod);
+        return {
+          ...p,
+          product: {
+            ...prod,
+            price: flash.price,
+            originalPrice: flash.discounted ? flash.originalPrice : prod.originalPrice,
+            flashPercent: flash.discounted ? flash.percent : undefined,
+          },
+          variant: vrnt,
+          id: `guest-${prod.id}-${p.variantId || "base"}`,
+        };
       }).filter(Boolean);
     } catch {
       return [];

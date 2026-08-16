@@ -54,10 +54,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
         }
       `}} />
 
-      <Link href="/admin/orders" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors print:hidden rounded-none gap-1">
-        <i className="ri-arrow-left-line text-xs" />
-        Back to Orders
-      </Link>
+
 
       <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-6">
         <div>

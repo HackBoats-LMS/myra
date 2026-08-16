@@ -3,6 +3,15 @@ import { Resend } from "resend";
 // Initialize Resend with API key if available, otherwise just mock it for dev
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 interface SendEmailOptions {
   to: string;
   subject: string;
@@ -136,7 +145,7 @@ export async function sendLowStockAlert(items: { name: string; stockQuantity: nu
 export async function sendAbandonedCartEmail(email: string, items: { name: string; quantity: number }[]) {
   const cartUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/cart`;
   const rows = items
-    .map((item) => `• ${item.name} × ${item.quantity}`)
+    .map((item) => `• ${escapeHtml(item.name)} × ${item.quantity}`)
     .join("<br/>");
 
   if (!resend) {
@@ -157,6 +166,30 @@ export async function sendAbandonedCartEmail(email: string, items: { name: strin
           <div style="background:#FAFAFA;padding:12px;border:1px solid #eee;margin-bottom:16px;">${rows}</div>
           <div style="text-align: center;">
             <a href="${cartUrl}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;border: 1px solid #B6925B;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Return to your bag</a>
+          </div>
+        </div>
+      `,
+    })
+  );
+}
+
+export async function sendStockBackInStockEmail(email: string, productName: string, productUrl: string) {
+  if (!resend) {
+    console.log("📧 [BACK IN STOCK] Notifying:", productName, "->", email);
+    return;
+  }
+  await retry(() =>
+    resend.emails.send({
+      from: "Myra Shopping Mall <noreply@myra.com>",
+      to: email,
+      subject: `${productName} is back in stock!`,
+      html: `
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border: 1px solid #B6925B;padding:24px;border-top:4px solid #4A3B2C;">
+          <h2 style="font-family: serif; color: #4A3B2C;">Good news!</h2>
+          <p style="color: #555; font-size: 14px;">The item you were waiting for is back in stock:</p>
+          <p style="font-size: 16px; font-weight: bold; color: #4A3B2C;">${escapeHtml(productName)}</p>
+          <div style="text-align: center;">
+            <a href="${productUrl}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;border: 1px solid #B6925B;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Shop it now</a>
           </div>
         </div>
       `,
@@ -192,7 +225,7 @@ export async function sendAdminNewOrderEmail(order: AdminOrderSummary) {
   const shortOrderId = order.orderId.split('-')[0].toUpperCase();
   const rows = [
     `Order ID: #${shortOrderId}`,
-    `Customer: ${order.customerName}`,
+    `Customer: ${escapeHtml(order.customerName)}`,
     `Items: ${order.itemCount}`,
     `Payment: ${order.paymentMethod || "N/A"}`,
     `Total: ₹${order.totalAmount.toFixed(2)}`,
@@ -233,9 +266,9 @@ export async function sendAdminNewReturnEmail(input: {
 
   const rows = [
     `Request ID: #${input.requestId.split('-')[0].toUpperCase()}`,
-    `Customer: ${input.customerName}`,
-    `Item: ${input.itemName}`,
-    `Reason: ${input.reason}`,
+    `Customer: ${escapeHtml(input.customerName)}`,
+    `Item: ${escapeHtml(input.itemName)}`,
+    `Reason: ${escapeHtml(input.reason)}`,
   ].join("\n");
 
   if (!resend) {

@@ -16,6 +16,7 @@ export default function AdminSidebar({ onNavigate }: SidebarProps) {
       title: "Overview",
       links: [
         { href: "/admin", icon: "ri-dashboard-3-line", label: "Dashboard" },
+        { href: "/admin/analytics", icon: "ri-line-chart-line", label: "Analytics" },
       ],
     },
     {
@@ -30,6 +31,7 @@ export default function AdminSidebar({ onNavigate }: SidebarProps) {
       title: "Sales & Fulfilment",
       links: [
         { href: "/admin/orders", icon: "ri-shopping-cart-2-line", label: "Orders" },
+        { href: "/admin/flash-sales", icon: "ri-flashlight-line", label: "Flash Sales" },
         { href: "/admin/returns", icon: "ri-refund-2-line", label: "Returns & Replacements" },
         { href: "/admin/coupons", icon: "ri-ticket-2-line", label: "Coupons & Offers" },
         { href: "/admin/shipping", icon: "ri-truck-line", label: "Shipping" },
@@ -53,7 +55,7 @@ export default function AdminSidebar({ onNavigate }: SidebarProps) {
   ];
 
   return (
-    <aside className="w-64 bg-[#4A3B2C] text-white min-h-screen flex flex-col shadow-xl z-50">
+    <aside className="w-64 bg-[#4A3B2C] text-white h-screen sticky top-0 overflow-hidden flex flex-col shadow-xl z-50">
       <div className="p-6 border-b border-[#B6925B]/20 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif tracking-widest text-[#FAFAFA]">MYRA</h2>
@@ -70,7 +72,7 @@ export default function AdminSidebar({ onNavigate }: SidebarProps) {
         )}
       </div>
 
-      <nav className="flex-1 p-4 mt-4 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-4 mt-4 overflow-y-auto no-scrollbar">
         {sections.map((section) => (
           <div key={section.title} className="mb-5">
             <p className="px-4 mb-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#B6925B]">{section.title}</p>

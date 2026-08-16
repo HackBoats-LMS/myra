@@ -1,24 +1,36 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 import DeleteButton from "@/components/admin/DeleteButton";
 import { deleteCollection } from "@/actions/admin";
 import type { Prisma } from "@/generated/prisma";
 import { requireWorkerModule } from "@/lib/worker";
+import { CACHE_TAGS } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
-export default async function WorkerCollectionsPage() {
-  await requireWorkerModule("inventory");
-  let collections: Prisma.CollectionGetPayload<{
-    include: { _count: { select: { products: true } } }
-  }>[] = [];
-  try {
-    collections = await prisma.collection.findMany({
+type WorkerCollectionRow = Prisma.CollectionGetPayload<{
+  include: { _count: { select: { products: true } } }
+}>;
+
+const getCachedWorkerCollections = unstable_cache(
+  async () => {
+    return prisma.collection.findMany({
       include: {
         _count: { select: { products: true } },
       },
       orderBy: { createdAt: "desc" },
-    });
+    }) as Promise<WorkerCollectionRow[]>;
+  },
+  ["worker", "collections"],
+  { tags: [CACHE_TAGS.workerCollections], revalidate: 30 }
+);
+
+export default async function WorkerCollectionsPage() {
+  await requireWorkerModule("inventory");
+  let collections: WorkerCollectionRow[] = [];
+  try {
+    collections = await getCachedWorkerCollections();
   } catch (error) {
     console.warn("Database unreachable in WorkerCollectionsPage:", error);
   }

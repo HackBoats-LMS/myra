@@ -151,8 +151,8 @@ export default async function AdminDashboard() {
               <i className={`${iconClass} text-xl`} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest truncate">{label}</p>
-              <p className="text-xl font-bold text-[#4A3B2C] mt-1 truncate">{value}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>
+              <p className="text-xl font-bold text-[#4A3B2C] mt-1 break-words leading-tight">{value}</p>
             </div>
           </div>
         ))}

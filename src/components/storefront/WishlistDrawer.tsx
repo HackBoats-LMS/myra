@@ -15,6 +15,7 @@ export default function WishlistDrawer() {
   const [rendered, setRendered] = useState(false);
   const [closing, setClosing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [movingAll, setMovingAll] = useState(false);
   const toast = useToast();
   const router = useRouter();
 
@@ -33,20 +34,22 @@ export default function WishlistDrawer() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    const raf = requestAnimationFrame(() => {
-      if (isWishlistOpen) {
-        setRendered(true);
+    
+    if (isWishlistOpen) {
+      setRendered(true);
+      setClosing(true);
+      // Small delay to allow DOM to render off-screen before sliding in
+      setTimeout(() => {
         setClosing(false);
-      } else {
-        setClosing(true);
-        closeTimer.current = setTimeout(() => {
-          setRendered(false);
-          setClosing(false);
-          closeTimer.current = null;
-        }, 300);
-      }
-    });
-    return () => cancelAnimationFrame(raf);
+      }, 10);
+    } else {
+      setClosing(true);
+      closeTimer.current = setTimeout(() => {
+        setRendered(false);
+        setClosing(false);
+        closeTimer.current = null;
+      }, 300);
+    }
   }, [isWishlistOpen]);
 
   useEffect(() => {
@@ -81,7 +84,11 @@ export default function WishlistDrawer() {
   const handleMoveToBag = async (item: WishlistDrawerItem) => {
     setBusyId(item.id);
     try {
-      await addToCart(item.product.id, 1);
+      const res = await addToCart(item.product.id, 1);
+      if (!res.added) {
+        toast.error(res.message || "Unable to add item to cart.");
+        return;
+      }
       await toggleWishlist(item.product.id);
       setItems((prev) => prev.filter((i) => i.id !== item.id));
       toast.success("Moved to bag!");
@@ -91,6 +98,32 @@ export default function WishlistDrawer() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const handleMoveAllToBag = async () => {
+    if (items.length === 0) return;
+    setMovingAll(true);
+    let moved = 0;
+    let skipped = 0;
+    const snapshot = [...items];
+    for (const item of snapshot) {
+      try {
+        const res = await addToCart(item.product.id, 1);
+        if (!res.added) {
+          skipped += 1;
+          continue;
+        }
+        await toggleWishlist(item.product.id);
+        moved += 1;
+        setItems((prev) => prev.filter((i) => i.id !== item.id));
+      } catch {
+        skipped += 1;
+      }
+    }
+    if (moved > 0) toast.success(`Moved ${moved} item${moved > 1 ? "s" : ""} to bag`);
+    if (skipped > 0) toast.error(`Skipped ${skipped} item${skipped > 1 ? "s" : ""} (out of stock or variants required)`);
+    setMovingAll(false);
+    router.refresh();
   };
 
   return (
@@ -205,6 +238,18 @@ export default function WishlistDrawer() {
               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Items Saved</span>
               <span className="text-xl font-serif text-[#4A3B2C]">{items.length}</span>
             </div>
+            <button
+              onClick={handleMoveAllToBag}
+              disabled={movingAll}
+              className="w-full border border-[#B6925B]/30 text-[#B6925B] hover:bg-[#B6925B] hover:text-white py-3 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-none disabled:opacity-50 flex items-center justify-center gap-1.5"
+            >
+              {movingAll ? (
+                <i className="ri-loader-4-line animate-spin text-sm" />
+              ) : (
+                <i className="ri-shopping-bag-line text-sm" />
+              )}
+              <span>Move All to Bag</span>
+            </button>
             <Link
               href="/wishlist"
               onClick={closeWishlist}

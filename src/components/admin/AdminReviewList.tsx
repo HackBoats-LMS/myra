@@ -111,6 +111,15 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
               </td>
               <td className="p-4 max-w-xs border-r border-[#B6925B]/10">
                 <p className="text-[#4A3B2C] text-xs">{review.comment || <span className="italic text-gray-400">No comment</span>}</p>
+                {review.images && review.images.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {review.images.map((src, i) => (
+                      <div key={`${src}-${i}`} className="relative w-10 h-10 border border-[#B6925B]/20 overflow-hidden rounded-none bg-[#FAFAFA]">
+                        <Image src={src} alt="Review photo" fill className="object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {review.reply ? (
                   <div className="mt-2 pl-3 border-l-2 border-[#B6925B]/30 text-[11px] text-[#B6925B]">
                     <span className="font-bold uppercase tracking-widest text-[9px]">Store reply:</span> {review.reply}

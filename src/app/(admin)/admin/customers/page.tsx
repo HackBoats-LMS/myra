@@ -1,32 +1,84 @@
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { Prisma } from "@/generated/prisma";
+import AdminFilters from "@/components/admin/AdminFilters";
+import Pagination from "@/components/storefront/Pagination";
 
 export const metadata: Metadata = {
   title: "Customers Directory | Admin Portal",
 };
 
-export default async function AdminCustomersPage() {
-  let customers: Prisma.UserGetPayload<{
-    where: { role: 'CUSTOMER' };
-    include: { orders: { select: { totalAmount: true } } };
-  }>[] = [];
-  try {
-    customers = await prisma.user.findMany({
-      where: { role: 'CUSTOMER' },
-      include: {
-        orders: {
-          select: {
-            totalAmount: true,
+const ITEMS_PER_PAGE = 25;
+
+type CustomerRow = Prisma.UserGetPayload<{
+  where: { role: 'CUSTOMER' };
+  include: { orders: { select: { totalAmount: true } } };
+}>;
+
+export const dynamic = "force-dynamic";
+
+const getCachedCustomers = unstable_cache(
+  async (search: string | undefined, skip: number, take: number) => {
+    const where = {
+      role: 'CUSTOMER' as const,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' as const } },
+              { email: { contains: search, mode: 'insensitive' as const } },
+              { phoneNumber: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
+    };
+    const [customers, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        include: {
+          orders: {
+            select: {
+              totalAmount: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      prisma.user.count({ where }),
+    ]);
+    return { customers: customers as CustomerRow[], total };
+  },
+  ["admin", "customers"],
+  { revalidate: 30 }
+);
+
+export default async function AdminCustomersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; page?: string }>;
+}) {
+  const { search } = await searchParams;
+  const resolved = await searchParams;
+  const currentPage = Math.max(1, parseInt(resolved.page || '1', 10));
+
+  let customers: CustomerRow[] = [];
+  let totalCustomers = 0;
+  try {
+    const result = await getCachedCustomers(search, (currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+    customers = result.customers;
+    totalCustomers = result.total;
   } catch (error) {
     console.warn("Database unreachable in AdminCustomersPage:", error);
   }
+
+  const totalPages = Math.max(1, Math.ceil(totalCustomers / ITEMS_PER_PAGE));
+  const urlParams = new URLSearchParams();
+  if (search) urlParams.set("search", search);
+  const qs = urlParams.toString();
+  const baseUrl = qs ? `/admin/customers?${qs}` : "/admin/customers";
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -34,6 +86,8 @@ export default async function AdminCustomersPage() {
         <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Customers</h2>
         <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage your customer database and view aggregate spending</p>
       </div>
+
+      <AdminFilters search={search} placeholder="Search name, email or phone..." />
 
       <div className="bg-white border border-[#B6925B]/20 relative">
         <table className="w-full text-left text-sm text-[#4A3B2C]">
@@ -98,6 +152,8 @@ export default async function AdminCustomersPage() {
           </tbody>
         </table>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
     </div>
   );
 }

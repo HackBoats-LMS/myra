@@ -32,10 +32,7 @@ export default async function AdminCustomerDetailsPage({ params }: { params: Pro
     <div className="max-w-6xl mx-auto px-6 py-12 md:py-16 space-y-8 rounded-none">
       {/* Back button */}
       <div>
-        <Link href="/admin/customers" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors mb-4 rounded-none gap-1">
-          <i className="ri-arrow-left-line text-xs" />
-          Back to Customers
-        </Link>
+
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#B6925B]/20 pb-6">
           <div>
             <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">{customer.name || "Unnamed Customer"}</h1>

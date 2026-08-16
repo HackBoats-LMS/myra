@@ -5,22 +5,28 @@ import { getCart, updateCartQuantity } from "@/actions/cart";
 import { toggleWishlist } from "@/actions/wishlist";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
 interface DrawerItem {
   id: string;
   quantity: number;
+  variantId?: string | null;
   product: {
     id: string;
     name: string;
     price: number;
+    originalPrice?: number | null;
+    flashPercent?: number;
     images?: string[] | null;
     collection?: { name: string | null } | null;
   };
+  variant?: { priceOffset: number; size?: string | null; color?: string | null } | null;
 }
 
 export default function CartDrawer() {
   const { isCartOpen, closeCart } = useCartDrawer();
+  const router = useRouter();
   const [items, setItems] = useState<DrawerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [rendered, setRendered] = useState(false);
@@ -42,20 +48,22 @@ export default function CartDrawer() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    const raf = requestAnimationFrame(() => {
-      if (isCartOpen) {
-        setRendered(true);
+    
+    if (isCartOpen) {
+      setRendered(true);
+      setClosing(true);
+      // Small delay to allow DOM to render off-screen before sliding in
+      setTimeout(() => {
         setClosing(false);
-      } else {
-        setClosing(true);
-        closeTimer.current = setTimeout(() => {
-          setRendered(false);
-          setClosing(false);
-          closeTimer.current = null;
-        }, 300);
-      }
-    });
-    return () => cancelAnimationFrame(raf);
+      }, 10);
+    } else {
+      setClosing(true);
+      closeTimer.current = setTimeout(() => {
+        setRendered(false);
+        setClosing(false);
+        closeTimer.current = null;
+      }, 300);
+    }
   }, [isCartOpen]);
 
   useEffect(() => {
@@ -75,36 +83,42 @@ export default function CartDrawer() {
 
   if (!rendered) return null;
 
-  const handleQuantity = async (productId: string, currentQty: number, change: number) => {
-    const newQty = currentQty + change;
+  const handleQuantity = async (productId: string, variantId: string | null | undefined, newQty: number) => {
     try {
-      // Optimistic update
+      // Optimistic update keyed by the line id (unique per product+variant).
       setItems(prev =>
         prev.map(item =>
-          item.product.id === productId ? { ...item, quantity: newQty } : item
+          item.product.id === productId && (item.variantId || null) === (variantId || null)
+            ? { ...item, quantity: newQty }
+            : item
         ).filter(item => item.quantity > 0)
       );
-      await updateCartQuantity(productId, newQty);
+      await updateCartQuantity(productId, newQty, variantId ?? undefined);
+      router.refresh();
     } catch {
       toast.error("Failed to update cart");
       fetchCart();
     }
   };
 
-  const handleSaveForLater = async (productId: string) => {
+  const handleSaveForLater = async (productId: string, variantId?: string | null) => {
     try {
-      // Optimistic delete
-      setItems(prev => prev.filter(item => item.product.id !== productId));
+      // Optimistic delete keyed by product+variant.
+      setItems(prev => prev.filter(item => !(item.product.id === productId && (item.variantId || null) === (variantId || null))));
       await toggleWishlist(productId); // Add to wishlist
-      await updateCartQuantity(productId, 0); // Remove from cart
+      await updateCartQuantity(productId, 0, variantId ?? undefined); // Remove from cart
       toast.success("Saved to wishlist!");
+      router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Action failed");
       fetchCart();
     }
   };
 
-  const totalAmount = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  // Effective unit price includes the variant offset, matching cart/checkout.
+  const linePrice = (item: DrawerItem) =>
+    (item.product.price + (item.variant?.priceOffset || 0)) * item.quantity;
+  const totalAmount = items.reduce((sum, item) => sum + linePrice(item), 0);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -177,14 +191,24 @@ export default function CartDrawer() {
                     <div>
                       <h4 className="text-sm font-bold text-[#4A3B2C] line-clamp-1">{item.product.name}</h4>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">{item.product.collection?.name || "Uncategorized"}</p>
-                      <p className="text-sm font-bold text-[#B6925B] mt-1.5">₹{item.product.price.toFixed(2)}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <p className="text-sm font-bold text-[#B6925B]">₹{(item.product.price + (item.variant?.priceOffset || 0)).toFixed(2)}</p>
+                        {item.product.originalPrice != null && item.product.originalPrice + (item.variant?.priceOffset || 0) > item.product.price + (item.variant?.priceOffset || 0) && (
+                          <p className="text-xs text-gray-400 line-through">₹{(item.product.originalPrice + (item.variant?.priceOffset || 0)).toFixed(2)}</p>
+                        )}
+                        {item.product.flashPercent ? (
+                          <span className="text-[9px] font-bold uppercase tracking-widest bg-[#B6925B] text-white px-1.5 py-0.5 rounded-none">
+                            -{item.product.flashPercent}%
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between mt-2">
                       {/* Qty selectors */}
                       <div className="flex items-center border border-[#B6925B]/30 bg-white rounded-none">
                         <button
-                          onClick={() => handleQuantity(item.product.id, item.quantity, -1)}
+                          onClick={() => handleQuantity(item.product.id, item.variantId, item.quantity - 1)}
                           className="p-1.5 text-[#B6925B] hover:text-[#4A3B2C] transition-colors flex items-center justify-center"
                           aria-label="Decrease quantity"
                         >
@@ -192,7 +216,7 @@ export default function CartDrawer() {
                         </button>
                         <span className="w-8 text-center text-xs font-bold text-[#4A3B2C]">{item.quantity}</span>
                         <button
-                          onClick={() => handleQuantity(item.product.id, item.quantity, 1)}
+                          onClick={() => handleQuantity(item.product.id, item.variantId, item.quantity + 1)}
                           className="p-1.5 text-[#B6925B] hover:text-[#4A3B2C] transition-colors flex items-center justify-center"
                           aria-label="Increase quantity"
                         >
@@ -203,13 +227,13 @@ export default function CartDrawer() {
                       {/* Action links */}
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => handleSaveForLater(item.product.id)}
+                          onClick={() => handleSaveForLater(item.product.id, item.variantId)}
                           className="text-[10px] font-bold text-[#B6925B] hover:text-[#4A3B2C] uppercase tracking-widest transition-colors"
                         >
                           Save for Later
                         </button>
                         <button
-                          onClick={() => handleQuantity(item.product.id, item.quantity, -item.quantity)}
+                          onClick={() => handleQuantity(item.product.id, item.variantId, 0)}
                           className="p-1 text-gray-400 hover:text-red-700 transition-colors flex items-center justify-center"
                           title="Remove item"
                         >
@@ -241,7 +265,7 @@ export default function CartDrawer() {
                 View Full Bag
               </Link>
               <Link
-                href="/cart"
+                href="/checkout"
                 onClick={closeCart}
                 className="w-full text-center bg-[#B6925B] hover:bg-[#9c7d4e] text-white py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
               >

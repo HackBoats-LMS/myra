@@ -102,25 +102,28 @@ export default function ProfileForm({ user }: { user: User }) {
     <div className="space-y-6">
       {/* Account Details Box */}
       <div className="bg-white border border-[#B6925B]/20 shadow-sm relative rounded-none">
-        <div className="p-6 border-b border-[#B6925B]/20 flex justify-between items-center bg-[#FAFAFA]">
-          <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide">Account Details</h3>
-          <div className="flex items-center gap-4">
-            {!isEditing && (
+        <div className="p-6 border-b border-[#B6925B]/20 bg-[#FAFAFA]">
+          {/* Title row */}
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide flex-shrink-0">Account Details</h3>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {!isEditing && (
+                <button 
+                  onClick={() => dispatch({ type: "START_EDIT" })}
+                  className="text-[10px] font-bold text-[#B6925B] hover:text-[#9c7d4e] flex items-center gap-1 transition-colors uppercase tracking-widest border border-[#B6925B]/30 px-3 py-1.5 hover:bg-[#B6925B]/5"
+                >
+                  <i className="ri-edit-box-line text-sm" />
+                  <span className="hidden sm:inline">Edit</span>
+                </button>
+              )}
               <button 
-                onClick={() => dispatch({ type: "START_EDIT" })}
-                className="text-sm font-semibold text-[#B6925B] hover:text-[#9c7d4e] flex items-center gap-1.5 transition-colors uppercase tracking-widest"
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="text-[10px] font-bold text-gray-400 hover:text-red-600 transition-colors flex items-center gap-1 uppercase tracking-widest border border-gray-200 px-3 py-1.5 hover:bg-red-50"
               >
-                <i className="ri-edit-box-line text-base" />
-                Edit Profile
+                <i className="ri-logout-box-r-line text-sm" />
+                <span className="hidden sm:inline">Sign Out</span>
               </button>
-            )}
-            <button 
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-sm font-bold text-gray-500 hover:text-red-600 transition-colors flex items-center gap-1.5 uppercase tracking-widest"
-            >
-              <i className="ri-logout-box-r-line text-base" />
-              Sign Out
-            </button>
+            </div>
           </div>
         </div>
 

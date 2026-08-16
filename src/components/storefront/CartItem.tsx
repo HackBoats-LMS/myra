@@ -14,12 +14,15 @@ interface CartLineItem {
     id: string;
     slug: string;
     price: number;
+    originalPrice?: number | null;
     name: string;
     images: string[];
     stockQuantity?: number;
     collection?: { name: string | null } | null;
   };
   variant?: { priceOffset: number; size?: string | null; color?: string | null } | null;
+  flashPrice?: number;
+  flashPercent?: number;
 }
 
 export default function CartItem({ item }: { item: CartLineItem }) {
@@ -28,6 +31,13 @@ export default function CartItem({ item }: { item: CartLineItem }) {
 
   const maxQty = item.product.stockQuantity ?? Infinity;
   const atStockLimit = item.quantity >= maxQty;
+
+  // Effective unit price reflects the active flash sale, plus any variant offset.
+  const unitPrice = (item.flashPrice ?? item.product.price) + (item.variant?.priceOffset || 0);
+  const originalUnitPrice =
+    (item.product.originalPrice && item.product.originalPrice > item.product.price
+      ? item.product.originalPrice
+      : item.product.price) + (item.variant?.priceOffset || 0);
 
   const handleUpdate = async (newQty: number) => {
     if (newQty > maxQty) return;
@@ -66,31 +76,50 @@ export default function CartItem({ item }: { item: CartLineItem }) {
               </p>
             )}
           </div>
-          <p className="text-base font-bold text-[#4A3B2C]">
-            Rs. {((item.product.price + (item.variant?.priceOffset || 0)) * item.quantity).toLocaleString('en-IN')}
-          </p>
+          <div className="flex flex-col items-end gap-0.5">
+            {item.flashPercent ? (
+              <span className="text-[9px] font-bold uppercase tracking-widest bg-[#B6925B] text-white px-1.5 py-0.5 rounded-none">
+                Flash {item.flashPercent}% OFF
+              </span>
+            ) : null}
+            <p className="text-base font-bold text-[#4A3B2C]">
+              Rs. {(unitPrice * item.quantity).toLocaleString('en-IN')}
+            </p>
+            {item.flashPrice != null && item.flashPrice < originalUnitPrice && (
+              <p className="text-xs text-gray-400 line-through">
+                Rs. {(originalUnitPrice * item.quantity).toLocaleString('en-IN')}
+              </p>
+            )}
+          </div>
         </div>
         
         <div className="mt-auto flex items-center justify-between">
-          <div className="flex items-center w-24 h-8 border border-[#B6925B]/30 rounded-none bg-white">
-            <button onClick={() => handleUpdate(item.quantity - 1)} disabled={isUpdating || item.quantity <= 1} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
-              <i className="ri-subtract-line text-sm" />
-            </button>
-            <div className="w-1/3 h-full flex items-center justify-center text-xs font-bold text-[#4A3B2C]">
-              {item.quantity}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center w-24 h-8 border border-[#B6925B]/30 rounded-none bg-white">
+              <button onClick={() => handleUpdate(item.quantity - 1)} disabled={isUpdating || item.quantity <= 1} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
+                <i className="ri-subtract-line text-sm" />
+              </button>
+              <div className="w-1/3 h-full flex items-center justify-center text-xs font-bold text-[#4A3B2C]">
+                {item.quantity}
+              </div>
+              <button onClick={() => handleUpdate(item.quantity + 1)} disabled={isUpdating || atStockLimit} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
+                <i className="ri-add-line text-sm" />
+              </button>
             </div>
-            <button onClick={() => handleUpdate(item.quantity + 1)} disabled={isUpdating || atStockLimit} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
-              <i className="ri-add-line text-sm" />
-            </button>
+            {item.quantity > maxQty ? (
+              <span className="text-[9px] font-bold uppercase tracking-widest text-red-600 bg-red-50 px-2 py-1 border border-red-100">
+                Limit: {maxQty}
+              </span>
+            ) : atStockLimit && item.product.stockQuantity != null ? (
+              <span className="text-[9px] font-bold uppercase tracking-widest text-red-600 bg-red-50 px-2 py-1 border border-red-100">
+                Only {item.product.stockQuantity} left
+              </span>
+            ) : null}
           </div>
-          {atStockLimit && item.product.stockQuantity != null && (
-            <span className="text-[9px] font-bold uppercase tracking-widest text-red-600">
-              Only {item.product.stockQuantity} in stock
-            </span>
-          )}
           
-          <button onClick={() => handleUpdate(0)} className="p-2 text-gray-400 hover:text-red-600 transition-colors">
+          <button onClick={() => handleUpdate(0)} className="text-gray-400 hover:text-red-600 transition-colors flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest">
             <i className="ri-delete-bin-line text-base" />
+            <span className="hidden sm:inline">Remove</span>
           </button>
         </div>
       </div>

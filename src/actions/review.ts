@@ -5,8 +5,31 @@ import { authOptions } from "@/lib/auth";
 import { revalidatePath, updateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache";
 import { logAudit } from "@/lib/audit";
+import { detectImageType } from "@/lib/image-upload";
+import { uploadImageObject, REVIEW_IMAGES_BUCKET } from "@/lib/image-storage";
 
-export async function submitReview(productId: string, rating: number, comment: string) {
+const REVIEW_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
+export async function uploadReviewImage(file: File): Promise<{ path: string; previewUrl: string }> {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user?.id) {
+    throw new Error("You must be logged in to add review photos.");
+  }
+  if (!file) {
+    throw new Error("No file provided.");
+  }
+  if (file.size > REVIEW_IMAGE_MAX_BYTES) {
+    throw new Error("File is too large. Maximum size is 5 MB.");
+  }
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const detected = detectImageType(bytes);
+  if (!detected) {
+    throw new Error("Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.");
+  }
+  return uploadImageObject(REVIEW_IMAGES_BUCKET, file, detected.mime, detected.ext);
+}
+
+export async function submitReview(productId: string, rating: number, comment: string, images: string[] = []) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.id) {
@@ -44,6 +67,7 @@ export async function submitReview(productId: string, rating: number, comment: s
       data: {
         rating,
         comment: comment.trim() || null,
+        images: images.slice(0, 5),
       },
     });
   } else {
@@ -54,6 +78,7 @@ export async function submitReview(productId: string, rating: number, comment: s
         productId,
         rating,
         comment: comment.trim() || null,
+        images: images.slice(0, 5),
       },
     });
   }

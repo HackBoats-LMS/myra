@@ -315,19 +315,19 @@ export default function AddressManager({ addresses }: AddressManagerProps) {
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-[#B6925B]/10">
-                  <div className="flex gap-2">
+                  <div className="flex gap-4">
                     <button
                       onClick={() => dispatch({ type: "OPEN_EDIT", address })}
-                      className="text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-2 hover:bg-white flex items-center justify-center"
+                      className="text-[#B6925B] hover:text-[#4A3B2C] transition-colors py-2 flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest"
                       title="Edit Address"
                     >
-                      <i className="ri-edit-box-line text-sm" />
+                      <i className="ri-edit-box-line text-sm" /> Edit
                     </button>
                     {!address.isDefault && (
                       <button
                         onClick={() => handleDelete(address.id)}
                         disabled={loading === `delete-${address.id}`}
-                        className="text-gray-400 hover:text-red-700 transition-colors p-2 hover:bg-white disabled:opacity-50 flex items-center justify-center"
+                        className="text-gray-400 hover:text-red-700 transition-colors py-2 disabled:opacity-50 flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest"
                         title="Delete Address"
                       >
                         {loading === `delete-${address.id}` ? (
@@ -335,6 +335,7 @@ export default function AddressManager({ addresses }: AddressManagerProps) {
                         ) : (
                           <i className="ri-delete-bin-line text-sm" />
                         )}
+                        Delete
                       </button>
                     )}
                   </div>

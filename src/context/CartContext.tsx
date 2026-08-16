@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 
 interface CartContextType {
   isCartOpen: boolean;
@@ -9,11 +9,24 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [isCartOpen, setIsCartOpen] = useState(false);
+type CartAction = { type: "OPEN" } | { type: "CLOSE" };
 
-  const openCart = () => setIsCartOpen(true);
-  const closeCart = () => setIsCartOpen(false);
+function cartReducer(state: boolean, action: CartAction): boolean {
+  switch (action.type) {
+    case "OPEN":
+      return true;
+    case "CLOSE":
+      return false;
+    default:
+      return state;
+  }
+}
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [isCartOpen, dispatch] = useReducer(cartReducer, false);
+
+  const openCart = () => dispatch({ type: "OPEN" });
+  const closeCart = () => dispatch({ type: "CLOSE" });
 
   return (
     <CartContext.Provider value={{ isCartOpen, openCart, closeCart }}>

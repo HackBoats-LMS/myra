@@ -1,10 +1,13 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import MobileMenu from "./MobileMenu";
+import dynamic from "next/dynamic";
 import CartButton from "./CartButton";
 import WishlistButton from "./WishlistButton";
 import { NAV_LINKS } from "@/lib/navigation";
+
+// Load the mobile slide-out menu only on the client when the hamburger is tapped.
+const MobileMenu = dynamic(() => import("./MobileMenu"), { ssr: false });
 
 interface MinimalTopbarProps {
   cartCount: number;

@@ -189,7 +189,7 @@ export async function reorderOrder(orderId: string) {
     where: { id: { in: order.orderItems.map((i) => i.productId) }, deletedAt: null },
     select: { id: true, stockQuantity: true },
   });
-  const available = new Set(availableProducts.map((p) => p.id));
+  const available = new Map(availableProducts.map((p) => [p.id, p.stockQuantity]));
 
   const variants = await prisma.productVariant.findMany({
     where: { id: { in: order.orderItems.filter((i) => i.variantId).map((i) => i.variantId!) } },
@@ -200,7 +200,11 @@ export async function reorderOrder(orderId: string) {
   let added = 0;
   for (const item of order.orderItems) {
     if (!available.has(item.productId)) continue;
-    if (item.variantId && (variantStock.get(item.variantId) ?? 0) <= 0) continue;
+    if (item.variantId) {
+      if ((variantStock.get(item.variantId) ?? 0) <= 0) continue;
+    } else if ((available.get(item.productId) ?? 0) <= 0) {
+      continue;
+    }
     await addToCart(item.productId, item.quantity, item.variantId || undefined);
     added += 1;
   }
@@ -231,6 +235,10 @@ export async function cancelOrder(orderId: string) {
     throw new Error("Only pending orders can be cancelled.");
   }
 
+  if (order.paymentStatus === "PAID") {
+    throw new Error("This order is already paid. Please request a return/refund instead.");
+  }
+
   await prisma.$transaction(async (tx) => {
     const orderItems = await tx.orderItem.findMany({
       where: { orderId },
@@ -256,6 +264,24 @@ export async function cancelOrder(orderId: string) {
         where: { code: order.couponCode, timesUsed: { gt: 0 } },
         data: { timesUsed: { decrement: 1 } },
       });
+
+      // Release one per-user usage so the coupon can be used again.
+      const coupon = await tx.coupon.findUnique({ where: { code: order.couponCode } });
+      if (coupon) {
+        const usage = await tx.couponUsage.findUnique({
+          where: { couponId_userId: { couponId: coupon.id, userId } },
+        });
+        if (usage) {
+          if (usage.count <= 1) {
+            await tx.couponUsage.delete({ where: { id: usage.id } });
+          } else {
+            await tx.couponUsage.update({
+              where: { id: usage.id },
+              data: { count: { decrement: 1 } },
+            });
+          }
+        }
+      }
     }
 
     await tx.order.update({

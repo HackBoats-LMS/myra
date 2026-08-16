@@ -13,6 +13,7 @@ interface ProductCarouselProps {
     reviewCount?: number;
     averageRating?: number;
     stockQuantity?: number;
+    flashPercent?: number;
   }>;
 }
 

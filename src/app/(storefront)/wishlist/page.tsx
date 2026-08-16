@@ -4,13 +4,25 @@ import { authOptions } from "@/lib/auth";
 import { cookies } from "next/headers";
 import ProductCard from "@/components/storefront/ProductCard";
 import MoveToCartButton from "@/components/storefront/MoveToCartButton";
-import type { Prisma, Product } from "@/generated/prisma";
+import MoveAllToBagButton from "@/components/storefront/MoveAllToBagButton";
+import type { Prisma } from "@/generated/prisma";
+import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
 
 type WishlistItem = Prisma.WishlistItemGetPayload<{
   include: { product: { include: { reviews: { select: { rating: true } } } } };
 }>;
 
-type WishlistProduct = Omit<Product, "reviews"> & { reviewCount: number; averageRating: number };
+type WishlistProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  originalPrice: number | null;
+  flashPercent?: number;
+  images: string[];
+  reviewCount: number;
+  averageRating: number;
+};
 
 function parseGuestWishlistCookie(value: string | undefined): string[] {
   if (!value) return [];
@@ -39,6 +51,10 @@ export default async function WishlistPage() {
   let itemsWithReviews: { id: string; product: WishlistProduct }[] = [];
 
   try {
+    const sales = await getActiveFlashSales();
+    const apply = (p: { price: number; originalPrice: number | null; collectionId?: string | null }) =>
+      applyFlashDiscount(p.price, p.originalPrice, sales, p.collectionId ?? null);
+
     if (userId) {
       const wishlist = await prisma.wishlist.findUnique({
         where: { userId },
@@ -52,10 +68,18 @@ export default async function WishlistPage() {
 
       itemsWithReviews =
         wishlist?.items.map((item: WishlistItem) => {
-          const { id, slug, name, price, images } = item.product;
+          const { id, slug, name, originalPrice, images } = item.product;
+          const flash = apply(item.product);
           return {
             id: item.id,
-            product: { id, slug, name, price, images, ...computeReviews(item.product) } as WishlistProduct,
+            product: {
+              id, slug, name,
+              price: flash.price,
+              originalPrice: flash.discounted ? flash.originalPrice : originalPrice,
+              flashPercent: flash.discounted ? flash.percent : undefined,
+              images,
+              ...computeReviews(item.product),
+            } as WishlistProduct,
           };
         }) || [];
     } else {
@@ -72,7 +96,9 @@ export default async function WishlistPage() {
             id: p.id,
             slug: p.slug,
             name: p.name,
-            price: p.price,
+            price: apply(p).price,
+            originalPrice: apply(p).discounted ? apply(p).originalPrice : p.originalPrice,
+            flashPercent: apply(p).discounted ? apply(p).percent : undefined,
             images: p.images,
             ...computeReviews(p),
           } as WishlistProduct,
@@ -90,6 +116,9 @@ export default async function WishlistPage() {
         <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4">
           <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">Wishlist</h1>
           <p className="text-sm text-gray-500 uppercase tracking-widest">{itemsWithReviews.length} items saved</p>
+          {itemsWithReviews.length > 0 && (
+            <MoveAllToBagButton productIds={itemsWithReviews.map((i) => i.product.id)} />
+          )}
         </div>
 
         {itemsWithReviews.length === 0 ? (

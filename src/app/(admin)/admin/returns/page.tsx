@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 import type { Prisma } from "@/generated/prisma";
+import Pagination from "@/components/storefront/Pagination";
 
 type ReturnRow = Prisma.ReturnRequestGetPayload<{
   include: {
@@ -9,21 +11,49 @@ type ReturnRow = Prisma.ReturnRequestGetPayload<{
   };
 }>;
 
+const ITEMS_PER_PAGE = 25;
+
 export const dynamic = "force-dynamic";
 
-export default async function AdminReturnsPage() {
+const getCachedReturns = unstable_cache(
+  async (skip: number, take: number) => {
+    const [returns, total] = await Promise.all([
+      prisma.returnRequest.findMany({
+        include: {
+          user: { select: { name: true, email: true } },
+          orderItem: { include: { product: { select: { name: true, images: true } } } },
+        },
+        orderBy: { requestedAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.returnRequest.count(),
+    ]);
+    return { returns: returns as ReturnRow[], total };
+  },
+  ["admin", "returns"],
+  { revalidate: 30 }
+);
+
+export default async function AdminReturnsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page || "1", 10));
+
   let returns: ReturnRow[] = [];
+  let totalReturns = 0;
   try {
-    returns = await prisma.returnRequest.findMany({
-      include: {
-        user: { select: { name: true, email: true } },
-        orderItem: { include: { product: { select: { name: true, images: true } } } },
-      },
-      orderBy: { requestedAt: "desc" },
-    });
+    const result = await getCachedReturns((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+    returns = result.returns;
+    totalReturns = result.total;
   } catch (error) {
     console.warn("Database unreachable in AdminReturnsPage:", error);
   }
+
+  const totalPages = Math.max(1, Math.ceil(totalReturns / ITEMS_PER_PAGE));
 
   const statusBadge: Record<string, string> = {
     PENDING: "bg-yellow-50 text-yellow-700 border-yellow-200",
@@ -101,6 +131,8 @@ export default async function AdminReturnsPage() {
           </tbody>
         </table>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl="/admin/returns" />
     </div>
   );
 }

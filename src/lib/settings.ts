@@ -6,6 +6,9 @@ export interface StoreSettings {
   supportPhone: string;
   footerAbout: string;
   taxPercent: number;
+  promoEnabled: boolean;
+  promoText: string;
+  promoLink: string;
 }
 
 const DEFAULT_SETTINGS: StoreSettings = {
@@ -14,6 +17,9 @@ const DEFAULT_SETTINGS: StoreSettings = {
   supportPhone: "+91 00000 00000",
   footerAbout: "Curated sarees and ethnic wear crafted for every celebration.",
   taxPercent: 0,
+  promoEnabled: false,
+  promoText: "Complimentary shipping worldwide · Orders delivered within 3-5 business days",
+  promoLink: "",
 };
 
 export async function getStoreSettings(): Promise<StoreSettings> {
@@ -25,5 +31,8 @@ export async function getStoreSettings(): Promise<StoreSettings> {
     supportPhone: map.get("supportPhone") || DEFAULT_SETTINGS.supportPhone,
     footerAbout: map.get("footerAbout") || DEFAULT_SETTINGS.footerAbout,
     taxPercent: parseFloat(map.get("taxPercent") || "0") || 0,
+    promoEnabled: map.get("promoEnabled") === "true",
+    promoText: map.get("promoText") ?? DEFAULT_SETTINGS.promoText,
+    promoLink: map.get("promoLink") ?? DEFAULT_SETTINGS.promoLink,
   };
 }

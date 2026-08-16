@@ -1,10 +1,12 @@
 "use client";
+import Image from "next/image";
 import StarRating from "./StarRating";
 
 interface Review {
   id: string;
   rating: number;
   comment: string | null;
+  images: string[];
   createdAt: Date;
   user: {
     name: string | null;
@@ -55,6 +57,15 @@ export default function ReviewSection({ reviews }: { reviews: Review[] }) {
                 <p className="text-xs text-gray-600 leading-relaxed mt-2 break-words">
                   {review.comment}
                 </p>
+              )}
+              {review.images.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {review.images.map((src, i) => (
+                    <div key={`${src}-${i}`} className="relative w-16 h-16 border border-[#B6925B]/20 overflow-hidden rounded-none bg-[#FAFAFA]">
+                      <Image src={src} alt={`${review.user.name || "Review"} photo ${i + 1}`} fill className="object-cover" />
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           ))}

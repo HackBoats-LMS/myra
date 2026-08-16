@@ -11,6 +11,7 @@ import OrderTrackingTimeline from "@/components/storefront/OrderTrackingTimeline
 import ChangeOrderAddressButton from "@/components/storefront/ChangeOrderAddressButton";
 import OrderItemReview from "@/components/storefront/OrderItemReview";
 import OrderItemReturn from "@/components/storefront/OrderItemReturn";
+import PayNowButton from "@/components/storefront/PayNowButton";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
 
@@ -66,6 +67,11 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
 
   const canChangeAddress = order.status !== "DELIVERED" && order.status !== "CANCELLED";
 
+  const needsPayment =
+    order.paymentMethod === "RAZORPAY" &&
+    order.paymentStatus === "UNPAID" &&
+    order.status !== "CANCELLED";
+
   const productIds = order.orderItems.map((item) => item.productId);
   const userReviews = await prisma.review.findMany({
     where: { userId, productId: { in: productIds } },
@@ -97,10 +103,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
         }
       `}} />
 
-      <Link href="/account" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors print:hidden gap-1 rounded-none">
-        <i className="ri-arrow-left-line text-sm" />
-        Back to Account
-      </Link>
+
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#B6925B]/20 pb-6">
         <div>
@@ -131,7 +134,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Column: Items */}
-        <div className="md:col-span-2 bg-white border border-[#B6925B]/20 overflow-hidden shadow-sm">
+        <div className="md:col-span-2 bg-white border border-[#B6925B]/20 overflow-hidden shadow-sm h-fit">
           <div className="p-6 border-b border-[#B6925B]/20 bg-[#FAFAFA]">
             <h3 className="font-serif text-[#4A3B2C] text-lg tracking-wide">Items in Order</h3>
           </div>
@@ -182,8 +185,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
           {/* Order Info */}
           <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-4">
             <div>
-              <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-2">Status</span>
-              <span className={`inline-flex items-center px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest
+              <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-2">Status</span>              <span className={`inline-flex items-center px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest
                 ${order.status === 'DELIVERED' ? 'bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30' : 
                   order.status === 'SHIPPED' || order.status === 'READY_TO_SHIP' || order.status === 'OUT_FOR_DELIVERY' ? 'bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30' : 
                   order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-200' : 
@@ -193,7 +195,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
             </div>
             <div>
               <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">Order ID</span>
-              <span className="text-sm font-mono text-[#4A3B2C]">{order.id}</span>
+              <span className="text-sm font-mono text-[#4A3B2C]">{order.id.split('-')[0].toUpperCase()}</span>
             </div>
             <div>
               <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">Payment Method</span>
@@ -234,14 +236,28 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
             )}
           </div>
 
+          {/* Payment */}
+          {needsPayment && (
+            <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-4">
+              <div className="flex items-center gap-2">
+                <i className="ri-error-warning-line text-xl text-yellow-600" />
+                <h3 className="font-serif text-[#4A3B2C] text-lg tracking-wide">Complete Your Payment</h3>
+              </div>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Your order is reserved but not yet paid. Complete the payment now to confirm it.
+              </p>
+              <PayNowButton orderId={order.id} amount={order.totalAmount} />
+            </div>
+          )}
+
           {/* Delivery Address */}
           <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-4">
             <h3 className="font-serif text-[#4A3B2C] text-lg tracking-wide border-b border-[#B6925B]/20 pb-3">Delivery Address</h3>
-            <div className="text-[10px] uppercase tracking-widest font-bold text-gray-500 space-y-2 leading-relaxed pt-1">
+            <div className="text-[11px] text-gray-600 space-y-1.5 leading-relaxed pt-1 font-medium">
               <p className="font-bold text-[#4A3B2C] text-sm tracking-normal capitalize mb-2">{order.user.name}</p>
               {order.address ? (
                 <>
-                  <p className="text-[8px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">({order.address.label} Address)</p>
+                  <p className="text-[9px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">({order.address.label} Address)</p>
                   <p>{order.address.addressLine1}</p>
                   <p>{order.address.city}, {order.address.state} - {order.address.postalCode}</p>
                   <p className="capitalize">{order.address.country}</p>
@@ -254,7 +270,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
                 </>
               )}
               {order.user.phoneNumber && (
-                <p className="mt-4 text-[#4A3B2C] font-mono tracking-normal">Phone: {order.user.phoneNumber}</p>
+                <p className="mt-4 text-[#4A3B2C] font-mono text-[10px] font-bold uppercase tracking-widest">Phone: <span className="tracking-normal normal-case font-medium">{order.user.phoneNumber}</span></p>
               )}
             </div>
           </div>

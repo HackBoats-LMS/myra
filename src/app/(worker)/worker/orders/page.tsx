@@ -1,28 +1,40 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 import type { Prisma } from "@/generated/prisma";
 import { requireWorkerModule } from "@/lib/worker";
+import { CACHE_TAGS } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
-export default async function WorkerOrdersPage() {
-  await requireWorkerModule("shipping");
-  let orders: Prisma.OrderGetPayload<{
-    include: {
-      user: { select: { name: true; email: true; phoneNumber: true } };
-      _count: { select: { orderItems: true } };
-    };
-  }>[] = [];
+type WorkerOrderRow = Prisma.OrderGetPayload<{
+  include: {
+    user: { select: { name: true; email: true; phoneNumber: true } };
+    _count: { select: { orderItems: true } };
+  };
+}>;
 
-  try {
-    orders = await prisma.order.findMany({
+const getCachedWorkerOrders = unstable_cache(
+  async () => {
+    return prisma.order.findMany({
       include: {
         user: { select: { name: true, email: true, phoneNumber: true } },
         _count: { select: { orderItems: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 100,
-    });
+    }) as Promise<WorkerOrderRow[]>;
+  },
+  ["worker", "orders"],
+  { tags: [CACHE_TAGS.workerOrders], revalidate: 30 }
+);
+
+export default async function WorkerOrdersPage() {
+  await requireWorkerModule("shipping");
+  let orders: WorkerOrderRow[] = [];
+
+  try {
+    orders = await getCachedWorkerOrders();
   } catch (error) {
     console.warn("Database unreachable in WorkerOrdersPage:", error);
   }

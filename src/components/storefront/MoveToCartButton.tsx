@@ -13,7 +13,11 @@ export default function MoveToCartButton({ productId }: { productId: string }) {
   const handleMove = async () => {
     setLoading(true);
     try {
-      await addToCart(productId, 1);
+      const res = await addToCart(productId, 1);
+      if (!res.added) {
+        toast.error(res.message || "Unable to add item to cart.");
+        return;
+      }
       await toggleWishlist(productId); // Removes it from wishlist
       toast.success("Moved item to cart!");
       router.refresh();

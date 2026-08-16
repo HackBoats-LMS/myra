@@ -4,10 +4,23 @@ import { prisma } from "./prisma";
 
 export async function verifyRole(allowedRoles: string[]) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || !allowedRoles.includes(session.user.role)) {
+  if (!session || !session.user) {
     throw new Error("Unauthorized");
   }
-  return session.user;
+
+  // Re-read the role fresh from the DB so admin demotions take effect
+  // immediately, rather than relying on the role baked into the JWT at login.
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  const role = dbUser?.role ?? session.user.role;
+
+  if (!allowedRoles.includes(role)) {
+    throw new Error("Unauthorized");
+  }
+
+  return { ...session.user, role };
 }
 
 export async function verifyAdmin() {
@@ -36,19 +49,22 @@ export async function verifyWorkerCapability(capability: "inventory" | "shipping
   if (!session || !session.user) {
     throw new Error("Unauthorized");
   }
-  const { role, id } = session.user;
+  const { id } = session.user;
+
+  // Re-read role and capabilities fresh from the DB so admin changes apply
+  // immediately instead of relying on the (possibly stale) JWT.
+  const dbUser = await prisma.user.findUnique({
+    where: { id },
+    select: { role: true, canManageInventory: true, canManageShipping: true },
+  });
+  const role = dbUser?.role ?? session.user.role;
+
   if (role === "ADMIN") {
     return session.user;
   }
   if (role !== "MULTI_WORKER") {
     throw new Error("You do not have permission to perform this action.");
   }
-
-  // Read capabilities fresh from the DB so admin changes apply immediately.
-  const dbUser = await prisma.user.findUnique({
-    where: { id },
-    select: { canManageInventory: true, canManageShipping: true },
-  });
 
   const hasCapability =
     capability === "inventory"

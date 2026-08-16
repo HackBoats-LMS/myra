@@ -9,6 +9,9 @@ interface StoreSettingsFormProps {
   supportPhone: string;
   footerAbout: string;
   taxPercent: number;
+  promoEnabled: boolean;
+  promoText: string;
+  promoLink: string;
 }
 
 export default function StoreSettingsForm(props: StoreSettingsFormProps) {
@@ -54,6 +57,26 @@ export default function StoreSettingsForm(props: StoreSettingsFormProps) {
         <div className="space-y-2 md:col-span-2">
           <label className={label} htmlFor="footerAbout">Footer About Text</label>
           <textarea id="footerAbout" name="footerAbout" rows={3} defaultValue={props.footerAbout} className={field} />
+        </div>
+      </div>
+
+      <div className="border-t border-[#B6925B]/20 pt-6">
+        <h3 className="font-serif text-lg text-[#4A3B2C] mb-4">Promo Banner</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 md:col-span-2">
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="promoEnabled" defaultChecked={props.promoEnabled} className="accent-[#B6925B]" />
+              <span className="text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Show promo banner at the top of the store</span>
+            </label>
+          </div>
+          <div className="space-y-2">
+            <label className={label} htmlFor="promoText">Banner Text</label>
+            <input id="promoText" name="promoText" defaultValue={props.promoText} placeholder="e.g. 20% off sarees this weekend" className={field} />
+          </div>
+          <div className="space-y-2">
+            <label className={label} htmlFor="promoLink">Banner Link (optional)</label>
+            <input id="promoLink" name="promoLink" defaultValue={props.promoLink} placeholder="e.g. /collections/sarees" className={field} />
+          </div>
         </div>
       </div>
 

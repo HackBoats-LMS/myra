@@ -1,7 +1,10 @@
 import HeroGrid from "@/components/storefront/HeroGrid";
 import CategoryButtons from "@/components/storefront/CategoryButtons";
 import ProductCarousel from "@/components/storefront/ProductCarousel";
+import FlashSaleBanner from "@/components/storefront/FlashSaleBanner";
+import RecommendedForYou from "@/components/storefront/RecommendedForYou";
 import { getFeaturedProducts, getBestSellers } from "@/services/products";
+import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -25,9 +28,15 @@ export default async function StorefrontHome() {
     const results = await Promise.all([
       getFeaturedProducts(4),
       getBestSellers(4),
+      getActiveFlashSales(),
     ]);
     featuredProducts = results[0];
     bestSellers = results[1];
+    const sales = results[2];
+    if (sales.length > 0) {
+      featuredProducts = applyFlashToProductList(featuredProducts, sales);
+      bestSellers = applyFlashToProductList(bestSellers, sales);
+    }
   } catch (error) {
     console.warn("Database unreachable in StorefrontHome, falling back to empty state:", error);
   }
@@ -49,6 +58,9 @@ export default async function StorefrontHome() {
         
         {/* 1. Hero Section */}
         <HeroGrid />
+
+        {/* 1b. Flash Sale Banner */}
+        <FlashSaleBanner />
 
         {/* 2. Category Buttons */}
         <CategoryButtons />
@@ -82,7 +94,7 @@ export default async function StorefrontHome() {
 
         {/* 5. Bridal Elegance Banner */}
         <Link href="/collections/bridal" className="block w-full relative h-[180px] md:h-[600px] overflow-hidden cursor-pointer">
-          <Image src="/displaypics/bribal poster.png" alt="Bridal Collection" fill quality={100} className="object-cover object-center" />
+          <Image src="/displaypics/bribal poster.png" alt="Bridal Collection" fill sizes="100vw" quality={100} className="object-cover object-center" />
         </Link>
 
         {/* 6. New Arrivals */}
@@ -96,12 +108,15 @@ export default async function StorefrontHome() {
           </div>
         </section>
 
+        {/* 6b. Recommended For You (personalized) */}
+        <RecommendedForYou />
+
 
         {/* 7. Curated Collection Block */}
         <section className="w-full bg-[#9c7d4e] py-12 md:py-24 px-4 md:px-8">
           <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-center gap-8 md:gap-24">
             <div className="relative w-full md:w-1/2 h-[200px] md:h-[450px]">
-              <Image src="/displaypics/landingpage9.png" alt="Curated Sarees" fill quality={100} sizes="(max-width: 768px) 100vw, 50vw" className="object-contain drop-shadow-2xl" />
+              <Image src="/displaypics/landingpage9.png" alt="Curated Sarees" fill sizes="(max-width: 768px) 100vw, 50vw" quality={100} className="object-contain drop-shadow-2xl" />
             </div>
             <div className="text-center md:text-left space-y-4 md:space-y-6 max-w-sm text-white">
               <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/80">Where Every Saree Becomes a Statement</h4>

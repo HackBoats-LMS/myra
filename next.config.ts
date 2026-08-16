@@ -22,6 +22,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Static branding/marketing assets rarely change; cache them aggressively.
+        source: '/displaypics/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           {

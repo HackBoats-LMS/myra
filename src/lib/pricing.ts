@@ -24,8 +24,9 @@ export interface Coupon {
 export interface PricingResult {
   totalAmount: number;
   discountAmount: number;
-  finalAmount: number;
   shippingAmount: number;
+  taxAmount: number;
+  finalAmount: number;
 }
 
 export interface ShippingConfig {
@@ -62,7 +63,8 @@ export function calculateShippingDiscount(shippingAmount: number, couponValue: n
 export function calculateOrderTotal(
   items: CartItem[],
   coupon?: Coupon | null,
-  shippingConfig?: ShippingConfig | null
+  shippingConfig?: ShippingConfig | null,
+  taxPercent: number = 0
 ): PricingResult {
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -107,7 +109,20 @@ export function calculateOrderTotal(
     shippingAmount -= calculateShippingDiscount(shippingAmount, coupon.discountValue);
   }
 
-  const finalAmount = Math.max(totalAmount - discount + shippingAmount, 0);
+  // Tax is applied to the discounted subtotal (plus shipping).
+  const taxBase = Math.max(totalAmount - discount, 0) + shippingAmount;
+  const taxAmount = taxPercent > 0 ? Math.round(taxBase * (taxPercent / 100) * 100) / 100 : 0;
 
-  return { totalAmount, discountAmount: discount, shippingAmount, finalAmount };
+  const finalAmount = Math.max(taxBase + taxAmount, 0);
+
+  // Round all money fields to 2 decimals so the stored order total always
+  // matches the paise amount sent to (and refunded from) the gateway.
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  return {
+    totalAmount: round2(totalAmount),
+    discountAmount: round2(discount),
+    shippingAmount: round2(shippingAmount),
+    taxAmount: round2(taxAmount),
+    finalAmount: round2(finalAmount),
+  };
 }

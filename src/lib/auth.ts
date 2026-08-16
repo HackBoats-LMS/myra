@@ -6,6 +6,13 @@ import { prisma } from "./prisma";
 import { cookies } from "next/headers";
 import { mergeGuestCart } from "@/actions/cart";
 import { mergeGuestWishlist } from "@/actions/wishlist";
+import { checkRateLimit, getClientIp } from "./rate-limit";
+import { CACHE_TAGS } from "./cache";
+import { revalidateTag } from "next/cache";
+
+// A fixed bcrypt hash used when an account has no password (e.g. Google-only),
+// so the compare always runs and timing doesn't reveal whether a password exists.
+const DUMMY_PASSWORD_HASH = "$2b$10$nDofhNs0/keiqBZ1Kw.UNug/yevi6H21OiA3nzxuRn3DFMWTKEqba";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -19,10 +26,24 @@ export const authOptions: NextAuthOptions = {
         phoneOrEmail: { label: "Email or Phone", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.phoneOrEmail || !credentials?.password) {
           throw new Error("Missing credentials");
         }
+
+        // Rate-limit login attempts by IP and by account identifier.
+        await checkRateLimit({
+          bucket: "login:ip",
+          key: getClientIp(req),
+          limit: 15,
+          windowSeconds: 900,
+        });
+        await checkRateLimit({
+          bucket: "login:id",
+          key: String(credentials.phoneOrEmail).toLowerCase(),
+          limit: 10,
+          windowSeconds: 900,
+        });
 
         const user = await prisma.user.findFirst({
           where: {
@@ -37,6 +58,16 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
+        // Always compare against a hash so timing is uniform whether or not the
+        // account has a password, and never reveal account state before the
+        // password is proven correct (prevents account enumeration).
+        const hashToCheck = user.password ?? DUMMY_PASSWORD_HASH;
+        const isPasswordValid = await bcrypt.compare(credentials.password, hashToCheck);
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid credentials");
+        }
+
         if (!user.password) {
           throw new Error("This account was created with Google. Please sign in with Google.");
         }
@@ -47,15 +78,6 @@ export const authOptions: NextAuthOptions = {
 
         if (!user.phoneNumber && user.email && !user.emailVerified) {
           throw new Error("Please verify your email address before logging in.");
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Invalid credentials");
         }
 
         return {
@@ -127,6 +149,17 @@ export const authOptions: NextAuthOptions = {
         }
       } catch {
         // Non-fatal: don't block sign-in if merge fails
+      }
+
+      // Refresh the header badge counts so they reflect the merged guest data
+      // immediately instead of waiting for the cache TTL.
+      try {
+        if (user.id) {
+          revalidateTag(CACHE_TAGS.cart(user.id), { expire: 0 });
+          revalidateTag(CACHE_TAGS.wishlist(user.id), { expire: 0 });
+        }
+      } catch {
+        // Non-fatal
       }
       return true;
     },

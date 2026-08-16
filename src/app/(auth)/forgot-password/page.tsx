@@ -65,11 +65,7 @@ export default function ForgotPasswordPage() {
                 {isLoading ? <i className="ri-loader-4-line animate-spin text-sm" /> : "Send Reset Link"}
               </button>
             </form>
-            <div className="mt-8 text-center">
-              <Link href="/login" className="text-[#B6925B] font-bold hover:underline uppercase tracking-widest text-xs rounded-none">
-                Back to Login
-              </Link>
-            </div>
+
           </>
         )}
       </div>

@@ -3,6 +3,7 @@ import ProductCard from "@/components/storefront/ProductCard";
 import Pagination from "@/components/storefront/Pagination";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
+import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
 
 export const metadata: Metadata = {
   title: "Search Results | Myra Shopping Mall",
@@ -77,7 +78,8 @@ export default async function SearchPage({
   ]);
 
   // Compute review data for each product
-  const productsWithReviews = products.map(({ reviews, ...product }) => {
+  const sales = await getActiveFlashSales();
+  const productsWithReviews = applyFlashToProductList(products, sales).map(({ reviews, ...product }) => {
     const reviewCount = reviews?.length || 0;
     const averageRating = reviewCount > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount

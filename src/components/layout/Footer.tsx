@@ -33,6 +33,7 @@ export default function Footer() {
             <li><Link href="/collections/bridal" className="hover:underline underline-offset-4">Bridal Wear</Link></li>
             <li><Link href="/about" className="hover:underline underline-offset-4">Our Story</Link></li>
             <li><Link href="/faq" className="hover:underline underline-offset-4">FAQs</Link></li>
+            <li><Link href="/track" className="hover:underline underline-offset-4">Track Order</Link></li>
             <li><Link href="/contact" className="hover:underline underline-offset-4">Contact</Link></li>
           </ul>
         </nav>

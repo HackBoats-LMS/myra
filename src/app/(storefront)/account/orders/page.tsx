@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
+import ExportOrdersButton from "@/components/storefront/ExportOrdersButton";
 
 type OrderWithItems = Prisma.OrderGetPayload<{
   include: {
@@ -52,12 +53,14 @@ export default async function OrdersPage({
     <div className="w-full bg-[#FAFAFA] min-h-screen">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-16">
         <div className="mb-8">
-          <Link href="/account" className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors gap-1 mb-6">
-            <i className="ri-arrow-left-line text-sm" />
-            Back to Account
-          </Link>
+
           <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">My Orders</h1>
           <p className="text-sm text-gray-500 mt-2 uppercase tracking-widest">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
+          {orders.length > 0 && (
+            <div className="mt-4">
+              <ExportOrdersButton />
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 mb-8">

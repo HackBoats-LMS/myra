@@ -3,12 +3,21 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import AddToCartButton from "@/components/storefront/AddToCartButton";
 import ShareProductButton from "@/components/storefront/ShareProductButton";
+import CompareButton from "@/components/storefront/CompareButton";
 import ImageGallery from "@/components/storefront/ImageGallery";
 import ProductCard from "@/components/storefront/ProductCard";
 import StarRating from "@/components/storefront/StarRating";
 import ReviewSection from "@/components/storefront/ReviewSection";
 import PincodeChecker from "@/components/storefront/PincodeChecker";
+import RecentlyViewedRail from "@/components/storefront/RecentlyViewedRail";
+import RecentlyViewedTracker from "@/components/storefront/RecentlyViewedTracker";
+import StockNotifyButton from "@/components/storefront/StockNotifyButton";
+import { getActiveFlashSales, applyFlashDiscount, applyFlashToProductList } from "@/lib/flash-sale";
 import { getCachedReviews, getCachedRelatedProducts } from "@/lib/cache";
+
+function safeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
 
 export const revalidate = 3600; // 1 hour ISR
 
@@ -44,11 +53,19 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
   if (!product) notFound();
 
-  // Parallel fetch: reviews and related products
-  const [reviews, related] = await Promise.all([
+  // Parallel fetch: reviews, related products, and active flash sales
+  const [reviews, related, flashSales] = await Promise.all([
     getCachedReviews(product.id),
     getCachedRelatedProducts(product.id, product.collectionId),
+    getActiveFlashSales(),
   ]);
+
+  const flashPricing = applyFlashDiscount(product.price, product.originalPrice, flashSales, product.collectionId);
+  const displayPrice = flashPricing.price;
+  const displayOriginal = flashPricing.originalPrice;
+  const flashPercent = flashPricing.percent > 0 ? flashPricing.percent : null;
+
+  const relatedWithPricing = applyFlashToProductList(related, flashSales);
 
   const reviewCount = reviews.length;
   const averageRating = reviewCount > 0 
@@ -87,7 +104,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
       "@type": "Offer",
       url: `${appUrl}/products/${product.slug}`,
       priceCurrency: "INR",
-      price: product.price,
+      price: displayPrice,
       itemCondition: "https://schema.org/NewCondition",
       availability: product.stockQuantity > 0 
         ? "https://schema.org/InStock" 
@@ -121,11 +138,11 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16 min-h-screen">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
@@ -155,19 +172,6 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
               </div>
             )}
 
-            {/* Price Block */}
-            <div className="flex items-center gap-3 mb-4">
-              {product.originalPrice != null && product.originalPrice > product.price && (
-                <>
-                  <span className="text-lg text-gray-400 line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-green-700 bg-green-50 border border-green-200 px-2 py-1">
-                    {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% off
-                  </span>
-                </>
-              )}
-              <span className="text-2xl font-bold text-[#4A3B2C]">₹{product.price.toLocaleString('en-IN')}</span>
-            </div>
-
             {/* Description */}
             {product.description && (
               <p className="text-sm text-gray-600 leading-relaxed mb-8 break-words">
@@ -175,23 +179,21 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
               </p>
             )}
 
-            <AddToCartButton 
-              productId={product.id} 
-              outOfStock={product.stockQuantity <= 0} 
-              variants={product.variants} 
-            />
-
-            <div className="mt-4">
-              <ShareProductButton name={product.name} />
-            </div>
-
-            <div className="mt-6 border-t border-[#B6925B]/20 pt-6">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Delivery Pincode</p>
-              <PincodeChecker />
+            {/* Price Block */}
+            <div className="flex items-center gap-3 mb-4">
+              {flashPercent && (
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white bg-[#B6925B] px-2 py-1">
+                  Flash {flashPercent}% OFF
+                </span>
+              )}
+              {displayOriginal != null && displayOriginal > displayPrice && (
+                <span className="text-lg text-gray-400 line-through">₹{displayOriginal.toLocaleString('en-IN')}</span>
+              )}
+              <span className="text-2xl font-bold text-[#4A3B2C]">₹{displayPrice.toLocaleString('en-IN')}</span>
             </div>
 
             {/* Product Specifications */}
-            <div className="mt-8 space-y-2.5 border-t border-[#B6925B]/20 pt-6">
+            <div className="space-y-2.5 pt-6 mb-6">
               <div className="grid grid-cols-[110px_1fr] gap-3 text-xs break-words">
                 <span className="font-bold text-[#4A3B2C]">Product Code:</span>
                 <span className="text-gray-600">{product.code || "—"}</span>
@@ -225,6 +227,28 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
                 <span className="text-gray-600">Yes</span>
               </div>
             </div>
+
+            <AddToCartButton 
+              productId={product.id} 
+              outOfStock={product.stockQuantity <= 0} 
+              variants={product.variants} 
+            />
+
+            {product.stockQuantity <= 0 && (
+              <div className="mt-4">
+                <StockNotifyButton productId={product.id} />
+              </div>
+            )}
+
+            <div className="mt-4 flex items-center gap-3">
+              <ShareProductButton name={product.name} />
+              <CompareButton productId={product.id} variant="pill" className="flex-1" />
+            </div>
+
+            <div className="mt-6 border-t border-[#B6925B]/20 pt-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Delivery Pincode</p>
+              <PincodeChecker />
+            </div>
           </div>
         </div>
 
@@ -235,10 +259,16 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           </div>
           
           <div className="flex items-center gap-2 mb-10 flex-wrap">
-            <StarRating rating={averageRating || 4} sizeClassName="w-5 h-5 text-[#B6925B]" />
-            <span className="text-xl text-[#4A3B2C] ml-2">
-              {(averageRating || 4).toFixed(1)} out of 5
-            </span>
+            {reviewCount > 0 ? (
+              <>
+                <StarRating rating={averageRating} sizeClassName="w-5 h-5 text-[#B6925B]" />
+                <span className="text-xl text-[#4A3B2C] ml-2">
+                  {averageRating.toFixed(1)} out of 5
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-gray-500">No reviews yet.</span>
+            )}
           </div>
 
           <ReviewSection reviews={reviews} />
@@ -253,13 +283,18 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
               <div className="h-[1px] w-12 md:w-24 bg-[#B6925B]/50"></div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-              {related.map((p) => (
+              {relatedWithPricing.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
           </section>
         )}
+
+        {/* Recently Viewed */}
+        <RecentlyViewedRail currentProductId={product.id} />
       </div>
+
+      <RecentlyViewedTracker productId={product.id} />
     </>
   );
 }

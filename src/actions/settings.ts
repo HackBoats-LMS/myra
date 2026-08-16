@@ -12,6 +12,9 @@ export async function updateStoreSettings(formData: FormData) {
   const supportPhone = String(formData.get("supportPhone") || "").trim();
   const footerAbout = String(formData.get("footerAbout") || "").trim();
   const taxPercent = parseFloat(formData.get("taxPercent") as string) || 0;
+  const promoEnabled = formData.get("promoEnabled") === "on";
+  const promoText = String(formData.get("promoText") || "").trim();
+  const promoLink = String(formData.get("promoLink") || "").trim();
 
   if (!storeName) {
     throw new Error("Store name cannot be empty.");
@@ -26,6 +29,9 @@ export async function updateStoreSettings(formData: FormData) {
     supportPhone,
     footerAbout,
     taxPercent: String(taxPercent),
+    promoEnabled: promoEnabled ? "true" : "false",
+    promoText,
+    promoLink,
   };
 
   for (const [key, value] of Object.entries(values)) {

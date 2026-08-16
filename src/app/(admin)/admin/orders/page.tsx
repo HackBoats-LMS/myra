@@ -1,29 +1,90 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@/generated/prisma';
+import { unstable_cache } from 'next/cache';
+import AdminFilters from '@/components/admin/AdminFilters';
+import Pagination from '@/components/storefront/Pagination';
 
-export default async function AdminOrdersPage() {
-  let orders: Prisma.OrderGetPayload<{
-    include: {
-      user: { select: { name: true; email: true; phoneNumber: true } }
-      _count: { select: { orderItems: true } }
-    }
-  }>[] = [];
-  try {
-    orders = await prisma.order.findMany({
-      include: {
-        user: {
-          select: { name: true, email: true, phoneNumber: true }
+const ORDER_STATUSES = [
+  'PENDING', 'READY_TO_SHIP', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
+] as const;
+
+const ITEMS_PER_PAGE = 25;
+
+type OrderWithUser = Prisma.OrderGetPayload<{
+  include: {
+    user: { select: { name: true; email: true; phoneNumber: true } }
+    _count: { select: { orderItems: true } }
+  }
+}>;
+
+export const dynamic = "force-dynamic";
+
+const getCachedOrders = unstable_cache(
+  async (search: string | undefined, status: string | undefined, skip: number, take: number) => {
+    const where = {
+      ...(status && ORDER_STATUSES.includes(status as typeof ORDER_STATUSES[number])
+        ? { status: status as typeof ORDER_STATUSES[number] }
+        : {}),
+      ...(search
+        ? {
+            OR: [
+              { id: { contains: search, mode: 'insensitive' as const } },
+              { user: { is: { name: { contains: search, mode: 'insensitive' as const } } } },
+              { user: { is: { email: { contains: search, mode: 'insensitive' as const } } } },
+              { user: { is: { phoneNumber: { contains: search, mode: 'insensitive' as const } } } },
+            ],
+          }
+        : {}),
+    };
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          user: {
+            select: { name: true, email: true, phoneNumber: true }
+          },
+          _count: {
+            select: { orderItems: true }
+          }
         },
-        _count: {
-          select: { orderItems: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      prisma.order.count({ where }),
+    ]);
+    return { orders: orders as OrderWithUser[], total };
+  },
+  ["admin", "orders"],
+  { revalidate: 30 }
+);
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; status?: string; page?: string }>;
+}) {
+  const { search, status } = await searchParams;
+  const resolved = await searchParams;
+  const currentPage = Math.max(1, parseInt(resolved.page || '1', 10));
+
+  let orders: OrderWithUser[] = [];
+  let totalOrders = 0;
+  try {
+    const result = await getCachedOrders(search, status, (currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+    orders = result.orders;
+    totalOrders = result.total;
   } catch (error) {
     console.warn("Database unreachable in AdminOrdersPage:", error);
   }
+
+  const totalPages = Math.max(1, Math.ceil(totalOrders / ITEMS_PER_PAGE));
+  const urlParams = new URLSearchParams();
+  if (search) urlParams.set("search", search);
+  if (status) urlParams.set("status", status);
+  const qs = urlParams.toString();
+  const baseUrl = qs ? `/admin/orders?${qs}` : "/admin/orders";
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 rounded-none">
@@ -40,6 +101,13 @@ export default async function AdminOrdersPage() {
           Export CSV
         </a>
       </div>
+
+      <AdminFilters
+        search={search}
+        status={status}
+        placeholder="Search order ID, name, email or phone..."
+        statusOptions={ORDER_STATUSES.map((s) => ({ value: s, label: s.replace(/_/g, ' ') }))}
+      />
 
       <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
         <table className="w-full text-left text-sm text-[#4A3B2C]">
@@ -85,6 +153,8 @@ export default async function AdminOrdersPage() {
           </tbody>
         </table>
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
     </div>
   );
 }
