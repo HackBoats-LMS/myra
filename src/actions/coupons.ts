@@ -44,6 +44,15 @@ export async function createCoupon(formData: FormData) {
   if (type === "PERCENTAGE" && value > 100) {
     throw new Error("Percentage discount cannot exceed 100%.");
   }
+  if (maxUses !== null && (!Number.isInteger(maxUses) || maxUses < 1)) {
+    throw new Error("Total usage limit must be a positive whole number.");
+  }
+  if (maxUsesPerUser !== null && (!Number.isInteger(maxUsesPerUser) || maxUsesPerUser < 1)) {
+    throw new Error("Per-user usage limit must be a positive whole number.");
+  }
+  if (expiresAt && (isNaN(expiresAt.getTime()) || expiresAt <= new Date())) {
+    throw new Error("Expiry must be a valid future date.");
+  }
   if (couponType === "SINGLE_USE") {
     if (!maxUsesPerUser || maxUsesPerUser !== 1) {
       throw new Error("Single-use coupons must have a per-user limit of 1.");
@@ -117,6 +126,15 @@ export async function updateCoupon(id: string, formData: FormData) {
   }
   if (type === "PERCENTAGE" && value > 100) {
     throw new Error("Percentage discount cannot exceed 100%.");
+  }
+  if (maxUses !== null && (!Number.isInteger(maxUses) || maxUses < 1)) {
+    throw new Error("Total usage limit must be a positive whole number.");
+  }
+  if (maxUsesPerUser !== null && (!Number.isInteger(maxUsesPerUser) || maxUsesPerUser < 1)) {
+    throw new Error("Per-user usage limit must be a positive whole number.");
+  }
+  if (expiresAt && (isNaN(expiresAt.getTime()) || expiresAt <= new Date())) {
+    throw new Error("Expiry must be a valid future date.");
   }
   if (couponType === "SINGLE_USE") {
     if (!maxUsesPerUser || maxUsesPerUser !== 1) {

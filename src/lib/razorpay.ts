@@ -66,3 +66,19 @@ export async function refundRazorpayPayment(paymentId: string, amountPaise: numb
   const client = await getClient();
   return client.payments.refund(paymentId, { amount: Math.round(amountPaise) });
 }
+
+/**
+ * Reconcile whether a refund actually went through on the gateway after a
+ * refund call failed (e.g. a request that timed out after Razorpay processed
+ * it). Returns true only when the payment reports a refund, so callers can
+ * avoid double-refunding on a retry.
+ */
+export async function hasRefundSucceeded(paymentId: string): Promise<boolean> {
+  try {
+    const payment = await fetchRazorpayPayment(paymentId);
+    const status = (payment as { refund_status?: string }).refund_status;
+    return status === "refunded" || status === "partial_refunded";
+  } catch {
+    return false;
+  }
+}

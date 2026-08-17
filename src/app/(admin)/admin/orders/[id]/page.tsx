@@ -5,7 +5,6 @@ import PrintInvoiceButton from "@/components/admin/PrintInvoiceButton";
 import OrderInternalNotes from "@/components/admin/OrderInternalNotes";
 import RefundButton from "@/components/admin/RefundButton";
 import Image from "next/image";
-import Link from "next/link";
 
 export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

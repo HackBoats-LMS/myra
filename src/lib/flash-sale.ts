@@ -20,25 +20,45 @@ export const getActiveFlashSales = unstable_cache(fetchActiveFlashSales, ["flash
   revalidate: 30,
 });
 
+// Approximate the rupee value of a sale for precedence: a PERCENTAGE sale is
+// applied against the full price; a FIXED sale is its value (capped at price).
+// Used only to pick the best (largest) sale when several overlap.
+function saleValue(sale: FlashSaleWithCollection, price: number): number {
+  if (sale.discountType === "PERCENTAGE") return price * (sale.value / 100);
+  return Math.min(sale.value, price);
+}
+
 /**
  * Find the flash sale that applies to a product. A collection-scoped sale only
  * applies when its collection matches the product's; a global sale (no
- * collection) applies to any product. A matching collection sale wins over a
- * global sale; if neither matches, no sale applies.
+ * collection) applies to any product. When several sales overlap the same
+ * product, the one offering the largest rupee discount wins (within the same
+ * scope), falling back to a global sale if no collection sale matches.
  */
 function findApplicableSale(
   sales: FlashSaleWithCollection[],
-  collectionId: string | null
+  collectionId: string | null,
+  price: number
 ): FlashSaleWithCollection | null {
-  let global: FlashSaleWithCollection | null = null;
+  let bestCollection: FlashSaleWithCollection | null = null;
+  let bestCollectionValue = -1;
+  let bestGlobal: FlashSaleWithCollection | null = null;
+  let bestGlobalValue = -1;
+
   for (const sale of sales) {
+    const value = saleValue(sale, price);
     if (sale.collectionId) {
-      if (collectionId && sale.collectionId === collectionId) return sale;
-    } else if (!global) {
-      global = sale;
+      if (collectionId && sale.collectionId === collectionId && value > bestCollectionValue) {
+        bestCollectionValue = value;
+        bestCollection = sale;
+      }
+    } else if (value > bestGlobalValue) {
+      bestGlobalValue = value;
+      bestGlobal = sale;
     }
   }
-  return global;
+
+  return bestCollection || bestGlobal;
 }
 
 export function applyFlashDiscount(
@@ -52,28 +72,36 @@ export function applyFlashDiscount(
   discounted: boolean;
   percent: number;
 } {
-  const applied = findApplicableSale(sales, collectionId);
+  const applied = findApplicableSale(sales, collectionId, price);
   if (!applied) {
     return { price, originalPrice, discounted: false, percent: 0 };
   }
 
   let newPrice = price;
   if (applied.discountType === "PERCENTAGE") {
-    // Clamp so a percentage > 100 (or a misconfiguration) can never go negative.
-    newPrice = Math.max(price - (price * applied.value) / 100, 0);
+    // Clamp the percentage discount so a 100%+ (or misconfigured) sale can never
+    // give an item away free or negative: cap at 99%, keeping at least 1% value.
+    const cappedValue = Math.min(applied.value, 99);
+    newPrice = Math.max(price - (price * cappedValue) / 100, 0);
   } else {
-    // Clamp a fixed discount to the full price so the item is never free/negative.
-    newPrice = Math.max(price - Math.min(applied.value, price), 0);
+    // Clamp a fixed discount so the item is never free or negative: cap the
+    // discount at 99% of the price, keeping at least 1% of its value.
+    const maxDiscount = price * 0.99;
+    newPrice = Math.max(price - Math.min(applied.value, maxDiscount), 0);
   }
 
-  const discounted = newPrice < price;
+  // Round to cents FIRST, then decide whether a discount actually applies, so a
+  // tiny discount that rounds back to the original price doesn't leave a stale
+  // "discounted" flag / strikethrough / 0% badge.
+  const roundedPrice = Math.max(Math.round(newPrice * 100) / 100, 0);
+  const discounted = roundedPrice < price;
   // The "Flash X% OFF" badge reflects the flash sale discount applied to the
   // selling price (not the compounded discount off the MRP), so a configured
   // 90% sale shows 90% regardless of the product's original price.
-  const percent = price > 0 ? Math.min(Math.round(((price - newPrice) / price) * 100), 100) : 0;
+  const percent = price > 0 && discounted ? Math.min(Math.round(((price - roundedPrice) / price) * 100), 100) : 0;
 
   return {
-    price: discounted ? Math.round(newPrice * 100) / 100 : price,
+    price: discounted ? roundedPrice : price,
     // When flashed, the strikethrough is the pre-flash selling price so the
     // displayed prices (price -> originalPrice) reconcile with the badge.
     originalPrice: discounted ? price : originalPrice,

@@ -19,6 +19,15 @@ export default async function PublicTrackOrderPage({
   const { orderId } = await params;
   const { email } = await searchParams;
 
+  // The order's email must be provided and match before revealing any details.
+  // The shipped-email link carries ?email=, so legitimate customers are never
+  // blocked, while anyone with a leaked order id (a UUID) cannot view items,
+  // totals, or tracking info for orders that aren't theirs.
+  if (!email || !email.trim()) {
+    notFound();
+  }
+  const providedEmail = email.trim().toLowerCase();
+
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
@@ -28,12 +37,7 @@ export default async function PublicTrackOrderPage({
     },
   });
 
-  if (!order) {
-    notFound();
-  }
-
-  // If an email was provided, verify it belongs to this order before revealing details.
-  if (email && email.trim().toLowerCase() !== (order.user?.email || "").toLowerCase()) {
+  if (!order || providedEmail !== (order.user?.email || "").toLowerCase()) {
     notFound();
   }
 

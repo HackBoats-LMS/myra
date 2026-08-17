@@ -65,9 +65,28 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ ok: false, error: "amount_mismatch" }, { status: 400 });
         }
 
+        // If the order was already cancelled (30-min cleanup, a prior payment
+        // failure, or user cancel) while money was captured, the customer is
+        // charged for a cancelled order. Refund it so they are not left out of
+        // pocket, and never silently drop the capture.
+        if (order.status === "CANCELLED") {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { razorpayPaymentId: paymentId || order.razorpayPaymentId },
+          });
+          const { refundPaymentIdempotent } = await import("@/lib/order-cleanup");
+          await refundPaymentIdempotent({
+            orderId: order.id,
+            paymentId: paymentId || order.razorpayPaymentId || "",
+            amountPaise: Math.round(order.totalAmount * 100),
+          }).catch((e) =>
+            console.error("Auto-refund failed for cancelled order", order.id, e)
+          );
+          return NextResponse.json({ ok: true, refunded: true }, { status: 200 });
+        }
+
         // Atomic claim: only the first path (webhook vs client confirm) that
         // flips UNPAID -> PAID sends emails, preventing duplicates on a race.
-        // A CANCELLED order (cleaned up after 30 min) can never be charged.
         const claimed = await prisma.order.updateMany({
           where: { id: order.id, paymentStatus: { not: "PAID" }, status: { not: "CANCELLED" } },
           data: {
@@ -110,11 +129,27 @@ export async function POST(req: NextRequest) {
             itemCount: order.orderItems.reduce((sum, i) => sum + i.quantity, 0),
           }).catch(console.error);
         }
+      } else {
+        // No DB order matches this gateway order id. This can happen when a
+        // retry re-linked the order to a new gateway order while the customer
+        // actually completed payment on the old (now-orphaned) one. Try to
+        // match by payment id so we can still mark the order paid / refund it.
+        if (paymentId) {
+          const orphaned = await prisma.order.findUnique({
+            where: { razorpayPaymentId: paymentId },
+          });
+          if (orphaned) {
+            await prisma.order.updateMany({
+              where: { id: orphaned.id, paymentStatus: { not: "PAID" } },
+              data: { paymentStatus: "PAID", razorpayPaymentId: paymentId },
+            });
+          }
+        }
       }
     } else if (event === "payment.failed") {
       const order = await prisma.order.findUnique({
         where: { razorpayOrderId: order_id },
-        include: { orderItems: true },
+        include: { orderItems: true, user: { select: { id: true } } },
       });
       // Guard: never regress an already-paid order back to FAILED. Only move
       // UNPAID -> FAILED.
@@ -144,6 +179,7 @@ export async function POST(req: NextRequest) {
                 quantity: i.quantity,
               })),
               couponCode: order.couponCode,
+              userId: order.user.id,
             });
           }
         });

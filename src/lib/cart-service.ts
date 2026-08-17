@@ -164,10 +164,42 @@ export async function mergeGuestCartItems(
 
   const cart = await getOrCreateCart(userId);
 
+  // Validate each guest line up front and drop invalid ones (a product that no
+  // longer exists, or a variant that isn't linked to its product). A single
+  // stale/tampered line in a guest cookie must not abort the merge and silently
+  // drop the user's entire guest cart on login (a FK failure inside the shared
+  // transaction below would roll everything back).
+  const productIds = guestItems.map((i) => i.productId);
+  const variantIds = guestItems.map((i) => i.variantId).filter((id): id is string => Boolean(id));
+
+  const [products, variants] = await Promise.all([
+    prisma.product.findMany({
+      where: { id: { in: productIds }, deletedAt: null },
+      select: { id: true },
+    }),
+    prisma.productVariant.findMany({
+      where: { id: { in: variantIds } },
+      select: { id: true, productId: true },
+    }),
+  ]);
+
+  const validProductIds = new Set(products.map((p) => p.id));
+  const variantByProduct = new Map(variants.map((v) => [v.id, v.productId]));
+
+  const validItems = guestItems.filter((item) => {
+    if (!validProductIds.has(item.productId)) return false;
+    if (item.variantId) {
+      return variantByProduct.get(item.variantId) === item.productId;
+    }
+    return true;
+  });
+
+  if (validItems.length === 0) return;
+
   // Batch all item mutations in a single transaction: atomic and holds one
   // connection instead of opening one per item (kills the N+1 round trips).
   await prisma.$transaction(async (tx) => {
-    for (const item of guestItems) {
+    for (const item of validItems) {
       const existing = await tx.cartItem.findFirst({
         where: { cartId: cart.id, productId: item.productId, variantId: item.variantId || null },
       });

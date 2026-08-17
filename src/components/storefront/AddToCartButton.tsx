@@ -16,9 +16,11 @@ interface AddToCartProps {
   productId: string;
   outOfStock: boolean;
   variants?: Variant[];
+  /** Base (flash-adjusted) selling price used to show the variant-adjusted price. */
+  price?: number;
 }
 
-export default function AddToCartButton({ productId, outOfStock, variants = [] }: AddToCartProps) {
+export default function AddToCartButton({ productId, outOfStock, variants = [], price }: AddToCartProps) {
   const router = useRouter();
   const toast = useToast();
   const [isAdding, setIsAdding] = useState(false);
@@ -64,6 +66,18 @@ export default function AddToCartButton({ productId, outOfStock, variants = [] }
     <div className="space-y-6">
       {hasVariants && (
         <div className="space-y-3">
+          {/* Show the effective price for the selected variant so it matches
+              what is actually charged (base price + variant offset). */}
+          {price != null && (
+            <p className="text-sm font-bold text-[#4A3B2C]">
+              ₹{((price ?? 0) + (selectedVariant?.priceOffset || 0)).toLocaleString('en-IN')}
+              {selectedVariant?.priceOffset ? (
+                <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">
+                  +₹{selectedVariant.priceOffset.toLocaleString('en-IN')}
+                </span>
+              ) : null}
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             {variants.map((v) => {
               const isSelected = selectedVariantId === v.id;

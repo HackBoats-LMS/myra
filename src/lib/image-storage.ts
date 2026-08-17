@@ -71,4 +71,22 @@ export async function createSignedObjectUrls(bucket: string, values: string[]): 
   return Promise.all(values.map((v) => createSignedObjectUrl(bucket, v)));
 }
 
+/** Permanently delete stored objects (paths or full URLs) from a bucket. Best-effort; resolves silently on failure. */
+export async function deleteImageObjects(bucket: string, values: string[]): Promise<void> {
+  if (values.length === 0) return;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return;
+
+  const objectPaths = values.map((v) => toObjectPath(bucket, v));
+  await Promise.allSettled(
+    objectPaths.map((path) =>
+      fetch(`${supabaseUrl}/storage/v1/object/${bucket}/${path}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${serviceRoleKey}` },
+      })
+    )
+  );
+}
+
 export { REVIEW_IMAGES_BUCKET };

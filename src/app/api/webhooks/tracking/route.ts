@@ -76,7 +76,38 @@ export async function POST(req: NextRequest) {
       data[mapped.timestampField] = new Date();
     }
 
-    await prisma.order.update({ where: { id: order.id }, data });
+    // Any order cancelled here (e.g. returned-to-origin) had its stock
+    // decremented at checkout — including COD orders, which remain paymentStatus
+    // UNPAID until delivery yet are shipped. Restore it exactly once. This is
+    // atomic with the status flip and the `status: { not: "CANCELLED" }` claim
+    // prevents double-restocking on duplicate webhooks or a race with the
+    // user-cancel / payment-failed paths (which use the same guard).
+    if (newStatus === "CANCELLED") {
+      await prisma.$transaction(async (tx) => {
+        const claimed = await tx.order.updateMany({
+          where: { id: order.id, status: { not: "CANCELLED" } },
+          data,
+        });
+        if (claimed.count === 1) {
+          const items = await tx.orderItem.findMany({ where: { orderId: order.id } });
+          for (const item of items) {
+            if (item.variantId) {
+              await tx.productVariant.update({
+                where: { id: item.variantId },
+                data: { stockQuantity: { increment: item.quantity } },
+              });
+            } else {
+              await tx.product.update({
+                where: { id: item.productId },
+                data: { stockQuantity: { increment: item.quantity } },
+              });
+            }
+          }
+        }
+      });
+    } else {
+      await prisma.order.update({ where: { id: order.id }, data });
+    }
 
     // Status changed -> refresh the worker/delivery dashboards immediately.
     revalidateTag(CACHE_TAGS.workerOrders, { expire: 0 });

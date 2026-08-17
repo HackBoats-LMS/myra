@@ -1,4 +1,3 @@
-import Link from "next/link";
 import CreateCouponForm from "./CreateCouponForm";
 import type { Metadata } from "next";
 

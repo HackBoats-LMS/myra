@@ -43,6 +43,8 @@ export async function createFlashSale(input: {
   revalidatePath("/admin/flash-sales");
   updateTag(FLASH_SALE_TAG);
   revalidatePath("/");
+  revalidatePath("/collections");
+  revalidatePath("/search");
 }
 
 export async function updateFlashSale(id: string, input: {
@@ -60,6 +62,7 @@ export async function updateFlashSale(id: string, input: {
   if (!title) throw new Error("Title is required.");
   if (!input.value || input.value <= 0) throw new Error("Discount value must be greater than 0.");
   if (input.discountType === "PERCENTAGE" && input.value > 100) throw new Error("Percentage discount cannot exceed 100.");
+  if (input.discountType === "FIXED" && input.value < 0) throw new Error("Fixed discount cannot be negative.");
 
   const startAt = new Date(input.startAt);
   const endAt = new Date(input.endAt);

@@ -209,6 +209,7 @@ const refreshAddresses = async () => {
           phone: deliveryPhone,
           gift: giftPayload,
           allowAutoApply: !couponRemoved,
+          couponIsAutoApplied: !!autoAppliedCoupon && appliedCoupon === autoAppliedCoupon,
         });
         await openRazorpay({
           keyId: payment.keyId,
@@ -227,7 +228,8 @@ const refreshAddresses = async () => {
           appliedCoupon || undefined,
           deliveryPhone,
           giftPayload,
-          !couponRemoved
+          !couponRemoved,
+          !!autoAppliedCoupon && appliedCoupon === autoAppliedCoupon
         );
         toast.success("Order placed successfully!");
         router.push(`/order-confirmation/${result.orderId}`);

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { confirmRazorpayPayment } from "@/actions/payment";
+import { confirmRazorpayPayment, releaseRazorpayReservation } from "@/actions/payment";
 import { useToast } from "@/components/ui/Toast";
 
 type RazorpayConstructor = new (options: Record<string, unknown>) => { open: () => void };
@@ -80,7 +80,17 @@ export function useRazorpay() {
         }
       },
       modal: {
-        ondismiss: () => setIsProcessing(false),
+        ondismiss: () => {
+          setIsProcessing(false);
+          // The user closed the payment window without paying. Release the
+          // reserved stock/coupon immediately so they aren't held for the full
+          // 30-min cleanup window. Best-effort; a later "Pay Now" retry
+          // re-reserves. The action itself is idempotent and owner-only, so a
+          // success-then-redirect cannot incorrectly release a paid order.
+          if (options.orderId) {
+            releaseRazorpayReservation(options.orderId).catch(() => {});
+          }
+        },
       },
     });
 

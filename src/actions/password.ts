@@ -4,9 +4,13 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "@/lib/email";
 import ResetPasswordEmail from "@/emails/ResetPasswordEmail";
+import { checkRateLimit, RateLimitError } from "@/lib/rate-limit";
 
 export async function generateResetToken(email: string) {
-  const user = await prisma.user.findUnique({ where: { email } });
+  // Emails are stored lowercase, so normalize the input or a reset request
+  // typed with different casing would silently find no user.
+  const normalizedEmail = (email || "").trim().toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   
   if (!user) {
     // We return success anyway to prevent email enumeration attacks
@@ -19,7 +23,7 @@ export async function generateResetToken(email: string) {
 
   await prisma.passwordResetToken.create({
     data: {
-      email,
+      email: normalizedEmail,
       token,
       expiresAt
     }
@@ -40,6 +44,19 @@ export async function generateResetToken(email: string) {
 export async function resetPassword(token: string, newPassword: string) {
   if (!token) throw new Error("Missing reset token");
   if (!newPassword || newPassword.length < 6) throw new Error("Password must be at least 6 characters");
+
+  // Defense-in-depth: limit rapid attempts against the same token (the token is
+  // 256-bit random and single-use, so this is a cheap guard, not the primary
+  // protection). Server actions don't expose a reliable client IP, so key on
+  // the token itself.
+  try {
+    await checkRateLimit({ bucket: "password:reset", key: token, limit: 5, windowSeconds: 300 });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      throw new Error("Too many attempts. Please request a new reset link.");
+    }
+    throw error;
+  }
 
   const resetRecord = await prisma.passwordResetToken.findUnique({
     where: { token }

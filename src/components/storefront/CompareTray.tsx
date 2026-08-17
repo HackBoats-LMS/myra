@@ -22,7 +22,7 @@ export default function CompareTray({
         if (active) setProducts(data);
       });
     } else {
-      setProducts([]);
+      queueMicrotask(() => setProducts([]));
     }
     return () => {
       active = false;

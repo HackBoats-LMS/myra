@@ -11,7 +11,10 @@ export async function updateStoreSettings(formData: FormData) {
   const supportEmail = String(formData.get("supportEmail") || "").trim();
   const supportPhone = String(formData.get("supportPhone") || "").trim();
   const footerAbout = String(formData.get("footerAbout") || "").trim();
-  const taxPercent = parseFloat(formData.get("taxPercent") as string) || 0;
+  const taxRaw = String(formData.get("taxPercent") || "").trim();
+  // Empty field means 0% tax; any non-numeric value must error rather than
+  // silently coercing to 0 (which would misprice every order).
+  const taxPercent = taxRaw === "" ? 0 : parseFloat(taxRaw);
   const promoEnabled = formData.get("promoEnabled") === "on";
   const promoText = String(formData.get("promoText") || "").trim();
   const promoLink = String(formData.get("promoLink") || "").trim();

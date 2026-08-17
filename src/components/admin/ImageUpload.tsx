@@ -35,6 +35,9 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
         return;
       }
 
+      // Warn when the source is low-resolution (may look soft after upscaling).
+      await warnIfLowResolution(file, toast);
+
       setIsUploading(true);
       const formData = new FormData();
       formData.append("file", file);
@@ -88,4 +91,17 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       </label>
     </div>
   );
+}
+
+async function warnIfLowResolution(file: File, toast: { error: (m: string) => void }) {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const shortSide = Math.min(bitmap.width, bitmap.height);
+    bitmap.close();
+    if (shortSide > 0 && shortSide < 600) {
+      toast.error("This image is low-resolution. It will be upscaled and sharpened, but a higher-resolution photo will look better.");
+    }
+  } catch {
+    // Could not read dimensions (e.g. GIF); skip the warning.
+  }
 }

@@ -39,6 +39,11 @@ export async function updateUserProfile(formData: FormData) {
 
   const data = result.data;
 
+  // Normalize email to lowercase so it matches how registration/login store and
+  // query it. Without this, a user could set "Bob@x.com" which login (which
+  // lowercases) could never find, leaving the account unreachable by email.
+  if (data.email) data.email = data.email.toLowerCase();
+
   const existingUser = await prisma.user.findUnique({
     where: { id: userId }
   });
@@ -240,6 +245,18 @@ export async function cancelOrder(orderId: string) {
   }
 
   await prisma.$transaction(async (tx) => {
+    // Atomic claim: only cancel if the order is still PENDING and not PAID.
+    // Prevents a race where a webhook/confirm flips the order to PAID (or the
+    // cleanup job cancels it) between the guard read and this transaction,
+    // which would otherwise double-release stock or cancel a paid order.
+    const claimed = await tx.order.updateMany({
+      where: { id: orderId, status: "PENDING", paymentStatus: { not: "PAID" } },
+      data: { status: "CANCELLED", cancelledAt: new Date() },
+    });
+    if (claimed.count !== 1) {
+      throw new Error("This order can no longer be cancelled.");
+    }
+
     const orderItems = await tx.orderItem.findMany({
       where: { orderId },
       select: { id: true, productId: true, variantId: true, quantity: true },
@@ -260,34 +277,9 @@ export async function cancelOrder(orderId: string) {
     }
 
     if (order.couponCode) {
-      await tx.coupon.updateMany({
-        where: { code: order.couponCode, timesUsed: { gt: 0 } },
-        data: { timesUsed: { decrement: 1 } },
-      });
-
-      // Release one per-user usage so the coupon can be used again.
-      const coupon = await tx.coupon.findUnique({ where: { code: order.couponCode } });
-      if (coupon) {
-        const usage = await tx.couponUsage.findUnique({
-          where: { couponId_userId: { couponId: coupon.id, userId } },
-        });
-        if (usage) {
-          if (usage.count <= 1) {
-            await tx.couponUsage.delete({ where: { id: usage.id } });
-          } else {
-            await tx.couponUsage.update({
-              where: { id: usage.id },
-              data: { count: { decrement: 1 } },
-            });
-          }
-        }
-      }
+      const { releaseCouponUse } = await import("@/lib/order-cleanup");
+      await releaseCouponUse(tx, order.couponCode, userId);
     }
-
-    await tx.order.update({
-      where: { id: orderId },
-      data: { status: "CANCELLED", cancelledAt: new Date() },
-    });
   });
 
   revalidatePath("/account");
@@ -306,8 +298,11 @@ export async function updateOrderDeliveryAddress(orderId: string, addressId: str
   if (order.userId !== userId) {
     throw new Error("Unauthorized");
   }
-  if (order.status === "DELIVERED" || order.status === "CANCELLED") {
-    throw new Error("Delivery address can only be changed while the order is in transit.");
+  // Only allow the address to change before the order is physically shipped.
+  // Once Shiprocket has created the label the courier uses the address at
+  // dispatch, so updating it here would desync the DB from actual delivery.
+  if (order.status !== "PENDING" && order.status !== "READY_TO_SHIP") {
+    throw new Error("Delivery address can only be changed before the order is shipped.");
   }
 
   const address = await prisma.address.findUnique({ where: { id: addressId } });

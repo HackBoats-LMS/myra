@@ -160,6 +160,10 @@ model Order {
   razorpayOrderId   String?         @unique
   razorpayPaymentId String?         @unique
   razorpaySignature String?
+  // When a Razorpay payment window is abandoned (modal dismissed), the reserved
+  // stock/coupon are released back to inventory and this flag is set so a later
+  // "Pay Now" retry re-reserves them exactly once before charging.
+  stockReleased     Boolean         @default(false)
   giftName          String?
   giftPhone         String?
   giftAddressLine1  String?

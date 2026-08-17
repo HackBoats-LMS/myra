@@ -6,7 +6,7 @@ import { verifyAdmin, verifyWorkerCapability } from "@/lib/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { CACHE_TAGS } from "@/lib/cache";
 import { refundRazorpayPayment, razorpayConfigured } from "@/lib/razorpay";
-import { detectImageType } from "@/lib/image-upload";
+import { detectImageType, processImageToWebP } from "@/lib/image-upload";
 import bcrypt from "bcryptjs";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -62,7 +62,8 @@ async function uniqueProductSlug(base: string, excludeId?: string): Promise<stri
 }
 
 // Generates a readable, unique product code like MYRA-0001 used as the product's
-// stable reference across the app.
+// stable reference across the app. `code` is @unique; on a concurrent-create
+// collision the caller retries with the next number.
 async function generateProductCode(): Promise<string> {
   const count = await prisma.product.count();
   let i = count + 1;
@@ -146,34 +147,59 @@ export async function createProduct(formData: FormData) {
   }
   data.slug = await uniqueProductSlug(data.slug);
 
-  const created = await prisma.product.create({
-    data: {
-      name: data.name,
-      code: await generateProductCode(),
-      slug: data.slug,
-      description: data.description || "",
-      price: data.price,
-      originalPrice: data.originalPrice ?? null,
-      stockQuantity: data.stockQuantity,
-      collectionId: data.collectionId || null,
-      productType: data.productType || null,
-      material: data.material || null,
-      weight: data.weight || null,
-      videoUrl: data.videoUrl || null,
-      images: data.images,
-      variants: {
-        create: data.variants?.map(v => ({
-          sku: v.sku || null,
-          size: v.size || null,
-          color: v.color || null,
-          stockQuantity: v.stockQuantity,
-          priceOffset: v.priceOffset,
-        })) || []
-      }
+  // A variant's price is base price + offset. Negative offsets are valid (e.g.
+  // a smaller size costs less), but the resulting variant price must stay
+  // positive — a zero/negative price would let an item be given away.
+  for (const v of data.variants || []) {
+    if (data.price + v.priceOffset <= 0) {
+      throw new Error(
+        `Variant price cannot be zero or negative (base ₹${data.price} plus offset of ${v.priceOffset}).`
+      );
     }
-  });
+  }
 
-  await logAudit("product.create", "Product", created.id, { slug: data.slug });
+  // Create with a retry loop: two concurrent creates can compute the same
+  // product code before either inserts, and `code` is unique — so on a P2002
+  // collision we simply retry, and `generateProductCode()` probes the DB again
+  // to pick the next free code.
+  let created;
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      created = await prisma.product.create({
+        data: {
+          name: data.name,
+          code: await generateProductCode(),
+          slug: data.slug,
+          description: data.description || "",
+          price: data.price,
+          originalPrice: data.originalPrice ?? null,
+          stockQuantity: data.stockQuantity,
+          collectionId: data.collectionId || null,
+          productType: data.productType || null,
+          material: data.material || null,
+          weight: data.weight || null,
+          videoUrl: data.videoUrl || null,
+          images: data.images,
+          variants: {
+            create: data.variants?.map(v => ({
+              sku: v.sku || null,
+              size: v.size || null,
+              color: v.color || null,
+              stockQuantity: v.stockQuantity,
+              priceOffset: v.priceOffset,
+            })) || []
+          }
+        }
+      });
+      break;
+    } catch (e) {
+      const isCodeCollision = (e as { code?: string }).code === "P2002";
+      if (!isCodeCollision || attempt === 19) throw e;
+      // Retry with a fresh code on the next iteration.
+    }
+  }
+
+  await logAudit("product.create", "Product", created!.id, { slug: data.slug });
 
   revalidatePath("/admin/products");
   updateTag(CACHE_TAGS.products);
@@ -185,7 +211,7 @@ export async function updateProduct(id: string, formData: FormData) {
 
   const prev = await prisma.product.findUnique({
     where: { id },
-    select: { stockQuantity: true, slug: true },
+    select: { stockQuantity: true, slug: true, images: true },
   });
 
   let parsedVariants: ParsedVariantRecord[] = [];
@@ -222,6 +248,22 @@ export async function updateProduct(id: string, formData: FormData) {
     data.slug = slugify(data.name) || `product-${Date.now()}`;
   }
   data.slug = await uniqueProductSlug(data.slug, id);
+
+  // A variant's price is base price + offset. Negative offsets are valid (e.g.
+  // a smaller size costs less), but the resulting variant price must stay
+  // positive — a zero/negative price would let an item be given away.
+  for (const v of data.variants || []) {
+    if (data.price + v.priceOffset <= 0) {
+      throw new Error(
+        `Variant price cannot be zero or negative (base ₹${data.price} plus offset of ${v.priceOffset}).`
+      );
+    }
+  }
+
+  // Images removed from the product are no longer referenced by any product
+  // (each image path belongs to a single product). Delete them from storage so
+  // they don't accumulate as orphaned objects. Best-effort, after the DB write.
+  const removedImages = (prev?.images ?? []).filter((img) => !data.images.includes(img));
 
   await prisma.$transaction(async (tx) => {
     await tx.product.update({
@@ -275,6 +317,13 @@ export async function updateProduct(id: string, formData: FormData) {
       }
     }
   });
+
+  // Clean up images that were removed from the product (best-effort; storage
+  // failures are non-fatal so the product update always succeeds).
+  if (removedImages.length > 0) {
+    const { deleteImageObjects } = await import("@/lib/image-storage");
+    await deleteImageObjects("product-images", removedImages).catch(console.error);
+  }
 
   await logAudit("product.update", "Product", id, { slug: data.slug });
 
@@ -358,6 +407,16 @@ export async function bulkRestoreProducts(ids: string[]) {
 
 export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
   await verifyWorkerCapability("inventory");
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    throw new Error("Select at least one product.");
+  }
+  if (ids.length > 200) {
+    throw new Error("Cannot update more than 200 products at once.");
+  }
+  if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
+    throw new Error("Stock must be a non-negative whole number.");
+  }
 
   await prisma.product.updateMany({
     where: { id: { in: ids } },
@@ -452,8 +511,17 @@ export async function updateCollection(id: string, formData: FormData) {
 export async function deleteCollection(id: string) {
   await verifyWorkerCapability("inventory");
 
-  await prisma.collection.delete({
-    where: { id }
+  await prisma.$transaction(async (tx) => {
+    // Products reference this collection (FK Restrict). Reassign them to no
+    // collection first so the delete doesn't crash on a DB constraint error.
+    await tx.product.updateMany({
+      where: { collectionId: id },
+      data: { collectionId: null },
+    });
+
+    await tx.collection.delete({
+      where: { id }
+    });
   });
 
   await logAudit("collection.delete", "Collection", id);
@@ -545,10 +613,19 @@ export async function processRefund(orderId: string, formData: FormData) {
       await refundRazorpayPayment(order.razorpayPaymentId!, amount * 100);
     }
   } catch (err) {
-    await prisma.order.updateMany({
-      where: { id: orderId, refundedAmount: { gte: amount } },
-      data: { refundedAmount: { decrement: amount }, paymentStatus: prevPaymentStatus },
-    });
+    // Reconcile before rolling back: if the refund actually reached the gateway
+    // (e.g. the request timed out after Razorpay processed it), keep the DB
+    // claim so a retry cannot double-refund the customer.
+    const { hasRefundSucceeded } = await import("@/lib/razorpay");
+    const refunded = order.razorpayPaymentId
+      ? await hasRefundSucceeded(order.razorpayPaymentId)
+      : false;
+    if (!refunded) {
+      await prisma.order.updateMany({
+        where: { id: orderId, refundedAmount: { gte: amount } },
+        data: { refundedAmount: { decrement: amount }, paymentStatus: prevPaymentStatus },
+      });
+    }
     throw err;
   }
 
@@ -583,16 +660,21 @@ export async function uploadImage(formData: FormData) {
     throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY in .env");
   }
 
+  // Optimize the image (upscale-if-small, downscale-if-huge, re-encode to WebP)
+  // so every uploaded product image is sharp and fast-loading. Animated GIFs
+  // are returned untouched.
+  const { data, mime, ext } = await processImageToWebP(bytes, detected);
+
   // Use crypto.randomUUID() — cryptographically strong, no Math.random()
-  const fileName = `${crypto.randomUUID()}.${detected.ext}`;
+  const fileName = `${crypto.randomUUID()}.${ext}`;
 
   const res = await fetch(`${supabaseUrl}/storage/v1/object/product-images/${fileName}`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${serviceRoleKey}`,
-      "Content-Type": detected.mime,
+      "Content-Type": mime,
     },
-    body: file,
+    body: new Blob([new Uint8Array(data)], { type: mime }),
   });
 
   if (!res.ok) {
@@ -776,6 +858,11 @@ export async function shipOrder(orderId: string) {
   }
   if (order.status === "CANCELLED" || order.status === "DELIVERED") {
     throw new Error("Cannot ship a cancelled or delivered order.");
+  }
+  // Never ship an online (Razorpay) order that hasn't been paid — doing so
+  // would let the goods go out COD and bypass the intended online payment.
+  if (order.paymentMethod === "RAZORPAY" && order.paymentStatus !== "PAID") {
+    throw new Error("Cannot ship an online order until its payment is captured.");
   }
   if (order.shipmentId) {
     throw new Error("This order has already been shipped to Shiprocket.");

@@ -116,6 +116,14 @@ export async function deleteAddress(addressId: string) {
     throw new Error("Address not found.");
   }
 
+  // Orders reference this address (FK Restrict). Deleting an address used by a
+  // past/active order would crash with a DB constraint error, so surface a clear
+  // message instead.
+  const usedByOrder = await prisma.order.count({ where: { addressId } });
+  if (usedByOrder > 0) {
+    throw new Error("This address is linked to an order and cannot be deleted.");
+  }
+
   await prisma.$transaction(async (tx) => {
     // Delete address
     await tx.address.delete({ where: { id: addressId } });

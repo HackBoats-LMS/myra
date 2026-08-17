@@ -50,14 +50,17 @@ export default function CartDrawer() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     
     if (isCartOpen) {
-      setRendered(true);
-      setClosing(true);
-      // Small delay to allow DOM to render off-screen before sliding in
+      // Render off-screen first, then slide in after a frame. Deferring the two
+      // synchronous state updates to a microtask avoids a cascading render.
+      queueMicrotask(() => {
+        setRendered(true);
+        setClosing(true);
+      });
       setTimeout(() => {
         setClosing(false);
       }, 10);
     } else {
-      setClosing(true);
+      queueMicrotask(() => setClosing(true));
       closeTimer.current = setTimeout(() => {
         setRendered(false);
         setClosing(false);

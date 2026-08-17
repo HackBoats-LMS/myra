@@ -9,6 +9,7 @@ import { shiprocketConfigured, createReturnOrder, assignAwbAndScheduleReturnPick
 import { refundRazorpayPayment, razorpayConfigured } from "@/lib/razorpay";
 import { detectImageType } from "@/lib/image-upload";
 import { createReturnImageSignedUrl } from "@/lib/return-images";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const REQUESTABLE_STATUSES = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"] as const;
 
@@ -16,7 +17,15 @@ const RETURN_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export async function uploadReturnImage(file: File): Promise<{ path: string; previewUrl: string }> {
   // Only authenticated customers may upload return evidence.
-  await requireCustomer();
+  const userId = await requireCustomer();
+
+  // Limit how many return images a single user can upload to prevent storage abuse.
+  await checkRateLimit({
+    bucket: "upload:return",
+    key: userId,
+    limit: 20,
+    windowSeconds: 3600,
+  });
 
   if (!file) {
     throw new Error("No file provided.");
@@ -102,12 +111,19 @@ export async function requestReturn(
   const existingActive = await prisma.returnRequest.findFirst({
     where: {
       orderItemId,
-      status: { in: ["PENDING", "APPROVED", "PICKED_UP"] },
+      // Block a second request if any prior one is active OR already completed
+      // (REFUNDED/REPLACED). A completed return already restocked the item, so
+      // allowing a re-request would restock the same unit twice (inventory leak).
+      status: { in: ["PENDING", "APPROVED", "PICKED_UP", "REFUNDED", "REPLACED"] },
     },
   });
 
   if (existingActive) {
-    throw new Error("A return or replacement request is already active for this item.");
+    throw new Error(
+      existingActive.status === "REFUNDED" || existingActive.status === "REPLACED"
+        ? "This item has already been returned or replaced."
+        : "A return or replacement request is already active for this item."
+    );
   }
 
   const created = await prisma.returnRequest.create({
@@ -336,6 +352,7 @@ export async function issueReturnRefund(requestId: string, amount: number) {
   }
 
   const prevRequestStatus = request.status;
+  const prevPaymentStatus = request.order.paymentStatus;
   const isOnlineRefund =
     request.order.paymentMethod === "RAZORPAY" && !!request.order.razorpayPaymentId;
 
@@ -393,16 +410,31 @@ export async function issueReturnRefund(requestId: string, amount: number) {
   } catch (err) {
     // If the DB was updated but the money could not be sent, revert the reservation.
     if (gatewayRefund) {
-      await prisma.$transaction(async (tx) => {
-        await tx.order.updateMany({
-          where: { id: request.orderId, refundedAmount: { gte: amount } },
-          data: { refundedAmount: { decrement: amount } },
+      // Reconcile before rolling back: if the refund actually reached the
+      // gateway (e.g. a timeout after Razorpay processed it), keep the DB claim
+      // so a retry cannot double-refund the customer.
+      const { hasRefundSucceeded } = await import("@/lib/razorpay");
+      const refunded = request.order.razorpayPaymentId
+        ? await hasRefundSucceeded(request.order.razorpayPaymentId)
+        : false;
+      if (!refunded) {
+        await prisma.$transaction(async (tx) => {
+          await tx.order.updateMany({
+            where: { id: request.orderId, refundedAmount: { gte: amount } },
+            data: { refundedAmount: { decrement: amount } },
+          });
+          // Restore the payment status too, so the order is not left marked
+          // REFUNDED when no money actually moved.
+          await tx.order.updateMany({
+            where: { id: request.orderId, refundedAmount: { lt: amount } },
+            data: { paymentStatus: prevPaymentStatus },
+          });
+          await tx.returnRequest.update({
+            where: { id: requestId },
+            data: { status: prevRequestStatus, refundAmount: null, refundedAt: null },
+          });
         });
-        await tx.returnRequest.update({
-          where: { id: requestId },
-          data: { status: prevRequestStatus, refundAmount: null, refundedAt: null },
-        });
-      });
+      }
     }
     throw err;
   }
@@ -424,18 +456,46 @@ export async function markReturnReplaced(requestId: string) {
     throw new Error("Goods must be picked up before shipping the replacement.");
   }
 
-  await prisma.returnRequest.update({
-    where: { id: requestId },
-    data: {
-      status: "REPLACED",
-      replacedAt: new Date(),
-      adminId: await setAdminId(),
-    },
+  await prisma.$transaction(async (tx) => {
+    // The returned unit was restocked on pickup; shipping the replacement unit
+    // takes it back out of inventory, so decrement stock by the ordered quantity.
+    // Guard so stock can never go negative if the replacement unit is no longer
+    // available.
+    const item = await tx.orderItem.findUnique({ where: { id: request.orderItemId } });
+    if (item) {
+      if (item.variantId) {
+        const res = await tx.productVariant.updateMany({
+          where: { id: item.variantId, stockQuantity: { gte: item.quantity } },
+          data: { stockQuantity: { decrement: item.quantity } },
+        });
+        if (res.count === 0) {
+          throw new Error("The replacement is out of stock. Restock before shipping the replacement.");
+        }
+      } else {
+        const res = await tx.product.updateMany({
+          where: { id: item.productId, stockQuantity: { gte: item.quantity } },
+          data: { stockQuantity: { decrement: item.quantity } },
+        });
+        if (res.count === 0) {
+          throw new Error("The replacement is out of stock. Restock before shipping the replacement.");
+        }
+      }
+    }
+
+    await tx.returnRequest.update({
+      where: { id: requestId },
+      data: {
+        status: "REPLACED",
+        replacedAt: new Date(),
+        adminId: await setAdminId(),
+      },
+    });
   });
 
   await logAudit("return.replace", "ReturnRequest", requestId);
 
   revalidatePath("/admin/returns");
   revalidatePath(`/admin/returns/${requestId}`);
+  revalidatePath("/admin/inventory");
   revalidatePath(`/account/orders/${request.orderId}`);
 }

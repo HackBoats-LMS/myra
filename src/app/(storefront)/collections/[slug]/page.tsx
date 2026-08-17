@@ -23,7 +23,7 @@ export async function generateMetadata(
   };
 }
 
-export const revalidate = 3600;
+export const revalidate = 60; // 60s ISR so flash-sale prices stay fresh
 
 export default async function CollectionPage({
   params,
@@ -121,6 +121,10 @@ export default async function CollectionPage({
   const queryString = queryParams.toString();
   const baseUrl = `/collections/${slug}${queryString ? `?${queryString}` : ''}`;
 
+  // Escape `<` so admin-controlled collection name/description can never break
+  // out of the ld+json script tag (stored-XSS guard, matches products page).
+  const safeJsonLd = (value: unknown): string => JSON.stringify(value).replace(/</g, "\\u003c");
+
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const collectionUrl = `${appUrl}/collections/${slug}`;
 
@@ -146,8 +150,8 @@ export default async function CollectionPage({
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdCollection) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdCollection) }} />
       <div className="w-full bg-[#FAFAFA] min-h-screen">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">
           

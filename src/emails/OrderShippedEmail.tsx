@@ -4,20 +4,21 @@ import EmailLayout from './EmailLayout';
 
 interface OrderShippedEmailProps {
   orderId: string;
+  email: string;
   trackingUrl?: string;
 }
 
-export default function OrderShippedEmail({ orderId, trackingUrl }: OrderShippedEmailProps) {
+export default function OrderShippedEmail({ orderId, email, trackingUrl }: OrderShippedEmailProps) {
   const shortOrderId = orderId.split('-')[0].toUpperCase();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  
+
   return (
     <EmailLayout
       previewText={`Your order is on its way! (Order #${shortOrderId})`}
       title="Your order has shipped!"
       cta={{
         text: "Track Your Order",
-        href: `${appUrl}/track/${orderId}`
+        href: `${appUrl}/track/${orderId}?email=${encodeURIComponent(email)}`
       }}
       footerText="If you have any questions, reply to this email or contact us at support@myra.com."
     >

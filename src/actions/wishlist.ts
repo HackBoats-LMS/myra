@@ -88,7 +88,16 @@ export async function mergeGuestWishlist(userId: string, cookieValue: string | u
     select: { productId: true },
   });
   const existingIds = new Set(existing.map((i) => i.productId));
-  const toAdd = productIds.filter((id) => !existingIds.has(id));
+
+  // Only merge ids that still map to a live (non-deleted) product. A single
+  // stale id in a guest cookie must not make the createMany fail on a FK and
+  // drop the user's entire wishlist on login.
+  const validProducts = await prisma.product.findMany({
+    where: { id: { in: productIds }, deletedAt: null },
+    select: { id: true },
+  });
+  const validIds = new Set(validProducts.map((p) => p.id));
+  const toAdd = productIds.filter((id) => !existingIds.has(id) && validIds.has(id));
 
   if (toAdd.length > 0) {
     await prisma.wishlistItem.createMany({

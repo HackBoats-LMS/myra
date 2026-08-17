@@ -19,7 +19,7 @@ function safeJsonLd(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-export const revalidate = 3600; // 1 hour ISR
+export const revalidate = 60; // 60s ISR so flash-sale prices stay fresh
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -232,6 +232,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
               productId={product.id} 
               outOfStock={product.stockQuantity <= 0} 
               variants={product.variants} 
+              price={displayPrice}
             />
 
             {product.stockQuantity <= 0 && (

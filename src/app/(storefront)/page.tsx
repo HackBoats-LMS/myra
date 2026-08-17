@@ -8,7 +8,7 @@ import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
 import Link from "next/link";
 import Image from "next/image";
 
-export const revalidate = 3600; // 1 hour ISR
+export const revalidate = 60; // 60s ISR so flash-sale prices stay fresh
 
 function SectionHeading({ title }: { title: string }) {
   return (

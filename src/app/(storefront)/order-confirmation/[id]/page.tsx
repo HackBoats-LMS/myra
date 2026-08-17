@@ -13,10 +13,18 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
+  // Checkout always requires a logged-in user, so the confirmation page must be
+  // owner-scoped. Requiring auth here prevents an anonymous visitor from viewing
+  // any order's items, prices, delivery address, and gift recipient details by
+  // guessing/leaking an order id (IDOR).
+  if (!session?.user?.id) {
+    notFound();
+  }
+
   const order = await prisma.order.findFirst({
     where: {
       id,
-      ...(session?.user?.id ? { userId: session.user.id } : {}),
+      userId: session.user.id,
     },
     include: {
       address: true,

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 3600;
+export const revalidate = 60; // 60s ISR so flash-sale prices stay fresh
 
 export default async function AllProductsPage({
   searchParams,

@@ -1,6 +1,5 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
-import { prisma } from "./prisma";
 
 export async function verifyRole(allowedRoles: string[]) {
   const session = await getServerSession(authOptions);
@@ -8,13 +7,12 @@ export async function verifyRole(allowedRoles: string[]) {
     throw new Error("Unauthorized");
   }
 
-  // Re-read the role fresh from the DB so admin demotions take effect
-  // immediately, rather than relying on the role baked into the JWT at login.
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  const role = dbUser?.role ?? session.user.role;
+  // No extra DB query needed: the NextAuth `session` callback already re-reads
+  // the user's role (and disabled state) fresh from the DB on every
+  // getServerSession call, so admin demotions and account disables take effect
+  // immediately. Relying on session.user.role avoids a redundant round-trip on
+  // every authenticated action, which was a major source of latency.
+  const role = session.user.role;
 
   if (!allowedRoles.includes(role)) {
     throw new Error("Unauthorized");
@@ -49,16 +47,10 @@ export async function verifyWorkerCapability(capability: "inventory" | "shipping
   if (!session || !session.user) {
     throw new Error("Unauthorized");
   }
-  const { id } = session.user;
+  const { role, canManageInventory, canManageShipping } = session.user;
 
-  // Re-read role and capabilities fresh from the DB so admin changes apply
-  // immediately instead of relying on the (possibly stale) JWT.
-  const dbUser = await prisma.user.findUnique({
-    where: { id },
-    select: { role: true, canManageInventory: true, canManageShipping: true },
-  });
-  const role = dbUser?.role ?? session.user.role;
-
+  // Capabilities are re-read fresh from the DB in the NextAuth `session`
+  // callback on every getServerSession, so no extra DB query is needed here.
   if (role === "ADMIN") {
     return session.user;
   }
@@ -68,8 +60,8 @@ export async function verifyWorkerCapability(capability: "inventory" | "shipping
 
   const hasCapability =
     capability === "inventory"
-      ? dbUser?.canManageInventory ?? false
-      : dbUser?.canManageShipping ?? false;
+      ? (canManageInventory ?? false)
+      : (canManageShipping ?? false);
 
   if (!hasCapability) {
     throw new Error("You do not have permission to perform this action.");

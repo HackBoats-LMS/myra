@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import ShipOrderButton from "@/components/admin/ShipOrderButton";
 import { requireWorkerModule } from "@/lib/worker";

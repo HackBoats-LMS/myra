@@ -48,13 +48,21 @@ async function isCouponAllowedForUser(
   userId: string
 ): Promise<boolean> {
   if (coupon.type === "FIRST_ORDER") {
-    const orderCount = await tx.order.count({ where: { userId } });
+    // Count only real (paid) orders. Cancelled/unpaid orders must not
+    // permanently block the FIRST_ORDER coupon.
+    const orderCount = await tx.order.count({
+      where: { userId, paymentStatus: "PAID" },
+    });
     if (orderCount > 0) return false;
   }
+  // A SINGLE_USE coupon is valid for at most one redemption per user, whether
+  // or not maxUsesPerUser is set. Rely on the CouponUsage row as the record of
+  // per-user redemption so it cannot be reused indefinitely.
+  const usage = await tx.couponUsage.findUnique({
+    where: { couponId_userId: { couponId: coupon.id, userId } },
+  });
+  if (coupon.type === "SINGLE_USE" && usage) return false;
   if (coupon.maxUsesPerUser) {
-    const usage = await tx.couponUsage.findUnique({
-      where: { couponId_userId: { couponId: coupon.id, userId } },
-    });
     if (usage && usage.count >= coupon.maxUsesPerUser) return false;
   }
   return true;
@@ -75,24 +83,26 @@ async function resolveCheckoutCoupon(
   userId: string,
   couponCode: string | undefined,
   subtotal: number,
-  allowAutoApply: boolean = true
+  allowAutoApply: boolean = true,
+  gracefulWhenInvalid: boolean = false
 ): Promise<{ coupon: Coupon | null }> {
   if (couponCode) {
     const code = couponCode.trim().toUpperCase();
     const dbCoupon = await tx.coupon.findUnique({ where: { code } });
-    if (!dbCoupon || !dbCoupon.isActive) {
-      throw new Error("Invalid or inactive coupon code.");
-    }
-    if (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date()) {
-      throw new Error("This coupon code has expired.");
-    }
-    if (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses) {
-      throw new Error("This coupon code has reached its usage limit.");
-    }
-    if (subtotal < dbCoupon.minOrderAmount) {
-      throw new Error(`This coupon requires a minimum purchase of ₹${dbCoupon.minOrderAmount.toFixed(2)}.`);
-    }
-    if (!(await isCouponAllowedForUser(tx, dbCoupon, userId))) {
+    const invalid = !dbCoupon || !dbCoupon.isActive
+      || (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date())
+      || (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses)
+      || (subtotal < dbCoupon.minOrderAmount)
+      || !(await isCouponAllowedForUser(tx, dbCoupon, userId));
+    if (invalid) {
+      // A coupon the user explicitly typed should surface the reason; an
+      // auto-applied coupon that became stale between render and submit should
+      // silently fall back to no discount so checkout still completes.
+      if (gracefulWhenInvalid) return { coupon: null };
+      if (!dbCoupon || !dbCoupon.isActive) throw new Error("Invalid or inactive coupon code.");
+      if (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date()) throw new Error("This coupon code has expired.");
+      if (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses) throw new Error("This coupon code has reached its usage limit.");
+      if (subtotal < dbCoupon.minOrderAmount) throw new Error(`This coupon requires a minimum purchase of ₹${dbCoupon.minOrderAmount.toFixed(2)}.`);
       throw new Error("This coupon is not applicable to your account.");
     }
     return { coupon: dbCoupon };
@@ -279,7 +289,13 @@ interface CreateOrderOptions {
    * auto-applied offer). Defaults to true so explicit-code and normal checkouts
    * keep the current auto-apply behavior.
    */
-  allowAutoApply?: boolean;
+allowAutoApply?: boolean;
+  /**
+   * When true, the provided couponCode was auto-applied (not typed by the user).
+   * If it became stale between render and submit (expired / hit its cap / no
+   * longer eligible), checkout falls back to no discount instead of failing.
+   */
+  couponIsAutoApplied?: boolean;
 }
 
 export interface CheckoutResult {
@@ -309,6 +325,16 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
 
     if (!cart || cart.items.length === 0) {
       throw new Error("Your cart is empty.");
+    }
+
+    // Integrity guard: a cart item's variant must belong to its own product.
+    // Otherwise a crafted cart (e.g. a tampered guest-cookie that merged into
+    // the DB) could decrement a different product's variant stock while paying
+    // this product's price.
+    for (const item of cart.items) {
+      if (item.variantId && item.variant && item.variant.productId !== item.productId) {
+        throw new Error("Your cart contains an invalid item. Please remove it and try again.");
+      }
     }
 
     const sales = await getActiveFlashSales();
@@ -389,7 +415,8 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
       userId,
       couponCode,
       subtotal,
-      opts.allowAutoApply !== false
+      opts.allowAutoApply !== false,
+      opts.couponIsAutoApplied === true
     );
 
     const { calculateOrderTotal } = await import("@/lib/pricing");
@@ -422,16 +449,58 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
       // `cancelOrder` decrements `timesUsed` and the per-user usage. Abandoned
       // UNPAID orders are cleaned up (stock + coupon restored) by the periodic
       // stale-order job, so the reservation is not permanent.
-      await tx.coupon.update({
-        where: { id: dbCoupon.id },
-        data: { timesUsed: { increment: 1 } }
-      });
-      if (dbCoupon.maxUsesPerUser || dbCoupon.type === "FIRST_ORDER" || dbCoupon.type === "SINGLE_USE") {
-        await tx.couponUsage.upsert({
-          where: { couponId_userId: { couponId: dbCoupon.id, userId } },
-          create: { couponId: dbCoupon.id, userId, count: 1 },
-          update: { count: { increment: 1 } },
+      //
+      // Reserve the total-usage slot atomically: only increment when the coupon
+      // still has capacity, so two concurrent checkouts cannot both take the
+      // last use. A failed claim means the coupon ran out under us.
+      if (dbCoupon.maxUses) {
+        const reserved = await tx.coupon.updateMany({
+          where: { id: dbCoupon.id, timesUsed: { lt: dbCoupon.maxUses } },
+          data: { timesUsed: { increment: 1 } },
         });
+        if (reserved.count === 0) {
+          throw new Error("This coupon code has reached its usage limit.");
+        }
+      } else {
+        await tx.coupon.update({
+          where: { id: dbCoupon.id },
+          data: { timesUsed: { increment: 1 } },
+        });
+      }
+      if (dbCoupon.maxUsesPerUser || dbCoupon.type === "FIRST_ORDER" || dbCoupon.type === "SINGLE_USE") {
+        // Reserve a per-user slot atomically: only increment when the user is
+        // still under their per-user limit, so two concurrent checkouts can't
+        // both take the last allowed use. If no row exists yet, create one with
+        // count 1; if a concurrent request created it meanwhile (unique conflict),
+        // fall back to the guarded increment.
+        const claimed = await tx.couponUsage.updateMany({
+          where: {
+            couponId: dbCoupon.id,
+            userId,
+            ...(dbCoupon.maxUsesPerUser ? { count: { lt: dbCoupon.maxUsesPerUser } } : {}),
+          },
+          data: { count: { increment: 1 } },
+        });
+        if (claimed.count === 0) {
+          try {
+            await tx.couponUsage.create({
+              data: { couponId: dbCoupon.id, userId, count: 1 },
+            });
+          } catch {
+            // Row was created by a concurrent request — claim a slot on it.
+            const retried = await tx.couponUsage.updateMany({
+              where: {
+                couponId: dbCoupon.id,
+                userId,
+                ...(dbCoupon.maxUsesPerUser ? { count: { lt: dbCoupon.maxUsesPerUser } } : {}),
+              },
+              data: { count: { increment: 1 } },
+            });
+            if (retried.count === 0 && dbCoupon.maxUsesPerUser) {
+              throw new Error("This coupon has reached your per-user usage limit.");
+            }
+          }
+        }
       }
     }
 
@@ -517,7 +586,8 @@ export async function checkoutCart(
   couponCode?: string,
   phone?: string,
   gift?: GiftDetails,
-  allowAutoApply: boolean = true
+  allowAutoApply: boolean = true,
+  couponIsAutoApplied: boolean = false
 ) {
   const session = await getServerSession(authOptions);
   
@@ -537,6 +607,7 @@ export async function checkoutCart(
     paymentMethod: 'CASH_ON_DELIVERY',
     paymentStatus: 'UNPAID',
     allowAutoApply,
+    couponIsAutoApplied,
   });
 
   if (userEmail) {

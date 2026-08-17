@@ -182,7 +182,8 @@ export const getCachedReviews = createCachedQuery(
     const reviews = await prisma.review.findMany({
       where: { productId, isApproved: true },
       include: {
-        user: { select: { name: true, email: true } }
+        // Only expose the reviewer's name publicly; never include email.
+        user: { select: { name: true } }
       },
       orderBy: { createdAt: "desc" }
     });

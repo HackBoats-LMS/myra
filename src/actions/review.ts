@@ -7,6 +7,8 @@ import { CACHE_TAGS } from "@/lib/cache";
 import { logAudit } from "@/lib/audit";
 import { detectImageType } from "@/lib/image-upload";
 import { uploadImageObject, REVIEW_IMAGES_BUCKET } from "@/lib/image-storage";
+import { verifyAdmin } from "@/lib/auth-utils";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const REVIEW_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -15,6 +17,14 @@ export async function uploadReviewImage(file: File): Promise<{ path: string; pre
   if (!session || !session.user?.id) {
     throw new Error("You must be logged in to add review photos.");
   }
+  // Limit how many review images a single user can upload in a short window to
+  // prevent storage abuse.
+  await checkRateLimit({
+    bucket: "upload:review",
+    key: session.user.id,
+    limit: 30,
+    windowSeconds: 3600,
+  });
   if (!file) {
     throw new Error("No file provided.");
   }
@@ -88,11 +98,7 @@ export async function submitReview(productId: string, rating: number, comment: s
 }
 
 export async function deleteReview(reviewId: string) {
-  const session = await getServerSession(authOptions);
-
-  if (!session || session.user?.role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await verifyAdmin();
 
   const review = await prisma.review.findUnique({
     where: { id: reviewId },
@@ -114,10 +120,7 @@ export async function deleteReview(reviewId: string) {
 }
 
 export async function setReviewApproved(reviewId: string, isApproved: boolean) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user?.role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await verifyAdmin();
 
   const review = await prisma.review.findUnique({
     where: { id: reviewId },
@@ -140,10 +143,7 @@ export async function setReviewApproved(reviewId: string, isApproved: boolean) {
 }
 
 export async function replyToReview(reviewId: string, reply: string) {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user?.role !== "ADMIN") {
-    throw new Error("Unauthorized");
-  }
+  await verifyAdmin();
 
   const cleanReply = (reply || "").trim();
   if (!cleanReply) {

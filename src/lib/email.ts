@@ -108,7 +108,7 @@ export async function sendOrderShippedEmail(email: string, orderId: string, trac
   await sendEmail({
     to: email,
     subject,
-    react: OrderShippedEmail({ orderId, trackingUrl })
+    react: OrderShippedEmail({ orderId, email, trackingUrl })
   });
 }
 
@@ -117,7 +117,7 @@ export async function sendLowStockAlert(items: { name: string; stockQuantity: nu
   if (!adminEmail) return;
 
   const rows = items
-    .map((item) => `• ${item.name} — ${item.stockQuantity} left`)
+    .map((item) => `• ${escapeHtml(item.name)} — ${item.stockQuantity} left`)
     .join("\n");
 
   if (!resend) {

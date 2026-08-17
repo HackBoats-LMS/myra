@@ -65,37 +65,31 @@ export async function checkRateLimit({ bucket, key, limit, windowSeconds }: Rate
 }
 
 /** Extract the best-effort client IP from an incoming request. */
-export function getClientIp(req: { headers?: unknown }): string {
-  const headers = req.headers as
-    | { get?(name: string): string | null; [key: string]: unknown }
-    | undefined;
-  if (!headers) return "unknown";
-
-  const get = (name: string): string | null => {
-    const lower = name.toLowerCase();
-    if (typeof headers.get === "function") {
-      return headers.get(name);
-    }
-    const raw = headers[lower];
-    return typeof raw === "string" ? raw : null;
-  };
-
-  // Client-supplied forwarding headers (x-forwarded-for, x-real-ip) are fully
-  // spoofable and must only be trusted when this app is explicitly deployed
-  // behind a proxy that overwrites them. Otherwise an attacker could rotate
-  // them to bypass the per-IP rate-limit bucket.
-  const trustProxy = process.env.TRUST_PROXY === "true";
-  if (!trustProxy) {
+export function getClientIp(req: { headers?: unknown; socket?: { remoteAddress?: string } }): string | null {
+  // Trusted proxy deployment: overwrite/populate forwarding headers. The app
+  // must be configured to only accept these when a real proxy rewrites them.
+  if (process.env.TRUST_PROXY === "true") {
+    const headers = req.headers as
+      | { get?(name: string): string | null; [key: string]: unknown }
+      | undefined;
+    const get = (name: string): string | null => {
+      if (!headers) return null;
+      const lower = name.toLowerCase();
+      if (typeof headers.get === "function") return headers.get(name);
+      const raw = headers[lower];
+      return typeof raw === "string" ? raw : null;
+    };
+    const xff = get("x-forwarded-for");
+    if (xff) return xff.split(",")[0].trim();
+    const real = get("x-real-ip");
+    if (real) return real;
     const cf = get("cf-connecting-ip");
     if (cf) return cf;
-    return "unknown";
   }
 
-  const xff = get("x-forwarded-for");
-  if (xff) {
-    return xff.split(",")[0].trim();
-  }
-  const real = get("x-real-ip");
-  if (real) return real;
-  return "unknown";
+  // Not behind a trusted proxy: forwarding headers are spoofable and MUST NOT
+  // be trusted. Fall back to the actual TCP peer address (not client-spoofable).
+  // If we can't determine a real per-client IP, return null so callers can skip
+  // IP-based limiting rather than collapsing everyone into one "unknown" bucket.
+  return req?.socket?.remoteAddress || null;
 }

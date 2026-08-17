@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import { mergeGuestCart } from "@/actions/cart";
 import { mergeGuestWishlist } from "@/actions/wishlist";
 import { checkRateLimit, getClientIp } from "./rate-limit";
+import { normalizeIndianPhone } from "./phone";
 import { CACHE_TAGS } from "./cache";
 import { revalidateTag } from "next/cache";
 
@@ -31,25 +32,37 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing credentials");
         }
 
-        // Rate-limit login attempts by IP and by account identifier.
-        await checkRateLimit({
-          bucket: "login:ip",
-          key: getClientIp(req),
-          limit: 15,
-          windowSeconds: 900,
-        });
+        // Rate-limit login attempts by IP and by account identifier. The
+        // account-identifier bucket always applies; the IP bucket is skipped
+        // when no reliable per-client IP can be determined.
+        const clientIp = getClientIp(req);
+        if (clientIp) {
+          await checkRateLimit({
+            bucket: "login:ip",
+            key: clientIp,
+            limit: 15,
+            windowSeconds: 900,
+          });
+        }
+        const identifier = String(credentials.phoneOrEmail).trim().toLowerCase();
         await checkRateLimit({
           bucket: "login:id",
-          key: String(credentials.phoneOrEmail).toLowerCase(),
+          key: identifier,
           limit: 10,
           windowSeconds: 900,
         });
 
+        // Normalize the input the same way registration does, so a user who
+        // registered with "+91 63010 67189" can sign in with that exact string
+        // and emails match case-insensitively.
+        const normalizedPhone = normalizeIndianPhone(identifier);
+        const lowerEmail = identifier;
+
         const user = await prisma.user.findFirst({
           where: {
             OR: [
-              { phoneNumber: credentials.phoneOrEmail },
-              { email: credentials.phoneOrEmail }
+              { phoneNumber: normalizedPhone },
+              { email: lowerEmail }
             ]
           },
         });
@@ -175,9 +188,32 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.canManageInventory = token.canManageInventory;
-        session.user.canManageShipping = token.canManageShipping;
+        // Re-read the user's current role/capabilities (and disabled state) from
+        // the DB so admin demotions, capability revocations, and account
+        // disables take effect immediately instead of being trusted from the
+        // JWT until it expires. Throwing here invalidates the session lookup
+        // for a disabled/deleted account.
+        if (token.id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: String(token.id) },
+            select: {
+              role: true,
+              canManageInventory: true,
+              canManageShipping: true,
+              isDisabled: true,
+            },
+          });
+          if (!dbUser || dbUser.isDisabled) {
+            throw new Error("Unauthorized");
+          }
+          session.user.role = dbUser.role;
+          session.user.canManageInventory = dbUser.canManageInventory;
+          session.user.canManageShipping = dbUser.canManageShipping;
+        } else {
+          session.user.role = token.role;
+          session.user.canManageInventory = token.canManageInventory;
+          session.user.canManageShipping = token.canManageShipping;
+        }
       }
       return session;
     },
