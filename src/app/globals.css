@@ -18,6 +18,15 @@ body {
   font-family: var(--font-inter), sans-serif;
 }
 
+/* Hide scrollbars everywhere while keeping scroll functionality */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes slide-in-right {
   from {
     transform: translateX(100%);

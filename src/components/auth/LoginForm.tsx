@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,9 +27,9 @@ export default function LoginForm() {
       });
 
       if (res?.error) {
-        setError("Invalid phone number or password");
+        setError(res.error);
       } else {
-        router.push("/");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
@@ -39,23 +41,23 @@ export default function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { callbackUrl: "/" });
+    await signIn("google", { callbackUrl });
   };
 
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-sm border border-red-100">{error}</div>}
+        {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-none border border-red-100">{error}</div>}
         
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Phone Number</label>
+          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Phone or Email</label>
           <input
             type="text"
             required
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
-            placeholder="e.g. 9876543210"
+            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+            placeholder="Phone number or email"
           />
         </div>
         
@@ -66,17 +68,23 @@ export default function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
             placeholder="••••••••"
           />
+        </div>
+
+        <div className="flex justify-end">
+          <Link href="/forgot-password" className="text-xs font-bold text-[#B6925B] hover:text-[#9c7d4e] uppercase tracking-widest transition-colors">
+            Forgot Password?
+          </Link>
         </div>
 
         <button
           type="submit"
           disabled={isLoading || isGoogleLoading}
-          className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70"
+          className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 rounded-none"
         >
-          {isLoading ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "Sign In"}
+          {isLoading ? <i className="ri-loader-4-line animate-spin text-base" /> : "Sign In"}
         </button>
       </form>
 
@@ -92,10 +100,10 @@ export default function LoginForm() {
       <button
         onClick={handleGoogleSignIn}
         disabled={isLoading || isGoogleLoading}
-        className="w-full bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FDFBF7] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm"
+        className="w-full bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FDFBF7] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm rounded-none"
       >
         {isGoogleLoading ? (
-          <ArrowPathIcon className="w-4 h-4 animate-spin text-[#B6925B]" />
+          <i className="ri-loader-4-line animate-spin text-base text-[#B6925B]" />
         ) : null}
         CONTINUE WITH GOOGLE
       </button>

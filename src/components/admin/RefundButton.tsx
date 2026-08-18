@@ -1,9 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { processRefund } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowPathIcon, CurrencyRupeeIcon } from "@heroicons/react/24/outline";
 
 interface RefundButtonProps {
   orderId: string;
@@ -39,7 +37,7 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
 
   if (maxRefundable <= 0) {
     return (
-      <span className="text-xs font-semibold px-2 py-1 bg-gray-100 text-gray-500 rounded uppercase tracking-wider">
+      <span className="text-[10px] font-bold px-2.5 py-1 bg-[#FAFAFA] text-gray-500 rounded-none uppercase tracking-widest border border-[#B6925B]/20">
         Fully Refunded
       </span>
     );
@@ -49,23 +47,23 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="print:hidden flex items-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-medium rounded-md transition-colors"
+        className="print:hidden flex items-center px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 text-[10px] font-bold uppercase tracking-widest rounded-none border border-red-200 transition-colors gap-1.5"
       >
-        <CurrencyRupeeIcon className="w-4 h-4 mr-1" />
+        <i className="ri-money-rupee-circle-line text-sm" />
         Issue Refund
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm print:hidden">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 m-4">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Process Refund</h3>
-            <p className="text-sm text-gray-500 mb-4">
+          <div className="bg-white rounded-none border border-[#B6925B]/20 shadow-xl w-full max-w-md p-6 m-4">
+            <h3 className="text-lg font-serif text-[#4A3B2C] mb-2 tracking-wide">Process Refund</h3>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">
               Enter the amount you wish to refund. Maximum refundable amount is ₹{maxRefundable.toFixed(2)}.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Refund Amount (₹)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Refund Amount (₹)</label>
                 <input
                   type="number"
                   required
@@ -74,16 +72,16 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
                   max={maxRefundable}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full rounded-none border border-[#B6925B]/20 px-3 py-2 text-sm focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] transition-all"
                   placeholder="0.00"
                 />
               </div>
 
-              <div className="flex justify-end pt-4 space-x-3">
+              <div className="flex justify-end pt-4 space-x-3 border-t border-[#B6925B]/10 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                  className="px-4 py-2 text-[10px] font-bold text-gray-500 hover:text-[#4A3B2C] uppercase tracking-widest transition-colors"
                   disabled={isSubmitting}
                 >
                   Cancel
@@ -91,9 +89,9 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
                 <button
                   type="submit"
                   disabled={isSubmitting || !amount}
-                  className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                  className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 gap-1.5"
                 >
-                  {isSubmitting && <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />}
+                  {isSubmitting && <i className="ri-loader-4-line animate-spin text-sm" />}
                   Confirm Refund
                 </button>
               </div>

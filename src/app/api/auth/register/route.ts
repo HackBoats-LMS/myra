@@ -1,24 +1,30 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
+import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-    const limitResult = rateLimit(`register_${ip}`, 5, 15 * 60 * 1000); // 5 requests per 15 minutes
-    
-    if (!limitResult.success) {
-      return NextResponse.json(
-        { error: "Too many registration attempts. Please try again later." },
-        { status: 429, headers: { "Retry-After": Math.ceil((limitResult.reset - Date.now()) / 1000).toString() } }
-      );
-    }
-
     const { name, phoneNumber, email, password } = await req.json();
 
     if (!phoneNumber || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Rate-limit signup by IP and by identifier to prevent account flooding/brute force.
+    const ip = getClientIp(req);
+    try {
+      await checkRateLimit({ bucket: "register:ip", key: ip, limit: 10, windowSeconds: 900 });
+      const identifier = String(phoneNumber ?? email ?? "").toLowerCase();
+      await checkRateLimit({ bucket: "register:id", key: identifier, limit: 5, windowSeconds: 900 });
+    } catch (error) {
+      if (error instanceof RateLimitError) {
+        return NextResponse.json(
+          { error: error.message, retryAfterSeconds: error.retryAfterSeconds },
+          { status: 429 }
+        );
+      }
+      throw error;
     }
 
     const existingUser = await prisma.user.findFirst({

@@ -1,13 +1,12 @@
 "use client";
-import { PrinterIcon } from "@heroicons/react/24/outline";
 
 export default function PrintInvoiceButton() {
   return (
     <button
       onClick={() => window.print()}
-      className="bg-[#0D3B66] hover:bg-[#082a4d] text-white px-4 py-2.5 rounded-md text-xs font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1.5 print:hidden"
+      className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-2 print:hidden rounded-none"
     >
-      <PrinterIcon className="w-4 h-4" />
+      <i className="ri-printer-line text-sm leading-none" />
       Print Invoice
     </button>
   );

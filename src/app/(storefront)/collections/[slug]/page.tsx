@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/storefront/ProductCard";
 import Pagination from "@/components/storefront/Pagination";
-import FilterControls from "@/components/storefront/FilterControls";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
-import Image from "next/image";
+import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -44,7 +43,8 @@ export default async function CollectionPage({
 
   // Construct filters
   const whereClause: Prisma.ProductWhereInput = {
-    collection: { slug }
+    collection: { slug },
+    deletedAt: null
   };
 
   if (stock === 'instock') {
@@ -69,7 +69,7 @@ export default async function CollectionPage({
     orderByClause = { name: 'asc' };
   }
 
-  const [collection, products, totalProducts] = await Promise.all([
+  const [collection, products, totalProducts, bestSellers] = await Promise.all([
     prisma.collection.findUnique({
       where: { slug }
     }),
@@ -82,6 +82,10 @@ export default async function CollectionPage({
     }),
     prisma.product.count({
       where: whereClause
+    }),
+    prisma.product.findMany({
+      where: { collection: { slug }, deletedAt: null, bestSeller: true },
+      include: { reviews: { select: { rating: true } } },
     })
   ]);
 
@@ -89,8 +93,17 @@ export default async function CollectionPage({
     notFound();
   }
 
-  // Compute review data for each product
-  const productsWithReviews = products.map(({ reviews, ...product }) => {
+  const sales = await getActiveFlashSales();
+
+  const productsWithReviews = applyFlashToProductList(products, sales).map(({ reviews, ...product }) => {
+    const reviewCount = reviews?.length || 0;
+    const averageRating = reviewCount > 0 
+      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+      : 0;
+    return { ...product, reviewCount, averageRating };
+  });
+
+  const bestSellersWithReviews = applyFlashToProductList(bestSellers, sales).map(({ reviews, ...product }) => {
     const reviewCount = reviews?.length || 0;
     const averageRating = reviewCount > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
@@ -136,7 +149,7 @@ export default async function CollectionPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdCollection) }} />
       <div className="w-full bg-[#FAFAFA] min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">
           
           {/* Clean Serif Header */}
           <div className="flex flex-col items-center justify-center text-center mb-10 space-y-4">
@@ -146,11 +159,24 @@ export default async function CollectionPage({
             )}
           </div>
 
-          {/* Filter and Sorting Controls */}
-          <FilterControls />
+          {/* Best Sellers */}
+          {bestSellersWithReviews.length > 0 && (
+            <section className="mt-8">
+              <div className="flex items-center justify-center gap-4 md:gap-8 mb-8">
+                <div className="h-[1px] w-12 md:w-24 bg-[#B6925B]/50"></div>
+                <h2 className="text-xl md:text-2xl font-serif text-[#B6925B] tracking-wider">Best Sellers</h2>
+                <div className="h-[1px] w-12 md:w-24 bg-[#B6925B]/50"></div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                {bestSellersWithReviews.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          )}
 
           {productsWithReviews.length === 0 ? (
-            <div className="text-center text-gray-500 py-20 border border-dashed border-gray-200 rounded-lg bg-white">
+            <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-10 md:py-20 border border-dashed border-[#B6925B]/20 bg-white">
               No products match the selected filters.
             </div>
           ) : (

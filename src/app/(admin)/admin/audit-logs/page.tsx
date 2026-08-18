@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { AuditLog } from "@/generated/prisma";
 
 export const metadata = {
   title: "Audit Logs | Admin Dashboard",
@@ -14,7 +15,9 @@ const ACTION_LABELS: Record<string, string> = {
   "product.create": "Product created",
   "product.update": "Product updated",
   "product.delete": "Product deleted",
+  "product.restore": "Product restored",
   "product.bulkDelete": "Products bulk deleted",
+  "product.bulkRestore": "Products bulk restored",
   "product.bulkUpdateStock": "Stock bulk updated",
   "collection.create": "Collection created",
   "collection.update": "Collection updated",
@@ -24,10 +27,22 @@ const ACTION_LABELS: Record<string, string> = {
   "order.refund": "Refund processed",
   "order.notesUpdate": "Order notes updated",
   "user.toggleDisabled": "User disabled/enabled",
+  "user.updateProfile": "Customer profile edited",
   "coupon.create": "Coupon created",
+  "coupon.update": "Coupon updated",
   "coupon.toggleStatus": "Coupon status toggled",
   "coupon.delete": "Coupon deleted",
+  "settings.update": "Store settings updated",
   "review.delete": "Review deleted",
+  "review.update": "Review approval updated",
+  "review.reply": "Admin replied to review",
+  "return.approve": "Return approved",
+  "return.reject": "Return rejected",
+  "return.schedulePickup": "Reverse pickup scheduled",
+  "return.pickup": "Return picked up",
+  "return.refund": "Return refunded",
+  "return.replace": "Return replaced",
+  "return.request": "Return requested",
 };
 
 function formatAction(action: string) {
@@ -58,9 +73,9 @@ export default async function AdminAuditLogsPage({
 
   const where = actionFilter ? { action: actionFilter } : {};
 
-  let logs: any[] = [];
+  let logs: AuditLog[] = [];
   let total = 0;
-  let distinctActions: any[] = [];
+  let distinctActions: { action: string }[] = [];
 
   try {
     const results = await Promise.all([

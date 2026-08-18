@@ -1,6 +1,5 @@
-"use client"
+"use client";
 import { useState } from "react";
-import { ArrowUpTrayIcon, XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { uploadImage } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
@@ -52,27 +51,27 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
   if (value) {
     return (
-      <div className="relative w-40 h-40 rounded-lg overflow-hidden border border-gray-200">
+      <div className="relative w-40 h-40 rounded-none overflow-hidden border border-[#B6925B]/20">
         <Image fill src={value} alt="Upload" className="object-cover" />
         <button
           type="button"
           onClick={() => onChange("")}
-          className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-sm transition-colors"
+          className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-none hover:bg-red-600 shadow-sm transition-colors flex items-center justify-center"
         >
-          <XMarkIcon className="w-4 h-4" />
+          <i className="ri-close-line text-sm" />
         </button>
       </div>
     );
   }
 
   return (
-    <div className="w-full">
-      <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+    <div className="w-full rounded-none">
+      <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-[#B6925B]/30 border-dashed rounded-none cursor-pointer bg-[#FAFAFA] hover:bg-white transition-colors">
         <div className="flex flex-col items-center justify-center pt-5 pb-6">
           {isUploading ? (
-            <ArrowPathIcon className="w-8 h-8 text-gray-400 animate-spin mb-3" />
+            <i className="ri-loader-4-line text-2xl text-gray-400 animate-spin mb-3" />
           ) : (
-            <ArrowUpTrayIcon className="w-8 h-8 text-gray-400 mb-3" />
+            <i className="ri-upload-cloud-line text-2xl text-gray-400 mb-3" />
           )}
           <p className="mb-1 text-sm text-gray-500">
             <span className="font-semibold">Click to upload</span> product image

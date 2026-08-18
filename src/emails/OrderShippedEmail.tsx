@@ -16,8 +16,8 @@ export default function OrderShippedEmail({ orderId, trackingUrl }: OrderShipped
       previewText={`Your order is on its way! (Order #${shortOrderId})`}
       title="Your order has shipped!"
       cta={{
-        text: "View Order Status",
-        href: `${appUrl}/account`
+        text: "Track Your Order",
+        href: `${appUrl}/track/${orderId}`
       }}
       footerText="If you have any questions, reply to this email or contact us at support@myra.com."
     >

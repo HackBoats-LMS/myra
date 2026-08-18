@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { toggleUserDisabled } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowPathIcon, LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/outline";
 
 export default function DisableUserButton({ userId, initialDisabled }: { userId: string; initialDisabled: boolean }) {
   const [disabled, setDisabled] = useState(initialDisabled);
@@ -28,17 +27,17 @@ export default function DisableUserButton({ userId, initialDisabled }: { userId:
     <button
       onClick={handleToggle}
       disabled={loading}
-      className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50
+      className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-none text-xs font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50
         ${disabled 
           ? "bg-green-700 hover:bg-green-800 text-white" 
           : "bg-red-700 hover:bg-red-800 text-white"}`}
     >
       {loading ? (
-        <ArrowPathIcon className="w-4 h-4 animate-spin" />
+        <i className="ri-loader-4-line animate-spin text-sm leading-none" />
       ) : disabled ? (
-        <LockOpenIcon className="w-4 h-4" />
+        <i className="ri-lock-unlock-line text-sm leading-none" />
       ) : (
-        <LockClosedIcon className="w-4 h-4" />
+        <i className="ri-lock-line text-sm leading-none" />
       )}
       <span>{disabled ? "Activate Account" : "Disable Account"}</span>
     </button>

@@ -38,17 +38,20 @@ export const metadata: Metadata = {
 
 import { WebVitals } from "@/components/WebVitals";
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       className={`${inter.variable} ${playfair.variable} h-full antialiased scroll-smooth`}
     >
+      <head>
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+      </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {/* Skip to main content — keyboard/screen-reader accessibility */}
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-[#0D3B66] focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:text-sm focus:font-bold focus:shadow-lg"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-[#4A3B2C] focus:text-white focus:px-6 focus:py-3 focus:border focus:border-[#B6925B] focus:text-xs focus:font-bold focus:uppercase focus:tracking-widest focus:shadow-2xl"
         >
           Skip to main content
         </a>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 interface PaginationProps {
   currentPage: number;
@@ -17,42 +16,42 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
   };
 
   return (
-    <div className="flex items-center justify-center space-x-6 py-12 border-t border-gray-100">
+    <div className="flex items-center justify-center space-x-6 py-12 border-t border-[#B6925B]/20">
       {/* Previous Button */}
       {currentPage > 1 ? (
         <Link
           href={createPageUrl(currentPage - 1)}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-md transition-all"
+          className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] border border-[#B6925B]/30 hover:border-[#4A3B2C] rounded-none transition-all bg-white"
         >
-          <ChevronLeftIcon className="w-4 h-4" />
+          <i className="ri-arrow-left-s-line text-[#B6925B] text-base leading-none" />
           <span>Previous</span>
         </Link>
       ) : (
-        <span className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-300 border border-gray-100 rounded-md cursor-not-allowed">
-          <ChevronLeftIcon className="w-4 h-4" />
+        <span className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-300 border border-[#B6925B]/10 rounded-none cursor-not-allowed bg-white">
+          <i className="ri-arrow-left-s-line text-base leading-none" />
           <span>Previous</span>
         </span>
       )}
 
       {/* Page Info */}
-      <span className="text-sm font-medium text-gray-500">
-        Page <span className="text-gray-900 font-semibold">{currentPage}</span> of{" "}
-        <span className="text-gray-900 font-semibold">{totalPages}</span>
+      <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">
+        Page <span className="text-[#B6925B] font-bold">{currentPage}</span> of{" "}
+        <span className="text-[#B6925B] font-bold">{totalPages}</span>
       </span>
 
       {/* Next Button */}
       {currentPage < totalPages ? (
         <Link
           href={createPageUrl(currentPage + 1)}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-md transition-all"
+          className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] border border-[#B6925B]/30 hover:border-[#4A3B2C] rounded-none transition-all bg-white"
         >
           <span>Next</span>
-          <ChevronRightIcon className="w-4 h-4" />
+          <i className="ri-arrow-right-s-line text-[#B6925B] text-base leading-none" />
         </Link>
       ) : (
-        <span className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-300 border border-gray-100 rounded-md cursor-not-allowed">
+        <span className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-300 border border-[#B6925B]/10 rounded-none cursor-not-allowed bg-white">
           <span>Next</span>
-          <ChevronRightIcon className="w-4 h-4" />
+          <i className="ri-arrow-right-s-line text-base leading-none" />
         </span>
       )}
     </div>

@@ -9,6 +9,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Use the DIRECT connection for CLI operations (migrate/db push).
+    // The pgbouncer transaction-pooler (DATABASE_URL / :6543) hangs Prisma's
+    // migration engines, so we route CLI commands to the direct :5432 URL.
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });

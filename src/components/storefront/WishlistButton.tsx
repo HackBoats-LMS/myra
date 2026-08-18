@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { toggleWishlist } from "@/actions/wishlist";
-import { HeartIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
@@ -30,12 +29,12 @@ export default function WishlistButton({ productId, isWishlisted = false }: { pr
     <button 
       onClick={handleToggle}
       disabled={isProcessing}
-      className="absolute top-4 right-4 z-20 p-2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full shadow-sm transition-all"
+      className="w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white backdrop-blur-sm shadow-sm transition-all rounded-full"
     >
       {isProcessing ? (
-        <ArrowPathIcon className="w-4 h-4 animate-spin text-gray-500" />
+        <i className="ri-loader-4-line animate-spin text-base text-gray-500 leading-none" />
       ) : (
-        <HeartIcon className={`w-4 h-4 ${wishlisted ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+        <i className={`text-base leading-none ${wishlisted ? 'ri-heart-fill text-red-500' : 'ri-heart-line text-gray-600'}`} />
       )}
     </button>
   );
