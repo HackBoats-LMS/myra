@@ -1,12 +1,12 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
 import { unstable_cache } from "next/cache";
-import AdminReviewList from "@/components/admin/AdminReviewList";
-import Pagination from "@/components/storefront/Pagination";
+import AdminReviewList from "@/app/(admin)/admin/reviews/_components/AdminReviewList";
+import Pagination from "@/components/shared/Pagination";
 import { Prisma } from "@/generated/prisma";
-import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "@/lib/image-storage";
+import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "@/lib/storage/image-storage";
 
 export const metadata = {
   title: "Review Management | Admin Dashboard",

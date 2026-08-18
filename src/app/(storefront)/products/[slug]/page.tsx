@@ -1,18 +1,18 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import AddToCartButton from "@/components/storefront/AddToCartButton";
-import ShareProductButton from "@/components/storefront/ShareProductButton";
-import CompareButton from "@/components/storefront/CompareButton";
-import ImageGallery from "@/components/storefront/ImageGallery";
-import ProductCard from "@/components/storefront/ProductCard";
-import StarRating from "@/components/storefront/StarRating";
-import ReviewSection from "@/components/storefront/ReviewSection";
-import PincodeChecker from "@/components/storefront/PincodeChecker";
-import RecentlyViewedRail from "@/components/storefront/RecentlyViewedRail";
-import RecentlyViewedTracker from "@/components/storefront/RecentlyViewedTracker";
-import StockNotifyButton from "@/components/storefront/StockNotifyButton";
-import { getActiveFlashSales, applyFlashDiscount, applyFlashToProductList } from "@/lib/flash-sale";
+import AddToCartButton from "@/components/shared/AddToCartButton";
+import { ShareProductButton } from "@/components/shared/ShareProductButton";
+import { CompareButton } from "@/components/shared/CompareButton";
+import { StockNotifyButton } from "@/components/shared/StockNotifyButton";
+import ImageGallery from "@/app/(storefront)/products/[slug]/_components/ImageGallery";
+import ProductCard from "@/components/shared/ProductCard";
+import StarRating from "@/components/shared/StarRating";
+import ReviewSection from "@/app/(storefront)/products/[slug]/_components/ReviewSection";
+import PincodeChecker from "@/app/(storefront)/products/[slug]/_components/PincodeChecker";
+import RecentlyViewedRail from "@/app/(storefront)/products/[slug]/_components/RecentlyViewedRail";
+import RecentlyViewedTracker from "@/app/(storefront)/products/[slug]/_components/RecentlyViewedTracker";
+import { getActiveFlashSales, applyFlashDiscount, applyFlashToProductList } from "@/features/flash-sale/lib";
 import { getCachedReviews, getCachedRelatedProducts } from "@/lib/cache";
 
 function safeJsonLd(value: unknown): string {

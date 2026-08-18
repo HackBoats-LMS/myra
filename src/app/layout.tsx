@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
 };
 
-import { WebVitals } from "@/components/WebVitals";
+import { WebVitals } from "@/components/shared/WebVitals";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

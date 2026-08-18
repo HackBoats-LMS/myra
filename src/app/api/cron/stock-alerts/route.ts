@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 
 export async function POST(req: Request) {
   if (!process.env.CRON_SECRET) {
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const inStock = pending.filter((p) => p.product.stockQuantity > 0);
   let notified = 0;
   for (const sub of inStock) {
-    const { notifyStockSubscribers } = await import("@/actions/stock-alert");
+    const { notifyStockSubscribers } = await import("@/actions/storefront/stock-alert");
     const res = await notifyStockSubscribers(sub.productId);
     notified += res.notified;
   }

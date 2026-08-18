@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import type { Metadata } from "next";
 import Link from "next/link";
-import CouponActions from "./CouponActions";
+import CouponActions from "@/app/(admin)/admin/coupons/_components/CouponActions";
 import { Coupon } from "@/generated/prisma";
 
 const TYPE_LABELS: Record<string, { label: string; classes: string }> = {

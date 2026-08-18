@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
-import ProductCard from "@/components/storefront/ProductCard";
-import Pagination from "@/components/storefront/Pagination";
+import { prisma } from "@/lib/db/prisma";
+import ProductCard from "@/components/shared/ProductCard";
+import Pagination from "@/components/shared/Pagination";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
-import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+import { getActiveFlashSales, applyFlashToProductList } from "@/features/flash-sale/lib";
 
 export const metadata: Metadata = {
   title: "Search Results | Myra Shopping Mall",

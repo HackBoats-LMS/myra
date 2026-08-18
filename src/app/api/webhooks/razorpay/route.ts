@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { revalidateTag } from "next/cache";
-import { verifyWebhookSignature } from "@/lib/razorpay";
+import { verifyWebhookSignature } from "@/lib/integrations/razorpay";
 import { CACHE_TAGS } from "@/lib/cache";
 
 export const runtime = "nodejs";
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
           // Send the customer receipt (this webhook fires for every capture,
           // including Pay Now retries, so it must not be skipped).
           if (order.user?.email) {
-            const { sendEmail } = await import("@/lib/email");
+            const { sendEmail } = await import("@/lib/email/email");
             const { default: OrderConfirmationEmail } = await import("@/emails/OrderConfirmationEmail");
             const userName = order.user.name || "Customer";
             await sendEmail({
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
           }
 
           // Notify admin of the online order.
-          const { sendAdminNewOrderEmail } = await import("@/lib/email");
+          const { sendAdminNewOrderEmail } = await import("@/lib/email/email");
           sendAdminNewOrderEmail({
             orderId: order.id,
             customerName: order.user?.name || "Customer",

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         }
       });
       
-      const { sendVerificationEmail, sendWelcomeEmail } = await import("@/lib/email");
+      const { sendVerificationEmail, sendWelcomeEmail } = await import("@/lib/email/email");
       sendVerificationEmail(user.email, token).catch(console.error);
       sendWelcomeEmail(user.email, user.name || "there").catch(console.error);
     }

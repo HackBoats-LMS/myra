@@ -1,6 +1,6 @@
 "use client";
 import { useState, Suspense } from "react";
-import { resetPassword } from "@/actions/password";
+import { resetPassword } from "@/actions/storefront/password";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";

@@ -1,4 +1,4 @@
-import { ProductCardSkeleton } from "@/components/storefront/Skeletons";
+import { ProductCardSkeleton } from "@/components/shared/Skeletons";
 
 export default function CollectionLoading() {
   return (

@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import type { Metadata } from "next";
-import ShippingConfigForm from "./ShippingConfigForm";
+import ShippingConfigForm from "@/app/(admin)/admin/shipping/_components/ShippingConfigForm";
 
 export const metadata: Metadata = {
   title: "Shipping Settings | Admin Portal",

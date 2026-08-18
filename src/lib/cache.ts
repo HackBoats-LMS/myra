@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
-import { prisma } from "./prisma";
+import { prisma } from "./db/prisma";
 import type { Prisma } from "@/generated/prisma";
-import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "./image-storage";
+import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "./storage/image-storage";
 
 // Cache tags for targeted revalidation
 export const CACHE_TAGS = {

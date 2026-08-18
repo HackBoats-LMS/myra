@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma";
 
 // Razorpay orders are reserved (stock decremented) the moment checkout starts.
@@ -155,7 +155,7 @@ export async function refundPaymentIdempotent(options: {
     return false;
   }
 
-  const { refundRazorpayPayment } = await import("@/lib/razorpay");
+  const { refundRazorpayPayment } = await import("@/lib/integrations/razorpay");
   try {
     await refundRazorpayPayment(paymentId, amountPaise);
     return true;
@@ -165,7 +165,7 @@ export async function refundPaymentIdempotent(options: {
     // timed out after Razorpay processed it), keep the claim so a retry doesn't
     // double-refund.
     console.error("Refund call failed, reconciling", orderId, err);
-    const { fetchRazorpayPayment } = await import("@/lib/razorpay");
+    const { fetchRazorpayPayment } = await import("@/lib/integrations/razorpay");
     let refunded = false;
     try {
       const payment = await fetchRazorpayPayment(paymentId);

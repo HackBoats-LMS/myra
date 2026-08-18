@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@/generated/prisma";
 import { requireWorkerModule } from "@/lib/worker";

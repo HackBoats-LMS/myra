@@ -1,12 +1,12 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { cookies } from "next/headers";
-import ProductCard from "@/components/storefront/ProductCard";
-import MoveToCartButton from "@/components/storefront/MoveToCartButton";
-import MoveAllToBagButton from "@/components/storefront/MoveAllToBagButton";
+import ProductCard from "@/components/shared/ProductCard";
+import { MoveToCartButton } from "@/app/(storefront)/wishlist/_components/MoveToCartButton";
+import { MoveAllToBagButton } from "@/app/(storefront)/wishlist/_components/MoveAllToBagButton";
 import type { Prisma } from "@/generated/prisma";
-import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
+import { getActiveFlashSales, applyFlashDiscount } from "@/features/flash-sale/lib";
 
 type WishlistItem = Prisma.WishlistItemGetPayload<{
   include: { product: { include: { reviews: { select: { rating: true } } } } };

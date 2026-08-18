@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import EditCouponForm from "./EditCouponForm";
+import { prisma } from "@/lib/db/prisma";
+import EditCouponForm from "@/app/(admin)/admin/coupons/_components/EditCouponForm";
 
 export const dynamic = "force-dynamic";
 

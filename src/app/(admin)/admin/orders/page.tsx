@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db/prisma';
 import { Prisma } from '@/generated/prisma';
 import { unstable_cache } from 'next/cache';
-import AdminFilters from '@/components/admin/AdminFilters';
-import Pagination from '@/components/storefront/Pagination';
+import AdminFilters from '@/app/(admin)/admin/_components/AdminFilters';
+import Pagination from '@/components/shared/Pagination';
 
 const ORDER_STATUSES = [
   'PENDING', 'READY_TO_SHIP', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',

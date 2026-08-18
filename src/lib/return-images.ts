@@ -1,4 +1,4 @@
-import { createSignedObjectUrl, createSignedObjectUrls } from "@/lib/image-storage";
+import { createSignedObjectUrl, createSignedObjectUrls } from "@/lib/storage/image-storage";
 
 const RETURN_IMAGES_BUCKET = "return-images";
 

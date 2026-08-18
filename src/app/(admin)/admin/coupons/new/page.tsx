@@ -1,4 +1,4 @@
-import CreateCouponForm from "./CreateCouponForm";
+import CreateCouponForm from "@/app/(admin)/admin/coupons/_components/CreateCouponForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

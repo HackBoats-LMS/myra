@@ -1,8 +1,8 @@
-import { getDeliveryOrders } from "@/actions/delivery";
+import { getDeliveryOrders } from "@/actions/admin/delivery";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
-import DeliveryDashboard from "@/components/delivery/DeliveryDashboard";
+import DeliveryDashboard from "@/app/delivery/_components/DeliveryDashboard";
 import type { Metadata } from "next";
 import Link from "next/link";
 

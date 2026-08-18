@@ -1,10 +1,10 @@
 "use client";
 import React, { createContext, useContext, useReducer, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { toggleCompare as toggleCompareAction, clearCompare as clearCompareAction } from "@/actions/compare";
+import { toggleCompare as toggleCompareAction, clearCompare as clearCompareAction } from "@/actions/storefront/compare";
 
 // Code-split the compare tray so its JS only loads on the client when needed.
-const CompareTray = dynamic(() => import("@/components/storefront/CompareTray"), { ssr: false });
+const CompareTray = dynamic(() => import("@/components/shared/CompareTray"), { ssr: false });
 
 interface CompareContextType {
   compareIds: string[];

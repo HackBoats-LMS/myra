@@ -1,9 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
-import ShipOrderButton from "@/components/admin/ShipOrderButton";
-import PrintInvoiceButton from "@/components/admin/PrintInvoiceButton";
-import OrderInternalNotes from "@/components/admin/OrderInternalNotes";
-import RefundButton from "@/components/admin/RefundButton";
+import { ShipOrderButton, PrintInvoiceButton, RefundButton } from "@/components/shared/OrderActions";
+import OrderInternalNotes from "@/app/(admin)/admin/orders/_components/OrderInternalNotes";
 import Image from "next/image";
 
 export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {

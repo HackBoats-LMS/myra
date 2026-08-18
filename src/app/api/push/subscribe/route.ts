@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { savePushSubscription, isPushConfigured } from "@/lib/push";
 import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
 

@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
-import ProfileForm from "@/components/storefront/ProfileForm";
-import AddressManager from "@/components/storefront/AddressManager";
+import ProfileForm from "@/app/(storefront)/account/_components/ProfileForm";
+import AddressManager from "@/app/(storefront)/account/_components/AddressManager";
 import Image from "next/image";
 import Link from "next/link";
 import type { Prisma } from "@/generated/prisma";

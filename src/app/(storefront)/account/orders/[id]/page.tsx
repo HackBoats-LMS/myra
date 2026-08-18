@@ -1,17 +1,17 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import CancelOrderButton from "@/components/storefront/CancelOrderButton";
-import ReorderButton from "@/components/storefront/ReorderButton";
-import PrintInvoiceButton from "@/components/admin/PrintInvoiceButton";
-import OrderTrackingTimeline from "@/components/storefront/OrderTrackingTimeline";
-import ChangeOrderAddressButton from "@/components/storefront/ChangeOrderAddressButton";
-import OrderItemReview from "@/components/storefront/OrderItemReview";
-import OrderItemReturn from "@/components/storefront/OrderItemReturn";
-import PayNowButton from "@/components/storefront/PayNowButton";
+import { CancelOrderButton } from "@/app/(storefront)/account/orders/_components/CancelOrderButton";
+import { ReorderButton } from "@/app/(storefront)/account/orders/_components/ReorderButton";
+import { PrintInvoiceButton } from "@/components/shared/OrderActions";
+import OrderTrackingTimeline from "@/components/shared/OrderTrackingTimeline";
+import ChangeOrderAddressButton from "@/app/(storefront)/account/orders/_components/ChangeOrderAddressButton";
+import OrderItemReview from "@/app/(storefront)/account/orders/_components/OrderItemReview";
+import OrderItemReturn from "@/app/(storefront)/account/orders/_components/OrderItemReturn";
+import PayNowButton from "@/app/(storefront)/account/orders/_components/PayNowButton";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
 

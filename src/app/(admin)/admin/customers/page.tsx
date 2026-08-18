@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { Prisma } from "@/generated/prisma";
-import AdminFilters from "@/components/admin/AdminFilters";
-import Pagination from "@/components/storefront/Pagination";
+import AdminFilters from "@/app/(admin)/admin/_components/AdminFilters";
+import Pagination from "@/components/shared/Pagination";
 
 export const metadata: Metadata = {
   title: "Customers Directory | Admin Portal",

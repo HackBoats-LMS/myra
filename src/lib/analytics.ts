@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { prisma } from "./prisma";
+import { prisma } from "./db/prisma";
 
 export const ANALYTICS_TAG = "analytics";
 

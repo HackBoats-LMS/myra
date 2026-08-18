@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
-import DeleteButton from '@/components/admin/DeleteButton';
-import { deleteCollection } from '@/actions/admin';
+import { prisma } from '@/lib/db/prisma';
+import DeleteButton from '@/components/shared/DeleteButton';
+import { deleteCollection } from '@/actions/admin/admin';
 import { Prisma } from '@/generated/prisma';
 
 export default async function AdminCollectionsPage() {

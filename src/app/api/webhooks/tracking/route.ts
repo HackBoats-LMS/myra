@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { revalidateTag } from "next/cache";
-import { mapShiprocketStatus } from "@/lib/shiprocket";
+import { mapShiprocketStatus } from "@/lib/integrations/shiprocket";
 import { CACHE_TAGS } from "@/lib/cache";
 
 interface TrackingWebhookPayload {
@@ -115,11 +115,11 @@ export async function POST(req: NextRequest) {
 
     if (newStatus && order.user?.email) {
       if (newStatus === "SHIPPED") {
-        import("@/lib/email").then(({ sendOrderShippedEmail }) =>
+        import("@/lib/email/email").then(({ sendOrderShippedEmail }) =>
           sendOrderShippedEmail(order.user.email!, order.id).catch(console.error)
         );
       } else if (newStatus === "DELIVERED") {
-        import("@/lib/email").then(({ sendOrderDeliveredEmail }) =>
+        import("@/lib/email/email").then(({ sendOrderDeliveredEmail }) =>
           sendOrderDeliveredEmail(order.user.email!, order.id).catch(console.error)
         );
       }

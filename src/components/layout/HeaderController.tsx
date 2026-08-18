@@ -1,8 +1,8 @@
 "use client";
 import { usePathname } from "next/navigation";
-import Navbar from "./Navbar";
-import MinimalTopbar from "./MinimalTopbar";
-import CatalogToolbar from "./CatalogToolbar";
+import Navbar from "@/components/layout/Navbar";
+import MinimalTopbar from "@/components/layout/MinimalTopbar";
+import CatalogToolbar from "@/components/layout/CatalogToolbar";
 
 interface HeaderControllerProps {
   cartCount: number;

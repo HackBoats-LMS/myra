@@ -2,8 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import CartButton from "./CartButton";
-import WishlistButton from "./WishlistButton";
+import { CartButton, WishlistButton } from "./NavIcons";
 import { NAV_LINKS } from "@/lib/navigation";
 
 // Load the mobile slide-out menu only on the client when the hamburger is tapped.

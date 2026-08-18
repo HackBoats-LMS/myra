@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { sendContactMessage } from "@/actions/contact";
+import { sendContactMessage } from "@/actions/storefront/contact";
 import { useToast } from "@/components/ui/Toast";
 
 export default function ContactPage() {

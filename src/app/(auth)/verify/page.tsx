@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 
 export default async function VerifyEmailPage({

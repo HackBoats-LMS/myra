@@ -1,10 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import DisableUserButton from "@/components/admin/DisableUserButton";
-import UserRoleSelect from "@/components/admin/UserRoleSelect";
-import WorkerCapabilitiesSelect from "@/components/admin/WorkerCapabilitiesSelect";
-import EditCustomerForm from "@/components/admin/EditCustomerForm";
+import { DisableUserButton, UserRoleSelect, WorkerCapabilitiesSelect } from "@/app/(admin)/admin/customers/_components/UserControls";
+import EditCustomerForm from "@/app/(admin)/admin/customers/_components/EditCustomerForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

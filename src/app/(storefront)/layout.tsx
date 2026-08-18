@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import HeaderController from "@/components/layout/HeaderController";
 import { validateEnv } from "@/lib/env";
 import { CartProvider } from "@/context/CartContext";
@@ -11,8 +11,8 @@ import { getCachedCartCount, getCachedWishlistCount } from "@/lib/cache";
 import CookieConsent from "@/components/layout/CookieConsent";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Footer from "@/components/layout/Footer";
-import PwaRegister from "@/components/storefront/PwaRegister";
-import Drawers from "@/components/storefront/Drawers";
+import PwaRegister from "@/app/(storefront)/_components/PwaRegister";
+import Drawers from "@/app/(storefront)/_components/Drawers";
 
 function parseGuestCartCount(raw: string | undefined): number {
   if (!raw) return 0;

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { generateResetToken } from "@/actions/password";
+import { generateResetToken } from "@/actions/storefront/password";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
 

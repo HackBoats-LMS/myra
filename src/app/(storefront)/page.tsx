@@ -1,10 +1,10 @@
-import HeroGrid from "@/components/storefront/HeroGrid";
-import CategoryButtons from "@/components/storefront/CategoryButtons";
-import ProductCarousel from "@/components/storefront/ProductCarousel";
-import FlashSaleBanner from "@/components/storefront/FlashSaleBanner";
-import RecommendedForYou from "@/components/storefront/RecommendedForYou";
+import HeroGrid from "@/features/home/components/HeroGrid";
+import CategoryButtons from "@/features/home/components/CategoryButtons";
+import ProductCarousel from "@/features/home/components/ProductCarousel";
+import FlashSaleBanner from "@/features/flash-sale/components/FlashSaleBanner";
+import RecommendedForYou from "@/features/home/components/RecommendedForYou";
 import { getFeaturedProducts, getBestSellers } from "@/services/products";
-import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+import { getActiveFlashSales, applyFlashToProductList } from "@/features/flash-sale/lib";
 import Link from "next/link";
 import Image from "next/image";
 

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { subscribeNewsletter } from "@/actions/contact";
+import { subscribeNewsletter } from "@/actions/storefront/contact";
 
 export default function NewsletterForm() {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");

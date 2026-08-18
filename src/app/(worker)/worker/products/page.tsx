@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { getProducts } from "@/services/products";
-import Pagination from "@/components/storefront/Pagination";
-import { prisma } from "@/lib/prisma";
-import ProductListTable from "@/components/admin/ProductListTable";
+import Pagination from "@/components/shared/Pagination";
+import { prisma } from "@/lib/db/prisma";
+import ProductListTable from "@/components/shared/ProductListTable";
 import { requireWorkerModule } from "@/lib/worker";
 import { CACHE_TAGS } from "@/lib/cache";
 

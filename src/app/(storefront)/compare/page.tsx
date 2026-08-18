@@ -1,11 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getCompareIds } from "@/lib/compare";
 import Link from "next/link";
 import Image from "next/image";
-import AddToCartButton from "@/components/storefront/AddToCartButton";
-import CompareButton from "@/components/storefront/CompareButton";
+import AddToCartButton from "@/components/shared/AddToCartButton";
+import { CompareButton } from "@/components/shared/CompareButton";
 import { Metadata } from "next";
-import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+import { getActiveFlashSales, applyFlashToProductList } from "@/features/flash-sale/lib";
 
 export const dynamic = "force-dynamic";
 

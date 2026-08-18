@@ -1,4 +1,4 @@
-import ProductForm from "@/components/admin/ProductForm";
+import ProductForm from "@/components/shared/ProductForm";
 import { getAllCollections } from "@/services/collections";
 import { requireWorkerModule } from "@/lib/worker";
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import TrackOrderForm from "@/components/storefront/TrackOrderForm";
+import TrackOrderForm from "@/app/(storefront)/track/_components/TrackOrderForm";
 
 export const metadata: Metadata = {
   title: "Track Your Order | Myra Shopping Mall",
