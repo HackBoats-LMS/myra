@@ -3,7 +3,6 @@ import { useState, Suspense } from "react";
 import { resetPassword } from "@/actions/password";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
 
 function ResetPasswordForm() {
@@ -44,9 +43,9 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="text-center">
+      <div className="text-center rounded-none">
         <p className="text-red-500 mb-6">Invalid or missing reset token.</p>
-        <Link href="/forgot-password" className="text-[#B6925B] hover:underline font-bold uppercase tracking-widest text-xs">
+        <Link href="/forgot-password" className="text-[#B6925B] hover:underline font-bold uppercase tracking-widest text-xs rounded-none">
           Request a new reset link
         </Link>
       </div>
@@ -62,7 +61,7 @@ function ResetPasswordForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+          className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
           placeholder="••••••••"
         />
       </div>
@@ -73,16 +72,16 @@ function ResetPasswordForm() {
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+          className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
           placeholder="••••••••"
         />
       </div>
       <button
         type="submit"
         disabled={isLoading || !password || !confirmPassword}
-        className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 flex justify-center items-center"
+        className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 flex justify-center items-center rounded-none"
       >
-        {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Reset Password"}
+        {isLoading ? <i className="ri-loader-4-line animate-spin text-sm" /> : "Reset Password"}
       </button>
     </form>
   );
@@ -90,11 +89,11 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4">
-      <div className="max-w-md w-full bg-white p-8 border border-[#B6925B]/20 shadow-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4 rounded-none">
+      <div className="max-w-md w-full bg-white p-8 border border-[#B6925B]/20 shadow-sm rounded-none">
         <h2 className="text-3xl font-serif text-[#4A3B2C] mb-8 text-center tracking-wide">Create New Password</h2>
         
-        <Suspense fallback={<div className="flex justify-center"><ArrowPathIcon className="w-5 h-5 animate-spin text-[#B6925B]" /></div>}>
+        <Suspense fallback={<div className="flex justify-center"><i className="ri-loader-4-line animate-spin text-lg text-[#B6925B]" /></div>}>
           <ResetPasswordForm />
         </Suspense>
       </div>

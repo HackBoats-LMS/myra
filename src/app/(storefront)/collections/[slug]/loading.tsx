@@ -5,8 +5,8 @@ export default function CollectionLoading() {
     <div className="max-w-7xl mx-auto px-8 py-16 min-h-screen">
       {/* Header Skeleton */}
       <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4 animate-pulse">
-        <div className="h-10 w-48 bg-slate-100 rounded-md" />
-        <div className="h-4 w-96 bg-slate-100 rounded-md" />
+        <div className="h-10 w-48 bg-slate-100 rounded-none" />
+        <div className="h-4 w-96 bg-slate-100 rounded-none" />
       </div>
 
       {/* Grid of Shimmering Product Cards */}

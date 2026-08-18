@@ -2,44 +2,45 @@ import Image from 'next/image';
 
 export default function HeroGrid() {
   return (
-    <section className="w-full grid grid-cols-1 lg:grid-cols-12 max-w-[1920px] mx-auto bg-white">
+    <section className="w-full max-w-[1920px] mx-auto bg-white flex flex-col lg:flex-row">
       {/* Main Left Banner */}
-      {/* Since the image has the text baked in, we just display the image */}
-      <div className="lg:col-span-8 relative min-h-[500px] lg:min-h-[750px] overflow-hidden flex items-center justify-start">
-        <Image 
-          src="/displaypics/50offsale.png" 
-          alt="Main Sale Banner" 
-          fill 
+      {/* 60% width, 4:3 aspect ratio. Height = 60 * 0.75 = 45% of total width */}
+      <div className="w-full lg:w-[60%] relative cursor-pointer aspect-[4/3]">
+        <Image
+          src="/displaypics/landingpage1.png"
+          alt="Sale up to 50% off"
+          fill
           priority
-          sizes="(max-width: 1024px) 100vw, 66vw"
-          className="object-cover absolute inset-0 z-0" 
+          quality={100}
+          sizes="(max-width: 1024px) 100vw, 60vw"
+          className="object-cover object-right"
         />
       </div>
 
       {/* Right Stacked Banners */}
-      <div className="lg:col-span-4 flex flex-col">
-        {/* Top Right Banner */}
-        <div className="flex-1 relative min-h-[350px] border-b-[8px] border-white lg:border-b-0 lg:border-l-[8px] overflow-hidden group cursor-pointer">
-           <Image 
-             src="/displaypics/dressesthatdefine.png" 
-             alt="Dresses Banner" 
-             fill 
-             priority
-             sizes="(max-width: 768px) 100vw, 33vw"
-             className="object-cover absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-700" 
-           />
+      {/* 40% width on desktop, 100% on mobile. Each image is 16:9 aspect ratio. Height = 40 * 0.5625 = 22.5% each. Total height = 45% */}
+      <div className="flex w-full lg:w-[40%] flex-col">
+        <div className="w-full relative cursor-pointer aspect-[16/9]">
+          <Image
+            src="/displaypics/landingpage2.png"
+            alt="Dresses collection"
+            fill
+            priority
+            quality={100}
+            sizes="(max-width: 1024px) 100vw, 40vw"
+            className="object-cover object-center"
+          />
         </div>
-
-        {/* Bottom Right Banner */}
-        <div className="flex-1 relative min-h-[350px] lg:border-l-[8px] border-white overflow-hidden group cursor-pointer">
-           <Image 
-             src="/displaypics/70offsale.png" 
-             alt="Kids Sale Banner" 
-             fill 
-             priority
-             sizes="(max-width: 768px) 100vw, 33vw"
-             className="object-cover absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-700" 
-           />
+        <div className="w-full relative cursor-pointer aspect-[16/9]">
+          <Image
+            src="/displaypics/landingpage3.png"
+            alt="Kids collection"
+            fill
+            priority
+            quality={100}
+            sizes="(max-width: 1024px) 100vw, 40vw"
+            className="object-cover object-center"
+          />
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 import type { Prisma } from "@/generated/prisma";
+import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "./image-storage";
 
 // Cache tags for targeted revalidation
 export const CACHE_TAGS = {
@@ -13,6 +14,10 @@ export const CACHE_TAGS = {
   orders: (userId: string) => `orders-${userId}`,
   wishlist: (userId: string) => `wishlist-${userId}`,
   cart: (userId: string) => `cart-${userId}`,
+  workerOrders: "worker-orders",
+  workerProducts: "worker-products",
+  workerCollections: "worker-collections",
+  deliveryOrders: "delivery-orders",
 } as const;
 
 // Cache durations (in seconds)
@@ -27,11 +32,18 @@ export const CACHE_TTL = {
 export function createCachedQuery<TArgs extends unknown[], TResult>(
   key: string[],
   queryFn: (...args: TArgs) => Promise<TResult>,
-  options: { tags?: string[]; revalidate?: number } = {}
+  options: {
+    tags?: string[] | ((...args: TArgs) => string[]);
+    revalidate?: number;
+  } = {}
 ) {
+  const staticTags = typeof options.tags === "function" ? [] : (options.tags || []);
   return unstable_cache(queryFn, key, {
-    tags: options.tags || [],
+    tags: staticTags,
     revalidate: options.revalidate || CACHE_TTL.medium,
+    ...(typeof options.tags === "function"
+      ? { getDerivedTags: (...args: TArgs) => (options.tags as (...a: TArgs) => string[])(...args) }
+      : {}),
   });
 }
 
@@ -40,6 +52,7 @@ export const getCachedProducts = createCachedQuery(
   ["products", "list"],
   async (skip?: number, take?: number) => {
     return prisma.product.findMany({
+      where: { deletedAt: null },
       include: { collection: true },
       orderBy: { createdAt: "desc" },
       ...(skip !== undefined ? { skip } : {}),
@@ -53,18 +66,21 @@ export const getCachedProductBySlug = createCachedQuery(
   ["product", "slug"],
   async (slug: string) => {
     return prisma.product.findUnique({
-      where: { slug },
+      where: { slug, deletedAt: null },
       include: { collection: true, variants: true },
     });
   },
-  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.medium }
+  {
+    tags: (slug: string) => [CACHE_TAGS.product(slug), CACHE_TAGS.products],
+    revalidate: CACHE_TTL.medium,
+  }
 );
 
 export const getCachedProductsByCollection = createCachedQuery(
   ["products", "collection"],
   async (collectionSlug: string) => {
     return prisma.product.findMany({
-      where: { collection: { slug: collectionSlug } },
+      where: { deletedAt: null, collection: { slug: collectionSlug } },
       include: { collection: true },
     });
   },
@@ -75,6 +91,7 @@ export const getCachedFeaturedProducts = createCachedQuery(
   ["products", "featured"],
   async (take: number = 4) => {
     return prisma.product.findMany({
+      where: { deletedAt: null },
       take,
       orderBy: { createdAt: "desc" },
       include: { 
@@ -90,8 +107,9 @@ export const getCachedBestSellers = createCachedQuery(
   ["products", "best-sellers"],
   async (take: number = 4) => {
     return prisma.product.findMany({
+      where: { deletedAt: null, bestSeller: true },
       take,
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
       include: { 
         collection: true,
         reviews: { select: { rating: true } }
@@ -104,14 +122,41 @@ export const getCachedBestSellers = createCachedQuery(
 export const getCachedRelatedProducts = createCachedQuery(
   ["products", "related"],
   async (productId: string, collectionId: string | null, take: number = 4) => {
-    const where: Prisma.ProductWhereInput = { id: { not: productId } };
-    if (collectionId) where.collectionId = collectionId;
-    
+    const baseWhere: Prisma.ProductWhereInput = { deletedAt: null, id: { not: productId } };
+    const include = { collection: true };
+
+    // 1. Same collection first.
+    if (collectionId) {
+      const sameCollection = await prisma.product.findMany({
+        where: { ...baseWhere, collectionId },
+        take,
+        orderBy: { createdAt: "desc" },
+        include,
+      });
+      if (sameCollection.length >= take) return sameCollection;
+    }
+
+    // 2. Same product type fallback.
+    const current = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { productType: true },
+    });
+    if (current?.productType) {
+      const sameType = await prisma.product.findMany({
+        where: { ...baseWhere, productType: current.productType, ...(collectionId ? { collectionId: { not: collectionId } } : {}) },
+        take,
+        orderBy: { createdAt: "desc" },
+        include,
+      });
+      if (sameType.length >= take) return sameType;
+    }
+
+    // 3. Any other products as a last resort.
     return prisma.product.findMany({
-      where,
+      where: baseWhere,
       take,
       orderBy: { createdAt: "desc" },
-      include: { collection: true },
+      include,
     });
   },
   { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.medium }
@@ -130,19 +175,27 @@ export const getCachedAllCollections = createCachedQuery(
   { tags: [CACHE_TAGS.collections], revalidate: CACHE_TTL.long }
 );
 
-// Reviews - using static tag "reviews" and revalidating with specific product ID
+// Reviews - derived tag per product so revalidation with CACHE_TAGS.reviews(productId) invalidates correctly
 export const getCachedReviews = createCachedQuery(
   ["reviews", "product"],
   async (productId: string) => {
-    return prisma.review.findMany({
-      where: { productId },
+    const reviews = await prisma.review.findMany({
+      where: { productId, isApproved: true },
       include: {
         user: { select: { name: true, email: true } }
       },
       orderBy: { createdAt: "desc" }
     });
+    // Resolve stored image paths to short-lived signed URLs for display.
+    return Promise.all(
+      reviews.map(async (review) => {
+        const images =
+          review.images.length > 0 ? await createSignedObjectUrls(REVIEW_IMAGES_BUCKET, review.images) : [];
+        return { ...review, images };
+      })
+    );
   },
-  { tags: [CACHE_TAGS.reviews("all")], revalidate: CACHE_TTL.medium }
+  { tags: (productId: string) => [CACHE_TAGS.reviews(productId)], revalidate: CACHE_TTL.medium }
 );
 
 // Search suggestions
@@ -150,9 +203,10 @@ export const getCachedSearchSuggestions = createCachedQuery(
   ["search", "suggest"],
   async (query: string) => {
     if (!query || query.length < 2) return [];
-    
+
     return prisma.product.findMany({
       where: {
+        deletedAt: null,
         OR: [
           { name: { contains: query, mode: "insensitive" } },
           { description: { contains: query, mode: "insensitive" } },
@@ -170,7 +224,34 @@ export const getCachedSearchSuggestions = createCachedQuery(
       take: 5,
     });
   },
-  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.short }
+  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.medium }
+);
+
+// Per-user cart/wishlist counts used in the storefront shell. Short TTL keeps
+// them cheap while avoiding a DB hit on every page navigation; mutations call
+// updateTag(CACHE_TAGS.*(userId)) to refresh immediately.
+export const getCachedCartCount = createCachedQuery(
+  ["cart", "count"],
+  async (userId: string) => {
+    const result = await prisma.cartItem.aggregate({
+      where: { cart: { userId } },
+      _sum: { quantity: true },
+    });
+    return result._sum.quantity ?? 0;
+  },
+  { tags: (userId: string) => [CACHE_TAGS.cart(userId)], revalidate: 30 }
+);
+
+export const getCachedWishlistCount = createCachedQuery(
+  ["wishlist", "count"],
+  async (userId: string) => {
+    const wishlist = await prisma.wishlist.findUnique({
+      where: { userId },
+      select: { _count: { select: { items: true } } },
+    });
+    return wishlist?._count.items ?? 0;
+  },
+  { tags: (userId: string) => [CACHE_TAGS.wishlist(userId)], revalidate: 30 }
 );
 
 // Sitemap data
@@ -178,7 +259,7 @@ export const getCachedSitemapData = createCachedQuery(
   ["sitemap", "data"],
   async () => {
     const [products, collections] = await Promise.all([
-      prisma.product.findMany({ select: { slug: true, updatedAt: true } }),
+      prisma.product.findMany({ where: { deletedAt: null }, select: { slug: true, updatedAt: true } }),
       prisma.collection.findMany({ select: { slug: true, updatedAt: true } }),
     ]);
     return { products, collections };

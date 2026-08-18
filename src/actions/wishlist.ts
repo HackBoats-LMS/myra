@@ -98,3 +98,83 @@ export async function mergeGuestWishlist(userId: string, cookieValue: string | u
 
   updateTag(CACHE_TAGS.wishlist(userId));
 }
+
+export type WishlistDrawerItem = {
+  id: string;
+  product: {
+    id: string;
+    slug: string;
+    name: string;
+    price: number;
+    images?: string[] | null;
+    collection?: { name: string | null } | null;
+  };
+};
+
+export async function getWishlist(): Promise<WishlistDrawerItem[]> {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id || null;
+
+  if (userId) {
+    const wishlist = await prisma.wishlist.findUnique({
+      where: { userId },
+      include: {
+        items: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            product: { include: { collection: { select: { name: true } } } },
+          },
+        },
+      },
+    });
+    return (
+      wishlist?.items.map((item) => ({
+        id: item.id,
+        product: {
+          id: item.product.id,
+          slug: item.product.slug,
+          name: item.product.name,
+          price: item.product.price,
+          images: item.product.images,
+          collection: item.product.collection,
+        },
+      })) || []
+    );
+  }
+
+  // Guest wishlist (cookie-based)
+  const cookieStore = await cookies();
+  const productIds = parseGuestWishlistCookie(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
+  if (productIds.length === 0) return [];
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds }, deletedAt: null },
+    include: { collection: { select: { name: true } } },
+  });
+  return products.map((p) => ({
+    id: `guest-${p.id}`,
+    product: {
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      price: p.price,
+      images: p.images,
+      collection: p.collection,
+    },
+  }));
+}
+
+export async function getWishlistCount(): Promise<number> {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id || null;
+
+  if (userId) {
+    const wishlist = await prisma.wishlist.findUnique({
+      where: { userId },
+      select: { _count: { select: { items: true } } },
+    });
+    return wishlist?._count.items ?? 0;
+  }
+
+  const cookieStore = await cookies();
+  return parseGuestWishlistCookie(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value).length;
+}

@@ -1,0 +1,39 @@
+import { prisma } from "@/lib/prisma";
+import CollectionForm from "@/components/admin/CollectionForm";
+import CollectionBestSellers from "@/components/admin/CollectionBestSellers";
+import { notFound } from "next/navigation";
+import { requireWorkerModule } from "@/lib/worker";
+
+export const dynamic = "force-dynamic";
+
+export default async function EditWorkerCollectionPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireWorkerModule("inventory");
+  const { id } = await params;
+
+  const collection = await prisma.collection.findUnique({
+    where: { id },
+  });
+
+  if (!collection) {
+    notFound();
+  }
+
+  const products = await prisma.product.findMany({
+    where: { collectionId: id, deletedAt: null },
+    select: { id: true, name: true, images: true, bestSeller: true },
+    orderBy: { name: "asc" },
+  });
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-6">
+      <div className="border-b border-[#B6925B]/20 pb-6">
+        <h2 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Edit Collection</h2>
+        <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">Update details for {collection.name}</p>
+      </div>
+
+      <CollectionForm initialData={collection} />
+
+      <CollectionBestSellers products={products} basePath="/worker/products" />
+    </div>
+  );
+}

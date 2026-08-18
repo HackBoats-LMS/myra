@@ -1,25 +1,23 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Bars3Icon, XMarkIcon, UserIcon, ShoppingBagIcon, HeartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useCartDrawer } from "@/context/CartContext";
-
-interface Collection {
-  id: string;
-  name: string;
-  slug: string;
-}
+import { useWishlistDrawer } from "@/context/WishlistContext";
+import type { NavLink } from "@/lib/navigation";
 
 interface MobileMenuProps {
-  collections: Collection[];
+  links: NavLink[];
   isLoggedIn: boolean;
   cartCount: number;
+  wishlistCount?: number;
 }
 
-export default function MobileMenu({ collections, isLoggedIn, cartCount }: MobileMenuProps) {
+export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount = 0 }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { openCart } = useCartDrawer();
+  const { openWishlist } = useWishlistDrawer();
 
   // Close on outside click
   useEffect(() => {
@@ -43,70 +41,96 @@ export default function MobileMenu({ collections, isLoggedIn, cartCount }: Mobil
       {/* Hamburger trigger */}
       <button
         onClick={() => setIsOpen((o) => !o)}
-        className="p-2 text-gray-700 hover:text-gray-900 transition-colors"
+        className="p-2 text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center"
         aria-label={isOpen ? "Close menu" : "Open menu"}
         aria-expanded={isOpen}
       >
         {isOpen ? (
-          <XMarkIcon className="w-6 h-6" />
+          <i className="ri-close-line text-2xl leading-none" />
         ) : (
-          <Bars3Icon className="w-6 h-6" />
+          <i className="ri-menu-line text-2xl leading-none" />
         )}
       </button>
 
       {/* Slide-down panel */}
       <div
         className={`
-          fixed left-0 right-0 top-[65px] bg-white border-b border-gray-100 shadow-lg z-40
+          fixed left-0 right-0 top-[65px] bg-white border-b border-[#B6925B]/20 shadow-lg z-40
           transition-all duration-300 ease-in-out overflow-hidden
           ${isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0 pointer-events-none"}
         `}
       >
         <nav className="flex flex-col px-6 py-4 gap-1">
-          {/* Mobile Search Bar */}
-          <form action="/search" method="GET" onSubmit={() => setIsOpen(false)} className="relative w-full mb-4 mt-2">
-            <input
-              name="q"
-              placeholder="Search products..."
-              className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:border-[#0D3B66] focus:bg-white transition-all text-gray-900 placeholder-gray-400"
-            />
-            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-              <MagnifyingGlassIcon className="w-5 h-5" />
-            </button>
-          </form>
-
           {/* Shop links */}
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-2 mb-1">
+          <p className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mt-2 mb-1">
             Shop
           </p>
           <Link
             href="/collections"
             onClick={() => setIsOpen(false)}
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 py-2.5 border-b border-gray-50 transition-colors"
+            className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 border-b border-[#B6925B]/10 transition-colors"
           >
             All Products
           </Link>
-          {collections.map((c) => (
-            <Link
-              key={c.id}
-              href={`/collections/${c.slug}`}
-              onClick={() => setIsOpen(false)}
-              className="text-sm font-medium text-gray-700 hover:text-gray-900 py-2.5 border-b border-gray-50 transition-colors capitalize"
-            >
-              {c.name.toLowerCase()}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const isOpenSection = openSection === link.label;
+            return (
+              <div key={link.label} className="border-b border-[#B6925B]/10">
+                <div className="flex items-center justify-between">
+                  <Link
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                  <button
+                    onClick={() => setOpenSection(isOpenSection ? null : link.label)}
+                    aria-expanded={isOpenSection}
+                    className="p-2 text-[#B6925B] hover:text-[#4A3B2C] transition-colors flex items-center justify-center"
+                  >
+                    <i className={`ri-${isOpenSection ? "subtract" : "add"}-line text-base leading-none`} />
+                  </button>
+                </div>
+                <div
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    isOpenSection ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="pl-3 pb-3 flex flex-col gap-1 border-l border-[#B6925B]/20 ml-1">
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsOpen(false)}
+                      className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] py-2 transition-colors"
+                    >
+                      View All {link.label}
+                    </Link>
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.label}
+                        href={child.href}
+                        onClick={() => setIsOpen(false)}
+                        className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-2 transition-colors"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
 
           {/* Account links */}
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-4 mb-1">
+          <p className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mt-4 mb-1">
             Account
           </p>
           <Link
             href={isLoggedIn ? "/account" : "/login"}
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-gray-900 py-2.5 border-b border-gray-50 transition-colors"
+            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 border-b border-[#B6925B]/10 transition-colors"
           >
-            <UserIcon className="w-4 h-4" />
+            <i className="ri-user-line text-[#B6925B] text-base leading-none" />
             {isLoggedIn ? "My Account" : "Log In"}
           </Link>
           <button
@@ -114,26 +138,28 @@ export default function MobileMenu({ collections, isLoggedIn, cartCount }: Mobil
               setIsOpen(false);
               openCart();
             }}
-            className="flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-gray-900 py-2.5 border-b border-gray-50 transition-colors w-full text-left"
+            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 border-b border-[#B6925B]/10 transition-colors w-full text-left"
           >
-            <div className="relative">
-              <ShoppingBagIcon className="w-4 h-4" />
+            <div className="relative flex items-center">
+              <i className="ri-shopping-bag-line text-[#B6925B] text-base leading-none" />
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-0.5 bg-[#B03138] text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
+                <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-0.5 bg-[#4A3B2C] text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}
             </div>
             Cart{cartCount > 0 && ` (${cartCount})`}
           </button>
-          <Link
-            href="/wishlist"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 text-sm font-medium text-gray-700 hover:text-gray-900 py-2.5 transition-colors"
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              openWishlist();
+            }}
+            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] py-3 transition-colors w-full text-left"
           >
-            <HeartIcon className="w-4 h-4" />
-            Wishlist
-          </Link>
+            <i className="ri-heart-line text-[#B6925B] text-base leading-none" />
+            Wishlist{wishlistCount > 0 && ` (${wishlistCount})`}
+          </button>
         </nav>
       </div>
 

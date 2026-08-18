@@ -41,7 +41,7 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
               key={i}
               onClick={() => setSelected(i)}
               className={`
-                relative flex-shrink-0 w-16 md:w-full aspect-[3/4] bg-[#f8f8f8] overflow-hidden rounded-sm transition-all border
+                relative flex-shrink-0 w-16 md:w-full aspect-[3/4] bg-[#FAFAFA] overflow-hidden rounded-none transition-all border
                 ${selected === i
                   ? "border-[#B6925B] ring-1 ring-[#B6925B]"
                   : "border-transparent opacity-60 hover:opacity-100"}
@@ -62,7 +62,7 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
 
       {/* Main image container with Zoom capabilities (Right side on Desktop) */}
       <div 
-        className="relative flex-1 aspect-[3/4] md:aspect-auto md:h-[600px] bg-[#f8f8f8] overflow-hidden rounded-sm cursor-zoom-in border border-gray-100 order-1 md:order-2"
+        className="relative flex-1 aspect-[3/4] md:aspect-auto md:h-[560px] xl:h-[640px] bg-[#FAFAFA] overflow-hidden rounded-none cursor-zoom-in border border-[#B6925B]/20 order-1 md:order-2"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
@@ -71,6 +71,7 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
           alt={alt}
           fill
           priority
+          quality={100}
           sizes="(max-width: 768px) 100vw, 50vw"
           style={zoomStyle}
           className="object-cover transition-transform duration-150 ease-out"

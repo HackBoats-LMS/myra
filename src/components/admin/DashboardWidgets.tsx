@@ -67,10 +67,12 @@ export default function DashboardWidgets({
   const maxRevenue = Math.max(...revenueByDay.map((d) => d.total), 1); // Avoid division by zero
 
   const statusColors: Record<OrderStatus, string> = {
-    PENDING: "bg-yellow-50 text-yellow-800 border border-yellow-200",
-    SHIPPED: "bg-blue-50 text-blue-800 border border-blue-200",
-    DELIVERED: "bg-green-50 text-green-800 border border-green-200",
-    CANCELLED: "bg-red-50 text-red-800 border border-red-200",
+    PENDING: "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30",
+    READY_TO_SHIP: "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30",
+    SHIPPED: "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30",
+    OUT_FOR_DELIVERY: "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30",
+    DELIVERED: "bg-[#FAFAFA] text-green-700 border border-[#B6925B]/20",
+    CANCELLED: "bg-red-50 text-red-700 border border-red-200",
   };
 
   return (
@@ -84,14 +86,16 @@ export default function DashboardWidgets({
             {revenueByDay.map((day, i) => {
               const heightPercent = (day.total / maxRevenue) * 100;
               return (
-                <div key={i} className="flex flex-col items-center flex-1 group relative">
-                  <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-[#4A3B2C] text-white text-xs py-1 px-2 font-bold tracking-widest transition-opacity">
+                <div key={i} className="flex flex-col items-center flex-1 group relative h-full justify-end">
+                  <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-[#4A3B2C] text-white text-xs py-1 px-2 font-bold tracking-widest transition-opacity whitespace-nowrap z-10">
                     Rs. {day.total.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                   </div>
-                  <div
-                    className="w-full bg-[#B6925B] transition-all duration-300 hover:bg-[#9c7d4e]"
-                    style={{ height: `${heightPercent || 2}%` }}
-                  ></div>
+                  <div className="w-full flex-1 flex items-end">
+                    <div
+                      className="w-full bg-[#B6925B] transition-all duration-300 hover:bg-[#9c7d4e]"
+                      style={{ height: `${heightPercent || 2}%` }}
+                    ></div>
+                  </div>
                   <span className="text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase truncate">
                     {day.date.split(",")[0]}
                   </span>
@@ -145,10 +149,10 @@ export default function DashboardWidgets({
                 <div key={order.id} className="flex items-center justify-between p-3 border border-[#B6925B]/20 hover:bg-[#FAFAFA] transition-colors">
                   <div>
                     <p className="text-sm font-bold text-[#4A3B2C]">
-                      {order.user?.name || order.user?.email || "Guest User"}
+                      Order #{order.id.slice(-6).toUpperCase()} • {order.user?.name || order.user?.email || "Guest"}
                     </p>
                     <p className="text-xs text-gray-500 mt-1 font-medium">
-                      {new Date(order.createdAt).toLocaleDateString()} • Rs. {order.totalAmount.toLocaleString()}
+                      {new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} • Rs. {order.totalAmount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">

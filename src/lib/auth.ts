@@ -6,7 +6,13 @@ import { prisma } from "./prisma";
 import { cookies } from "next/headers";
 import { mergeGuestCart } from "@/actions/cart";
 import { mergeGuestWishlist } from "@/actions/wishlist";
-import { rateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "./rate-limit";
+import { CACHE_TAGS } from "./cache";
+import { revalidateTag } from "next/cache";
+
+// A fixed bcrypt hash used when an account has no password (e.g. Google-only),
+// so the compare always runs and timing doesn't reveal whether a password exists.
+const DUMMY_PASSWORD_HASH = "$2b$10$nDofhNs0/keiqBZ1Kw.UNug/yevi6H21OiA3nzxuRn3DFMWTKEqba";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -20,15 +26,24 @@ export const authOptions: NextAuthOptions = {
         phoneOrEmail: { label: "Email or Phone", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.phoneOrEmail || !credentials?.password) {
           throw new Error("Missing credentials");
         }
 
-        const limitResult = rateLimit(`login_${credentials.phoneOrEmail}`, 5, 5 * 60 * 1000); // 5 attempts per 5 minutes
-        if (!limitResult.success) {
-          throw new Error(`Too many login attempts. Please try again in ${Math.ceil((limitResult.reset - Date.now()) / 1000)} seconds.`);
-        }
+        // Rate-limit login attempts by IP and by account identifier.
+        await checkRateLimit({
+          bucket: "login:ip",
+          key: getClientIp(req),
+          limit: 15,
+          windowSeconds: 900,
+        });
+        await checkRateLimit({
+          bucket: "login:id",
+          key: String(credentials.phoneOrEmail).toLowerCase(),
+          limit: 10,
+          windowSeconds: 900,
+        });
 
         const user = await prisma.user.findFirst({
           where: {
@@ -39,25 +54,30 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (!user || !user.password) {
+        if (!user) {
           throw new Error("Invalid credentials");
+        }
+
+        // Always compare against a hash so timing is uniform whether or not the
+        // account has a password, and never reveal account state before the
+        // password is proven correct (prevents account enumeration).
+        const hashToCheck = user.password ?? DUMMY_PASSWORD_HASH;
+        const isPasswordValid = await bcrypt.compare(credentials.password, hashToCheck);
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid credentials");
+        }
+
+        if (!user.password) {
+          throw new Error("This account was created with Google. Please sign in with Google.");
         }
 
         if (user.isDisabled) {
           throw new Error("Your account has been disabled. Please contact support.");
         }
 
-        if (user.email && !user.emailVerified) {
+        if (!user.phoneNumber && user.email && !user.emailVerified) {
           throw new Error("Please verify your email address before logging in.");
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          throw new Error("Invalid credentials");
         }
 
         return {
@@ -65,6 +85,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          canManageInventory: user.canManageInventory,
+          canManageShipping: user.canManageShipping,
         };
       },
     }),
@@ -128,12 +150,25 @@ export const authOptions: NextAuthOptions = {
       } catch {
         // Non-fatal: don't block sign-in if merge fails
       }
+
+      // Refresh the header badge counts so they reflect the merged guest data
+      // immediately instead of waiting for the cache TTL.
+      try {
+        if (user.id) {
+          revalidateTag(CACHE_TAGS.cart(user.id), { expire: 0 });
+          revalidateTag(CACHE_TAGS.wishlist(user.id), { expire: 0 });
+        }
+      } catch {
+        // Non-fatal
+      }
       return true;
     },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.canManageInventory = user.canManageInventory;
+        token.canManageShipping = user.canManageShipping;
       }
       return token;
     },
@@ -141,6 +176,8 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.canManageInventory = token.canManageInventory;
+        session.user.canManageShipping = token.canManageShipping;
       }
       return session;
     },

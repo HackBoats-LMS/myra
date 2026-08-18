@@ -1,107 +1,58 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
-import { UserIcon, HeartIcon } from "@heroicons/react/24/outline";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { cookies } from "next/headers";
-import MobileMenu from "./MobileMenu";
+import dynamic from "next/dynamic";
 import CartButton from "./CartButton";
-import LiveSearch from "../storefront/LiveSearch";
+import WishlistButton from "./WishlistButton";
+import NavMenu from "./NavMenu";
+import { NAV_LINKS } from "@/lib/navigation";
 
-async function getCartCount(userId: string | null): Promise<number> {
-  if (userId) {
-    const cart = await prisma.cart.findUnique({
-      where: { userId },
-      include: { _count: { select: { items: true } } },
-    });
-    return cart?._count.items ?? 0;
-  }
-  // Guest cart from cookie
-  const cookieStore = await cookies();
-  const raw = cookieStore.get("guest_cart")?.value;
-  if (!raw) return 0;
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.length : 0;
-  } catch {
-    return 0;
-  }
+// Load the mobile slide-out menu only on the client when the hamburger is tapped.
+const MobileMenu = dynamic(() => import("./MobileMenu"), { ssr: false });
+
+interface NavbarProps {
+  cartCount: number;
+  wishlistCount: number;
+  isLoggedIn: boolean;
 }
 
-export default async function Navbar() {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id ?? null;
-
-  let collections: any[] = [];
-  let cartCount = 0;
-
-  try {
-    const results = await Promise.all([
-      prisma.collection.findMany({ take: 5, orderBy: { createdAt: "asc" } }),
-      getCartCount(userId),
-    ]);
-    collections = results[0];
-    cartCount = results[1];
-  } catch (error) {
-    console.warn("Database unreachable in Navbar, falling back to empty state:", error);
-  }
-
+export default function Navbar({ cartCount, wishlistCount, isLoggedIn }: NavbarProps) {
   return (
-    <nav className="w-full bg-white border-b border-gray-100 flex items-center justify-between px-6 md:px-8 py-4 relative z-50">
-      {/* Logo */}
-      <Link href="/" className="flex items-center">
-        <Image
-          src="/displaypics/malllogo.png"
-          alt="Myra Shopping Mall Logo"
-          width={150}
-          height={50}
-          className="object-contain h-10 w-auto"
-        />
-      </Link>
-
-      {/* Desktop Navigation Links */}
-      <div className="hidden md:flex items-center gap-8">
-        <Link href="/collections" className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-          All Products
+    <nav className="w-full bg-white border-b border-[#B6925B]/20 flex items-center px-4 md:px-6 lg:px-8 py-3 relative z-50">
+      {/* Logo (left) */}
+      <div className="flex-1 flex items-center justify-start">
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/displaypics/malllogo.png"
+            alt="Myra Shopping Mall Logo"
+            width={150}
+            height={50}
+            priority
+            className="object-contain h-12 md:h-14 w-auto"
+          />
         </Link>
-        {collections.map((c) => (
-          <Link
-            key={c.id}
-            href={`/collections/${c.slug}`}
-            className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            {c.name.toLowerCase()}
-          </Link>
-        ))}
       </div>
 
-      {/* Global Search Bar */}
-      <LiveSearch />
+      {/* Desktop Navigation with Dropdowns (centered) */}
+      <NavMenu links={NAV_LINKS} />
 
-      {/* Desktop Action Icons */}
-      <div className="hidden md:flex items-center gap-8">
+      {/* Desktop Account / Cart / Wishlist (right) */}
+      <div className="flex-1 hidden lg:flex items-center justify-end gap-6 lg:gap-8">
         <Link
-          href={session ? "/account" : "/login"}
-          className="flex flex-col items-center gap-1 text-gray-700 hover:text-gray-900 transition-colors"
+          href={isLoggedIn ? "/account" : "/login"}
+          className="flex flex-col items-center gap-1 text-[#4A3B2C] hover:text-[#B6925B] transition-colors"
         >
-          <UserIcon className="w-[22px] h-[22px] stroke-[1.5]" />
-          <span className="text-[10px] capitalize text-gray-600">account</span>
+          <i className="ri-user-line text-[22px] leading-none stroke-[1.5]" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">account</span>
         </Link>
 
         <CartButton cartCount={cartCount} />
 
-        <Link
-          href="/wishlist"
-          className="flex flex-col items-center gap-1 text-gray-700 hover:text-gray-900 transition-colors"
-        >
-          <HeartIcon className="w-[22px] h-[22px] stroke-[1.5]" />
-          <span className="text-[10px] capitalize text-gray-600">wishlist</span>
-        </Link>
+        <WishlistButton wishlistCount={wishlistCount} />
       </div>
 
       {/* Mobile Hamburger Menu */}
-      <MobileMenu collections={collections} isLoggedIn={!!session} cartCount={cartCount} />
+      <MobileMenu links={NAV_LINKS} isLoggedIn={isLoggedIn} cartCount={cartCount} wishlistCount={wishlistCount} />
     </nav>
   );
 }

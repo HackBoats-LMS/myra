@@ -1,6 +1,5 @@
 "use client";
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
-import { CheckCircleIcon, XCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -62,29 +61,29 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
   return (
     <div
       className={`
-        flex items-start gap-3 w-full max-w-sm px-4 py-3 rounded-lg shadow-lg border
+        flex items-start gap-3 w-full max-w-sm px-4 py-3 rounded-none shadow-lg border
         transition-all duration-300
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
         ${isSuccess
-          ? "bg-white border-green-200 text-gray-800"
+          ? "bg-white border-[#B6925B]/30 text-[#4A3B2C]"
           : "bg-white border-red-200 text-gray-800"
         }
       `}
     >
-      <div className="flex-shrink-0 mt-0.5">
+      <div className="flex-shrink-0 mt-0.5 flex items-center justify-center">
         {isSuccess ? (
-          <CheckCircleIcon className="w-5 h-5 text-green-500" />
+          <i className="ri-checkbox-circle-fill text-green-600 text-lg leading-none" />
         ) : (
-          <XCircleIcon className="w-5 h-5 text-red-500" />
+          <i className="ri-close-circle-fill text-red-600 text-lg leading-none" />
         )}
       </div>
-      <p className="flex-1 text-sm font-medium leading-snug">{toast.message}</p>
+      <p className="flex-1 text-xs font-bold uppercase tracking-wider leading-snug">{toast.message}</p>
       <button
         onClick={handleDismiss}
-        className="flex-shrink-0 mt-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+        className="flex-shrink-0 mt-0.5 text-gray-400 hover:text-[#4A3B2C] transition-colors flex items-center justify-center"
         aria-label="Dismiss"
       >
-        <XMarkIcon className="w-4 h-4" />
+        <i className="ri-close-line text-base leading-none" />
       </button>
     </div>
   );

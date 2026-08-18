@@ -39,8 +39,8 @@ export default function OrderConfirmationEmail({ orderId, totalAmount, items = [
         ))}
         
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', borderTop: '1px solid #eaeaea', paddingTop: '16px' }}>
-          <Text style={{ margin: 0, fontWeight: 'bold', fontSize: '16px' }}>Total</Text>
-          <Text style={{ margin: 0, fontWeight: 'bold', fontSize: '18px', color: '#0D3B66' }}>₹{totalAmount.toFixed(2)}</Text>
+          <Text style={{ margin: 0, fontWeight: 'bold', fontSize: '16px', color: '#4A3B2C' }}>Total</Text>
+          <Text style={{ margin: 0, fontWeight: 'bold', fontSize: '18px', color: '#4A3B2C' }}>₹{totalAmount.toFixed(2)}</Text>
         </div>
       </Section>
     </EmailLayout>

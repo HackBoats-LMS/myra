@@ -1,36 +1,52 @@
 import { prisma } from "@/lib/prisma";
-import { ShoppingCartIcon, ArchiveBoxIcon, UsersIcon, ArrowTrendingUpIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import DashboardWidgets from "@/components/admin/DashboardWidgets";
+import { Prisma } from "@/generated/prisma";
+
+type OrderAggregate = {
+  _sum: { totalAmount: number | null; refundedAmount: number | null } | null;
+};
+type RecentOrder = Prisma.OrderGetPayload<{
+  include: { user: { select: { name: true; email: true } } };
+}>;
+type LowStockProduct = Prisma.ProductGetPayload<{
+  select: { id: true; name: true; stockQuantity: true; slug: true; images: true };
+}>;
+type TopSoldItem = { productId: string; _sum: { quantity: number | null } | null };
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   let totalOrders = 0;
-  let revenueData: any = { _sum: { totalAmount: 0 } };
+  let revenueData: OrderAggregate = {} as OrderAggregate;
   let totalProducts = 0;
   let totalCustomers = 0;
   let lowStockCount = 0;
-  let recentOrders: any[] = [];
-  let lowStockProducts: any[] = [];
-  let sevenDayOrders: any[] = [];
-  let topItems: any[] = [];
-  let topProducts: any[] = [];
+  let recentOrders: RecentOrder[] = [];
+  let lowStockProducts: LowStockProduct[] = [];
+  let sevenDayOrders: { totalAmount: number; createdAt: Date }[] = [];
+  let topItems: TopSoldItem[] = [];
+  let topProducts: { id: string; name: string; totalSold: number }[] = [];
 
   try {
     const results = await Promise.all([
       prisma.order.count(),
-      prisma.order.aggregate({ _sum: { totalAmount: true } }),
-      prisma.product.count(),
+      prisma.order.aggregate({
+        where: { status: { not: "CANCELLED" } },
+        _sum: { totalAmount: true, refundedAmount: true },
+      }),
+      prisma.product.count({ where: { deletedAt: null } }),
       prisma.user.count({ where: { role: "CUSTOMER" } }),
-      prisma.product.count({ where: { stockQuantity: { lt: 5 } } }),
+      prisma.product.count({ where: { deletedAt: null, stockQuantity: { lt: 5 } } }),
       prisma.order.findMany({ 
         take: 5, 
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { name: true, email: true } } }
       }),
       prisma.product.findMany({
-        where: { stockQuantity: { lt: 5 } },
+        where: { deletedAt: null, stockQuantity: { lt: 5 } },
         take: 5,
         orderBy: { stockQuantity: 'asc' },
         select: { id: true, name: true, stockQuantity: true, slug: true, images: true }
@@ -60,60 +76,62 @@ export default async function AdminDashboard() {
     sevenDayOrders = results[7];
     topItems = results[8];
 
-    const topProductIds = topItems.map((item: any) => item.productId);
+    const topProductIds = topItems.map((item) => item.productId);
     const topProductsRaw = await prisma.product.findMany({
       where: { id: { in: topProductIds } },
       select: { id: true, name: true, price: true, slug: true, images: true }
     });
 
-    topProducts = topItems.map((item: any) => {
-      const p = topProductsRaw.find((prod: any) => prod.id === item.productId);
+    topProducts = topItems.map((item) => {
+      const p = topProductsRaw.find((prod) => prod.id === item.productId);
       return {
         id: p?.id ?? "",
         name: p?.name ?? "",
-        totalSold: item._sum.quantity || 0
+        totalSold: item._sum?.quantity || 0
       };
-    }).filter((p: any) => p.id);
+    }).filter((p) => p.id);
   } catch (error) {
     console.warn("Database unreachable in AdminDashboard:", error);
     // Silent fail to empty state
   }
 
-  const totalRevenue = revenueData._sum.totalAmount ?? 0;
+  const grossRevenue = revenueData._sum?.totalAmount ?? 0;
+  const totalRefunded = revenueData._sum?.refundedAmount ?? 0;
+  const totalRevenue = grossRevenue - totalRefunded;
 
   const stats = [
     {
       label: "Total Orders",
       value: totalOrders.toLocaleString("en-IN"),
-      icon: ShoppingCartIcon,
+      iconClass: "ri-shopping-cart-2-line",
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Total Revenue",
       value: `Rs. ${totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      icon: ArrowTrendingUpIcon,
+      iconClass: "ri-funds-line",
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Total Products",
       value: totalProducts.toLocaleString("en-IN"),
-      icon: ArchiveBoxIcon,
+      iconClass: "ri-archive-line",
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Customers",
       value: totalCustomers.toLocaleString("en-IN"),
-      icon: UsersIcon,
+      iconClass: "ri-group-line",
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Low Stock",
       value: lowStockCount.toLocaleString("en-IN"),
-      icon: ExclamationTriangleIcon,
+      iconClass: "ri-error-warning-line",
       color: lowStockCount > 0 ? "text-red-700" : "text-[#B6925B]",
       bg: lowStockCount > 0 ? "bg-red-50" : "bg-[#B6925B]/10",
     },
@@ -127,14 +145,14 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
-        {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white border border-[#B6925B]/20 p-6 flex items-start gap-4 shadow-sm">
-            <div className={`${bg} ${color} p-3 flex-shrink-0 border border-[#B6925B]/20`}>
-              <Icon className="w-5 h-5" />
+        {stats.map(({ label, value, iconClass, color, bg }) => (
+          <div key={label} className="bg-white border border-[#B6925B]/20 p-6 flex items-start gap-4 shadow-sm rounded-none">
+            <div className={`${bg} ${color} w-11 h-11 flex-shrink-0 border border-[#B6925B]/20 flex items-center justify-center rounded-none`}>
+              <i className={`${iconClass} text-xl`} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest truncate">{label}</p>
-              <p className="text-xl font-bold text-[#4A3B2C] mt-1 truncate">{value}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>
+              <p className="text-xl font-bold text-[#4A3B2C] mt-1 break-words leading-tight">{value}</p>
             </div>
           </div>
         ))}

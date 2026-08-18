@@ -28,7 +28,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
   return (
     <div className="w-full bg-[#FAFAFA] min-h-screen">
-      <div className="max-w-3xl mx-auto px-6 py-16 md:py-24 text-center">
+      <div className="max-w-3xl mx-auto px-6 py-10 md:py-24 text-center">
         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-50 border border-green-200 text-green-700 flex items-center justify-center text-3xl">
           ✓
         </div>
@@ -58,12 +58,39 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
               ))}
             </ul>
 
+            {order.discountAmount > 0 && (
+              <div className="flex justify-between text-green-700 text-sm">
+                <span>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</span>
+                <span>-Rs. {order.discountAmount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+            {order.shippingAmount > 0 ? (
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Shipping</span>
+                <span>Rs. {order.shippingAmount.toLocaleString('en-IN')}</span>
+              </div>
+            ) : (
+              <div className="flex justify-between text-sm text-green-700">
+                <span>Shipping</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest">Free</span>
+              </div>
+            )}
+
             <div className="flex justify-between pt-4 border-t border-[#B6925B]/20">
-              <span className="text-sm font-bold text-[#4A3B2C]">Total (Cash on Delivery)</span>
+              <span className="text-sm font-bold text-[#4A3B2C]">
+                Total ({order.paymentMethod === "RAZORPAY" ? "Paid Online" : "Cash on Delivery"})
+              </span>
               <span className="text-lg font-black text-[#4A3B2C]">Rs. {order.totalAmount.toLocaleString('en-IN')}</span>
             </div>
 
-            {order.address && (
+            {order.giftName ? (
+              <div className="bg-[#FAFAFA] border border-[#B6925B]/10 p-4 text-sm text-gray-700 mt-4 space-y-1">
+                <span className="block text-xs font-bold uppercase tracking-widest text-[#B6925B] mb-1">Gift — Delivering to</span>
+                <p><span className="font-bold text-[#4A3B2C]">{order.giftName}</span></p>
+                {order.giftPhone && <p className="font-mono">Phone: {order.giftPhone}</p>}
+                <p>{order.giftAddressLine1}, {order.giftCity}, {order.giftState} {order.giftPostalCode}, {order.giftCountry}</p>
+              </div>
+            ) : order.address && (
               <div className="bg-[#FAFAFA] border border-[#B6925B]/10 p-4 text-sm text-gray-700 mt-4">
                 <span className="block text-xs font-bold uppercase tracking-widest text-[#B6925B] mb-2">Delivering to</span>
                 {order.address.addressLine1}, {order.address.city}, {order.address.state} {order.address.postalCode},{" "}

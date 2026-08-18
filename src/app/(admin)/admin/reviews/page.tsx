@@ -2,31 +2,77 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import AdminReviewList from "@/components/admin/AdminReviewList";
+import Pagination from "@/components/storefront/Pagination";
+import { Prisma } from "@/generated/prisma";
+import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "@/lib/image-storage";
 
 export const metadata = {
   title: "Review Management | Admin Dashboard",
 };
 
-export default async function AdminReviewsPage() {
+const ITEMS_PER_PAGE = 25;
+
+type ReviewRow = Prisma.ReviewGetPayload<{
+  include: {
+    user: { select: { name: true, email: true } };
+    product: { select: { name: true, slug: true, images: true } };
+  }
+}>;
+
+export const dynamic = "force-dynamic";
+
+const getCachedAdminReviews = unstable_cache(
+  async (skip: number, take: number) => {
+    const [reviews, total] = await Promise.all([
+      prisma.review.findMany({
+        include: {
+          user: { select: { name: true, email: true } },
+          product: { select: { name: true, slug: true, images: true } }
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.review.count(),
+    ]);
+    return { reviews: reviews as ReviewRow[], total };
+  },
+  ["admin", "reviews"],
+  { revalidate: 30 }
+);
+
+export default async function AdminReviewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const session = await getServerSession(authOptions);
 
   if (!session || session.user.role !== "ADMIN") {
     redirect("/admin/login");
   }
 
-  let reviews: any[] = [];
+  const { page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page || "1", 10));
+
+  let reviews: ReviewRow[] = [];
+  let totalReviews = 0;
   try {
-    reviews = await prisma.review.findMany({
-      include: {
-        user: { select: { name: true, email: true } },
-        product: { select: { name: true, slug: true, images: true } }
-      },
-      orderBy: { createdAt: "desc" }
-    });
+    const result = await getCachedAdminReviews((currentPage - 1) * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
+    reviews = await Promise.all(
+      result.reviews.map(async (review) => ({
+        ...review,
+        images: review.images.length > 0 ? await createSignedObjectUrls(REVIEW_IMAGES_BUCKET, review.images) : [],
+      }))
+    );
+    totalReviews = result.total;
   } catch (error) {
     console.warn("Database unreachable in AdminReviewsPage:", error);
   }
+
+  const totalPages = Math.max(1, Math.ceil(totalReviews / ITEMS_PER_PAGE));
 
   return (
     <div className="space-y-6">
@@ -38,6 +84,8 @@ export default async function AdminReviewsPage() {
       <div className="bg-white border border-[#B6925B]/20 relative">
         <AdminReviewList initialReviews={reviews} />
       </div>
+
+      <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl="/admin/reviews" />
     </div>
   );
 }

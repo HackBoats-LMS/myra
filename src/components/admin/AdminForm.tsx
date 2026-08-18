@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/Toast";
 
 interface AdminFormProps<T> {
@@ -55,24 +54,24 @@ export default function AdminForm<T extends { id?: string }>({
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="space-y-8 max-w-2xl bg-white p-8 rounded-lg shadow-sm border border-gray-200"
+      className="space-y-8 max-w-2xl bg-white p-8 border border-[#B6925B]/20 shadow-sm rounded-none"
     >
       {children({ isSubmitting, handleSubmit })}
       
-      <div className="flex justify-end pt-4 border-t border-gray-100">
+      <div className="flex justify-end pt-6 border-t border-[#B6925B]/20 gap-4">
         <button 
           type="button" 
           onClick={() => router.back()}
-          className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 mr-4"
+          className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#4A3B2C] border border-[#B6925B]/20 transition-colors bg-white hover:bg-[#FAFAFA] rounded-none"
         >
           Cancel
         </button>
         <button 
           type="submit" 
           disabled={isSubmitting}
-          className="bg-[#0D3B66] hover:bg-[#082a4d] text-white px-6 py-2 rounded-md text-sm font-medium transition-colors flex items-center disabled:opacity-50"
+          className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center disabled:opacity-50 rounded-none"
         >
-          {isSubmitting && <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />}
+          {isSubmitting && <i className="ri-loader-4-line animate-spin text-sm mr-2" />}
           {initialData?.id ? "Save Changes" : "Create"}
         </button>
       </div>
