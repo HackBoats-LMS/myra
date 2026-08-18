@@ -1,12 +1,12 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/auth/auth";
+import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
-import ExportOrdersButton from "@/components/storefront/ExportOrdersButton";
+import ExportOrdersButton from "@/app/(storefront)/account/orders/_components/ExportOrdersButton";
 
 type OrderWithItems = Prisma.OrderGetPayload<{
   include: {

@@ -1,12 +1,12 @@
 "use server"
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { updateTag } from "next/cache";
-import { verifyAdmin, verifyWorkerCapability } from "@/lib/auth-utils";
+import { verifyAdmin, verifyWorkerCapability } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { CACHE_TAGS } from "@/lib/cache";
-import { refundRazorpayPayment, razorpayConfigured } from "@/lib/razorpay";
-import { detectImageType } from "@/lib/image-upload";
+import { refundRazorpayPayment, razorpayConfigured } from "@/lib/integrations/razorpay";
+import { detectImageType } from "@/lib/storage/image-upload";
 import bcrypt from "bcryptjs";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -781,7 +781,7 @@ export async function shipOrder(orderId: string) {
     throw new Error("This order has already been shipped to Shiprocket.");
   }
 
-  const { createShipment, assignAwbAndSchedulePickup, shiprocketConfigured } = await import("@/lib/shiprocket");
+  const { createShipment, assignAwbAndSchedulePickup, shiprocketConfigured } = await import("@/lib/integrations/shiprocket");
   if (!shiprocketConfigured()) {
     throw new Error("Shiprocket is not configured. Add SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD.");
   }
@@ -819,7 +819,7 @@ export async function shipOrder(orderId: string) {
   await logAudit("order.ship", "Order", orderId, { shipmentId, awb: finalAwb });
 
   if (finalAwb && order.user?.email) {
-    import("@/lib/email").then(({ sendOrderShippedEmail }) =>
+    import("@/lib/email/email").then(({ sendOrderShippedEmail }) =>
       sendOrderShippedEmail(order.user.email!, orderId).catch(console.error)
     );
   }

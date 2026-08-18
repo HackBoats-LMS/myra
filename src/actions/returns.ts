@@ -1,13 +1,13 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { verifyAdmin } from "@/lib/auth-utils";
+import { authOptions } from "@/lib/auth/auth";
+import { verifyAdmin } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
-import { shiprocketConfigured, createReturnOrder, assignAwbAndScheduleReturnPickup } from "@/lib/shiprocket";
-import { refundRazorpayPayment, razorpayConfigured } from "@/lib/razorpay";
-import { detectImageType } from "@/lib/image-upload";
+import { shiprocketConfigured, createReturnOrder, assignAwbAndScheduleReturnPickup } from "@/lib/integrations/shiprocket";
+import { refundRazorpayPayment, razorpayConfigured } from "@/lib/integrations/razorpay";
+import { detectImageType } from "@/lib/storage/image-upload";
 import { createReturnImageSignedUrl } from "@/lib/return-images";
 
 const REQUESTABLE_STATUSES = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"] as const;
@@ -129,7 +129,7 @@ export async function requestReturn(
 
   // Notify admin of the new return request.
   {
-    const { sendAdminNewReturnEmail } = await import("@/lib/email");
+    const { sendAdminNewReturnEmail } = await import("@/lib/email/email");
     sendAdminNewReturnEmail({
       requestId: created.id,
       itemName: item.product.name,

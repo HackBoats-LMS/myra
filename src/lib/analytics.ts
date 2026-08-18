@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
-import { prisma } from "./prisma";
+import { subDays, startOfDay } from "date-fns";
+import { prisma } from "@/lib/db/prisma";
 
 export const ANALYTICS_TAG = "analytics";
 

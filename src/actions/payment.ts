@@ -1,10 +1,10 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { updateTag } from "next/cache";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { sendEmail } from "@/lib/email";
+import { authOptions } from "@/lib/auth/auth";
+import { sendEmail } from "@/lib/email/email";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import { createOrderTransaction, type GiftDetails } from "@/actions/cart";
 import {
@@ -12,7 +12,7 @@ import {
   getRazorpayKeyId,
   razorpayConfigured,
   verifyRazorpaySignature,
-} from "@/lib/razorpay";
+} from "@/lib/integrations/razorpay";
 import { CACHE_TAGS } from "@/lib/cache";
 
 interface InitiatePaymentInput {
@@ -202,7 +202,7 @@ export async function confirmRazorpayPayment(input: ConfirmPaymentInput): Promis
   }
 
   // Notify admin of the new online order (independent of the customer email).
-  const { sendAdminNewOrderEmail } = await import("@/lib/email");
+  const { sendAdminNewOrderEmail } = await import("@/lib/email/email");
   sendAdminNewOrderEmail({
     orderId: order.id,
     customerName: userName,

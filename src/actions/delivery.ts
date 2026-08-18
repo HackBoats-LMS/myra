@@ -1,7 +1,7 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { unstable_cache } from "next/cache";
-import { verifyDeliveryAgent } from "@/lib/auth-utils";
+import { verifyDeliveryAgent } from "@/lib/auth/auth-utils";
 import { CACHE_TAGS } from "@/lib/cache";
 import type { Prisma } from "@/generated/prisma";
 

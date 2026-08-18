@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
-import { getCartItems } from "@/lib/cart-service";
-import CheckoutWizard from "@/components/checkout/CheckoutWizard";
+import { getCartItems } from "@/features/cart/service";
+import CheckoutWizard from "@/app/(storefront)/checkout/_components/CheckoutWizard";
 import { getStoreSettings } from "@/lib/settings";
 import { estimateCheckoutTotal } from "@/actions/cart";
 import Link from "next/link";

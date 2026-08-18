@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import AdminReturnProcessor from "@/components/admin/AdminReturnProcessor";
+import AdminReturnProcessor from "@/app/(admin)/admin/returns/_components/AdminReturnProcessor";
 import { createReturnImageSignedUrls } from "@/lib/return-images";
 
 export const dynamic = "force-dynamic";

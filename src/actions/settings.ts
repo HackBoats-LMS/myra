@@ -1,7 +1,7 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
-import { verifyAdmin } from "@/lib/auth-utils";
+import { verifyAdmin } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
 
 export async function updateStoreSettings(formData: FormData) {

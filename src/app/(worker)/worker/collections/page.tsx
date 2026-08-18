@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { unstable_cache } from "next/cache";
-import DeleteButton from "@/components/admin/DeleteButton";
+import DeleteButton from "@/components/shared/DeleteButton";
 import { deleteCollection } from "@/actions/admin";
 import type { Prisma } from "@/generated/prisma";
 import { requireWorkerModule } from "@/lib/worker";

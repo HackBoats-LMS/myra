@@ -1,8 +1,8 @@
-import WorkerShell from "@/components/worker/WorkerShell";
+import WorkerShell from "@/app/(worker)/worker/_components/WorkerShell";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 
 export const dynamic = "force-dynamic";
 

@@ -1,5 +1,5 @@
 import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma";
 
 export const FLASH_SALE_TAG = "flash-sales";

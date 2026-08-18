@@ -1,8 +1,8 @@
 "use server"
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { sendEmail } from "@/lib/email";
+import { sendEmail } from "@/lib/email/email";
 import ResetPasswordEmail from "@/emails/ResetPasswordEmail";
 
 export async function generateResetToken(email: string) {

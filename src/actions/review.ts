@@ -1,12 +1,12 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { revalidatePath, updateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache";
 import { logAudit } from "@/lib/audit";
-import { detectImageType } from "@/lib/image-upload";
-import { uploadImageObject, REVIEW_IMAGES_BUCKET } from "@/lib/image-storage";
+import { detectImageType } from "@/lib/storage/image-upload";
+import { uploadImageObject, REVIEW_IMAGES_BUCKET } from "@/lib/storage/image-storage";
 
 const REVIEW_IMAGE_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 

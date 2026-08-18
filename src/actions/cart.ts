@@ -1,11 +1,11 @@
 "use server"
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth/auth";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { updateTag } from "next/cache";
-import { sendEmail } from "@/lib/email";
+import { sendEmail } from "@/lib/email/email";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import { isPincodeDeliverable } from "@/actions/pincode";
 import { 
@@ -14,7 +14,7 @@ import {
   getOrCreateCart, 
   mergeGuestCartItems,
   parseGuestCartCookie 
-} from "@/lib/cart-service";
+} from "@/features/cart/service";
 import { CACHE_TAGS } from "@/lib/cache";
 import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
 import { normalizeIndianPhone } from "@/lib/phone";
@@ -554,7 +554,7 @@ export async function checkoutCart(
 
   // Notify admin of the new order.
   {
-    const { sendAdminNewOrderEmail } = await import("@/lib/email");
+    const { sendAdminNewOrderEmail } = await import("@/lib/email/email");
     sendAdminNewOrderEmail({
       orderId: result.orderId,
       customerName: userName,
@@ -574,7 +574,7 @@ export async function checkoutCart(
     select: { name: true, stockQuantity: true },
   });
   if (lowStock.length > 0) {
-    const { sendLowStockAlert } = await import("@/lib/email");
+    const { sendLowStockAlert } = await import("@/lib/email/email");
     sendLowStockAlert(lowStock.map((p) => ({ name: p.name, stockQuantity: p.stockQuantity }))).catch(console.error);
   }
 

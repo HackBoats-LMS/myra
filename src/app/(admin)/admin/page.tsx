@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import DashboardWidgets from "@/components/admin/DashboardWidgets";
+import { prisma } from "@/lib/db/prisma";
+import DashboardWidgets from "@/app/(admin)/admin/_components/DashboardWidgets";
 import { Prisma } from "@/generated/prisma";
 
 type OrderAggregate = {

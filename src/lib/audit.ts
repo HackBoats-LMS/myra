@@ -1,6 +1,6 @@
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "./auth";
+import { authOptions } from "@/lib/auth/auth";
 import type { Prisma } from "@/generated/prisma";
 
 /**

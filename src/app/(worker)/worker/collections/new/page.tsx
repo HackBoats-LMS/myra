@@ -1,4 +1,4 @@
-import CollectionForm from "@/components/admin/CollectionForm";
+import CollectionForm from "@/components/shared/CollectionForm";
 import { requireWorkerModule } from "@/lib/worker";
 
 export default async function NewWorkerCollectionPage() {

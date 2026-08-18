@@ -1,6 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { COMPARE_COOKIE, COMPARE_MAX } from "@/lib/compare";
 import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
 

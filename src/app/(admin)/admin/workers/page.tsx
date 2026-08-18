@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
-import CreateWorkerForm from "@/components/admin/CreateWorkerForm";
-import WorkerCapabilitiesSelect from "@/components/admin/WorkerCapabilitiesSelect";
-import DisableUserButton from "@/components/admin/DisableUserButton";
+import CreateWorkerForm from "@/app/(admin)/admin/workers/_components/CreateWorkerForm";
+import WorkerCapabilitiesSelect from "@/app/(admin)/admin/customers/_components/WorkerCapabilitiesSelect";
+import DisableUserButton from "@/app/(admin)/admin/customers/_components/DisableUserButton";
 
 export const dynamic = "force-dynamic";
 

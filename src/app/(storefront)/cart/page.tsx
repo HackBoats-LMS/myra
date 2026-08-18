@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import CartItem from "@/components/storefront/CartItem";
-import { getCartItems } from "@/lib/cart-service";
+import { authOptions } from "@/lib/auth/auth";
+import CartItem from "@/features/cart/components/CartItem";
+import { getCartItems } from "@/features/cart/service";
 import Link from "next/link";
 import type { Metadata } from "next";
 

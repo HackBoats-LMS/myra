@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import FlashSaleManager from "@/components/admin/FlashSaleManager";
+import { prisma } from "@/lib/db/prisma";
+import FlashSaleManager from "@/app/(admin)/admin/flash-sales/_components/FlashSaleManager";
 
 export const dynamic = "force-dynamic";
 

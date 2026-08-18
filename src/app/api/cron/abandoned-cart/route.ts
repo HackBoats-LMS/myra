@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 
 const REMINDER_GAP_DAYS = 3;
 
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     const items = cart.items.map((i) => ({ name: i.product.name, quantity: i.quantity }));
 
     try {
-      const { sendAbandonedCartEmail } = await import("@/lib/email");
+      const { sendAbandonedCartEmail } = await import("@/lib/email/email");
       await sendAbandonedCartEmail(cart.user.email, items);
       await prisma.cart.update({
         where: { id: cart.id },

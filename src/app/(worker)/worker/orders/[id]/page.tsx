@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import ShipOrderButton from "@/components/admin/ShipOrderButton";
+import ShipOrderButton from "@/components/shared/ShipOrderButton";
 import { requireWorkerModule } from "@/lib/worker";
 
 export const dynamic = "force-dynamic";

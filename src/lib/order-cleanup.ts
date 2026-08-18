@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma";
 
 // Razorpay orders are reserved (stock decremented) the moment checkout starts.

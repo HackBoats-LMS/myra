@@ -1,7 +1,7 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
-import { verifyUser } from "@/lib/auth-utils";
+import { verifyUser } from "@/lib/auth/auth-utils";
 
 import { z } from "zod";
 

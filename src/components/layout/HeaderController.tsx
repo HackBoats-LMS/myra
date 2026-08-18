@@ -1,5 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import Navbar from "./Navbar";
 import MinimalTopbar from "./MinimalTopbar";
 import CatalogToolbar from "./CatalogToolbar";
@@ -22,7 +23,11 @@ export default function HeaderController({ cartCount, wishlistCount, isLoggedIn 
       ) : (
         <MinimalTopbar cartCount={cartCount} wishlistCount={wishlistCount} isLoggedIn={isLoggedIn} />
       )}
-      {isCatalog && <CatalogToolbar />}
+      {isCatalog && (
+        <Suspense fallback={null}>
+          <CatalogToolbar />
+        </Suspense>
+      )}
     </>
   );
 }

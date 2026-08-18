@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "./auth";
+import { authOptions } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "./prisma";
+import { prisma } from "@/lib/db/prisma";
 
 export async function requireWorkerModule(module: "inventory" | "shipping") {
   const session = await getServerSession(authOptions);

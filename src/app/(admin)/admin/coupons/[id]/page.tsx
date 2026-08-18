@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import EditCouponForm from "./EditCouponForm";
 
 export const dynamic = "force-dynamic";

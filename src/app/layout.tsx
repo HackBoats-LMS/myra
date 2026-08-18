@@ -1,18 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inria_Serif } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
 
-const inter = Inter({
-  variable: "--font-inter",
+const inria = Inria_Serif({
+  variable: "--font-inria",
   subsets: ["latin"],
+  weight: ["300", "400", "700"],
 });
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-});
-
 
 export const metadata: Metadata = {
   title: {
@@ -36,13 +31,13 @@ export const metadata: Metadata = {
   },
 };
 
-import { WebVitals } from "@/components/WebVitals";
+import { WebVitals } from "@/components/shared/WebVitals";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased scroll-smooth`}
+      className={`${inria.variable} h-full antialiased scroll-smooth`}
     >
       <head>
         <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />

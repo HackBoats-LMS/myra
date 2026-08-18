@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db/prisma';
 import { Prisma } from '@/generated/prisma';
 import { unstable_cache } from 'next/cache';
-import Pagination from '@/components/storefront/Pagination';
-import ProductListTable from '@/components/admin/ProductListTable';
-import AdminFilters from '@/components/admin/AdminFilters';
+import Pagination from '@/components/shared/Pagination';
+import ProductListTable from '@/components/shared/ProductListTable';
+import AdminFilters from '@/app/(admin)/admin/_components/AdminFilters';
 
 type ProductWithCollection = Prisma.ProductGetPayload<{ include: { collection: true } }>;
 

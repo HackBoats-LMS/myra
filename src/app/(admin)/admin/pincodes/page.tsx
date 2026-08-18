@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import PincodeManager from "@/components/admin/PincodeManager";
+import { prisma } from "@/lib/db/prisma";
+import PincodeManager from "@/app/(admin)/admin/pincodes/_components/PincodeManager";
 
 export const dynamic = "force-dynamic";
 

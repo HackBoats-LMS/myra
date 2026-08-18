@@ -1,5 +1,5 @@
 import { getStoreSettings } from "@/lib/settings";
-import StoreSettingsForm from "@/components/admin/StoreSettingsForm";
+import StoreSettingsForm from "@/app/(admin)/admin/_components/StoreSettingsForm";
 
 export const dynamic = "force-dynamic";
 

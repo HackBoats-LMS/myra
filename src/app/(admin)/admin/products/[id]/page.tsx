@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { getAllCollections } from "@/services/collections";
-import ProductForm from "@/components/admin/ProductForm";
+import ProductForm from "@/components/shared/ProductForm";
 import { notFound } from "next/navigation";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {

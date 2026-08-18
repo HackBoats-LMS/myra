@@ -1,5 +1,5 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { checkRateLimit, RateLimitError } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 
@@ -57,7 +57,7 @@ export async function notifyStockSubscribers(productId: string) {
   if (pending.length === 0) return { notified: 0 };
 
   const productUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/products/${product.slug}`;
-  const { sendStockBackInStockEmail } = await import("@/lib/email");
+  const { sendStockBackInStockEmail } = await import("@/lib/email/email");
 
   let notified = 0;
   for (const sub of pending) {

@@ -1,5 +1,5 @@
 "use server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 
 export async function sendContactMessage(formData: FormData) {
   const name = String(formData.get("name") || "").trim();
@@ -14,7 +14,7 @@ export async function sendContactMessage(formData: FormData) {
     throw new Error("Please enter a valid email address.");
   }
 
-  const { resendSend } = await import("@/lib/email-raw");
+  const { resendSend } = await import("@/lib/email/email-raw");
   await resendSend({
     to: process.env.ADMIN_EMAIL || "support@myra.com",
     subject: `Contact form: ${subject}`,

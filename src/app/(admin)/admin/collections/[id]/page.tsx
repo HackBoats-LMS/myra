@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
-import CollectionForm from "@/components/admin/CollectionForm";
-import CollectionBestSellers from "@/components/admin/CollectionBestSellers";
+import { prisma } from "@/lib/db/prisma";
+import CollectionForm from "@/components/shared/CollectionForm";
+import CollectionBestSellers from "@/components/shared/CollectionBestSellers";
 import { notFound } from "next/navigation";
 
 export default async function EditCollectionPage({ params }: { params: Promise<{ id: string }> }) {
