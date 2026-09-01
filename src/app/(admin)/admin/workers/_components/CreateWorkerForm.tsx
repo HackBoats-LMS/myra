@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createWorker } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { UserPlus, X, Loader2 } from "lucide-react";
 
 export default function CreateWorkerForm() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function CreateWorkerForm() {
         onClick={() => setOpen((o) => !o)}
         className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none"
       >
-        <i className={`${open ? "ri-close-line" : "ri-user-add-line"} text-sm`} />
+        {open ? <X className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
         {open ? "Cancel" : "Create Worker"}
       </button>
 
@@ -78,7 +79,7 @@ export default function CreateWorkerForm() {
           </div>
 
           <button type="submit" disabled={loading} className="bg-[#4A3B2C] hover:bg-[#3a2d20] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors disabled:opacity-70 rounded-none">
-            {loading ? <i className="ri-loader-4-line animate-spin text-sm" /> : <i className="ri-user-add-line text-sm" />}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
             Create Worker Account
           </button>
         </form>

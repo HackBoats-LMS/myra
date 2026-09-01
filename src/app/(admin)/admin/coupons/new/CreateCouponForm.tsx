@@ -3,6 +3,7 @@ import { useState } from "react";
 import { createCoupon } from "@/actions/coupons";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
+import { Loader2 } from "lucide-react";
 
 export default function CreateCouponForm() {
   const [loading, setLoading] = useState(false);
@@ -160,7 +161,7 @@ export default function CreateCouponForm() {
           disabled={loading}
           className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 rounded-none"
         >
-          {loading && <i className="ri-loader-4-line animate-spin text-base" />}
+          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           <span>Create Coupon</span>
         </button>
       </div>

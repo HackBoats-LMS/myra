@@ -24,7 +24,7 @@ export default async function AllProductsPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10));
-  const ITEMS_PER_PAGE = 8;
+  const ITEMS_PER_PAGE = 12;
 
   const sort = resolvedSearchParams.sort || 'newest';
   const stock = resolvedSearchParams.stock || 'all';
@@ -85,26 +85,34 @@ export default async function AllProductsPage({
   const baseUrl = `/collections${queryString ? `?${queryString}` : ''}`;
 
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">
-        <div className="flex flex-col items-center justify-center text-center mb-16 space-y-4">
-          <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">All Products</h1>
-          <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold">Explore our entire collection</p>
+    <div className="w-full bg-white min-h-screen">
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-12">
+        <div className="flex flex-col items-center justify-center text-center mb-8 md:mb-12">
+          <h1 className="text-3xl md:text-5xl font-serif text-[#333333] font-normal tracking-tight">
+            All Products
+          </h1>
+          <p className="text-xs md:text-sm text-gray-500 max-w-xl mx-auto mt-2 font-serif">
+            Explore our entire collection of curated premium items
+          </p>
         </div>
 
         {productsWithReviews.length === 0 ? (
-          <div className="text-center text-[#B6925B] text-[10px] uppercase tracking-widest font-bold py-10 md:py-10 md:py-20">No products available at the moment.</div>
+          <div className="text-center text-[#B6925B] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#B6925B]/20 bg-[#FAF8F5]">
+            No products available at the moment.
+          </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
               {productsWithReviews.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
-            <div className="mt-12">
-              <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
-            </div>
+            {totalPages > 1 && (
+              <div className="mt-16">
+                <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
+              </div>
+            )}
           </>
         )}
       </div>

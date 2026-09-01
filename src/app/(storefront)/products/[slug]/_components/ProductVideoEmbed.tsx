@@ -1,3 +1,13 @@
+function isSafeVideoUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (/^(javascript|data|vbscript|blob):/i.test(parsed.protocol)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export default function ProductVideoEmbed({ url }: { url: string }) {
   const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
 
@@ -15,6 +25,15 @@ export default function ProductVideoEmbed({ url }: { url: string }) {
             allowFullScreen
           />
         </div>
+      </div>
+    );
+  }
+
+  if (!isSafeVideoUrl(url)) {
+    return (
+      <div className="mt-6">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mb-2">Product Video</p>
+        <p className="text-sm text-gray-500">Invalid video URL.</p>
       </div>
     );
   }

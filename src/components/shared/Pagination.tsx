@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
   currentPage: number;
@@ -23,12 +24,12 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
           href={createPageUrl(currentPage - 1)}
           className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] border border-[#B6925B]/30 hover:border-[#4A3B2C] rounded-none transition-all bg-white"
         >
-          <i className="ri-arrow-left-s-line text-[#B6925B] text-base leading-none" />
+          <ChevronLeft className="w-4 h-4 text-[#B6925B]" />
           <span>Previous</span>
         </Link>
       ) : (
         <span className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-300 border border-[#B6925B]/10 rounded-none cursor-not-allowed bg-white">
-          <i className="ri-arrow-left-s-line text-base leading-none" />
+          <ChevronLeft className="w-4 h-4" />
           <span>Previous</span>
         </span>
       )}
@@ -46,12 +47,12 @@ export default function Pagination({ currentPage, totalPages, baseUrl }: Paginat
           className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] hover:text-[#B6925B] border border-[#B6925B]/30 hover:border-[#4A3B2C] rounded-none transition-all bg-white"
         >
           <span>Next</span>
-          <i className="ri-arrow-right-s-line text-[#B6925B] text-base leading-none" />
+          <ChevronRight className="w-4 h-4 text-[#B6925B]" />
         </Link>
       ) : (
         <span className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-300 border border-[#B6925B]/10 rounded-none cursor-not-allowed bg-white">
           <span>Next</span>
-          <i className="ri-arrow-right-s-line text-base leading-none" />
+          <ChevronRight className="w-4 h-4" />
         </span>
       )}
     </div>

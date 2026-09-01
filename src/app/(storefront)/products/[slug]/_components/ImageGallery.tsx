@@ -32,19 +32,19 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 h-full">
-      {/* Thumbnail strip — only shown when more than 1 image (Left side on Desktop) */}
+    <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 w-full">
+      {/* Thumbnail strip — Left side on Desktop */}
       {images.length > 1 && (
-        <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-y-auto md:w-20 order-2 md:order-1 no-scrollbar shrink-0">
+        <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto sm:w-20 md:w-24 shrink-0 no-scrollbar order-2 sm:order-1">
           {images.map((src, i) => (
             <button
               key={i}
               onClick={() => setSelected(i)}
               className={`
-                relative flex-shrink-0 w-16 md:w-full aspect-[3/4] bg-[#FAFAFA] overflow-hidden rounded-none transition-all border
+                relative flex-shrink-0 w-16 sm:w-full aspect-[3/4] bg-[#FAFAFA] overflow-hidden rounded-none transition-all border
                 ${selected === i
-                  ? "border-[#B6925B] ring-1 ring-[#B6925B]"
-                  : "border-transparent opacity-60 hover:opacity-100"}
+                  ? "border-[#B6925B] ring-1 ring-[#B6925B] opacity-100"
+                  : "border-transparent opacity-70 hover:opacity-100 hover:border-[#B6925B]/40"}
               `}
               aria-label={`View image ${i + 1}`}
             >
@@ -52,7 +52,7 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
                 src={src}
                 alt={`${alt} thumbnail ${i + 1}`}
                 fill
-                sizes="64px"
+                sizes="(max-width: 640px) 64px, 96px"
                 className="object-cover"
               />
             </button>
@@ -60,14 +60,14 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
         </div>
       )}
 
-      {/* Main image container with Zoom capabilities (Right side on Desktop) */}
+      {/* Main image container */}
       <div 
-        className="relative flex-1 aspect-[3/4] md:aspect-auto md:h-[560px] xl:h-[640px] bg-[#FAFAFA] overflow-hidden rounded-none cursor-zoom-in border border-[#B6925B]/20 order-1 md:order-2"
+        className="relative flex-1 aspect-[3/4] sm:aspect-auto sm:min-h-[580px] md:min-h-[640px] lg:min-h-[680px] bg-[#FAFAFA] overflow-hidden rounded-none cursor-zoom-in border border-black/5 order-1 sm:order-2"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <Image
-          src={images[selected]}
+          src={images[selected] || images[0]}
           alt={alt}
           fill
           priority
@@ -80,3 +80,4 @@ export default function ImageGallery({ images, alt }: { images: string[]; alt: s
     </div>
   );
 }
+

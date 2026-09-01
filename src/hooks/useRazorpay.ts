@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { confirmRazorpayPayment } from "@/actions/payment";
 import { useToast } from "@/components/ui/Toast";
 
+import type { GiftDetails } from "@/actions/cart";
+
 type RazorpayConstructor = new (options: Record<string, unknown>) => { open: () => void };
 interface RazorpayWindow {
   Razorpay?: RazorpayConstructor;
@@ -27,6 +29,11 @@ interface OpenRazorpayOptions {
   razorpayOrderId: string;
   orderId: string;
   prefill: { name?: string; email?: string; contact?: string };
+  addressId?: string;
+  couponCode?: string;
+  phone?: string;
+  gift?: GiftDetails;
+  allowAutoApply?: boolean;
 }
 
 /**
@@ -71,6 +78,11 @@ export function useRazorpay() {
             razorpayOrderId: response.razorpay_order_id,
             razorpayPaymentId: response.razorpay_payment_id,
             razorpaySignature: response.razorpay_signature,
+            addressId: options.addressId,
+            couponCode: options.couponCode,
+            phone: options.phone,
+            gift: options.gift,
+            allowAutoApply: options.allowAutoApply,
           });
           toast.success("Payment successful! Order placed.");
           router.push(`/order-confirmation/${orderId}`);
@@ -80,7 +92,10 @@ export function useRazorpay() {
         }
       },
       modal: {
-        ondismiss: () => setIsProcessing(false),
+        ondismiss: () => {
+          setIsProcessing(false);
+          toast.error("Payment cancelled. Your items are still in your cart.");
+        },
       },
     });
 

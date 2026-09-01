@@ -18,14 +18,14 @@ export function CollectionPillSkeleton() {
 
 export function HeroGridSkeleton() {
   return (
-    <section className="w-full grid grid-cols-1 lg:grid-cols-12 max-w-[1920px] mx-auto bg-white animate-pulse">
-      {/* Main Left Banner Skeleton */}
-      <div className="lg:col-span-8 min-h-[500px] lg:min-h-[750px] bg-slate-100 relative overflow-hidden" />
+    <section className="w-full max-w-[1920px] mx-auto bg-white flex flex-col lg:flex-row animate-pulse">
+      {/* Main Banner Skeleton */}
+      <div className="w-full lg:w-[60%] aspect-[3/2] bg-slate-100" />
 
-      {/* Right Stacked Banners Skeleton */}
-      <div className="lg:col-span-4 flex flex-col">
-        <div className="flex-1 min-h-[350px] border-b-[8px] border-white lg:border-b-0 lg:border-l-[8px] bg-slate-100" />
-        <div className="flex-1 min-h-[350px] lg:border-l-[8px] border-white bg-slate-100" />
+      {/* Sub-Banners Skeleton */}
+      <div className="flex w-full lg:w-[40%] flex-row lg:flex-col">
+        <div className="w-1/2 lg:w-full aspect-[16/10] lg:aspect-auto lg:flex-1 bg-slate-100" />
+        <div className="w-1/2 lg:w-full aspect-[16/10] lg:aspect-auto lg:flex-1 bg-slate-200" />
       </div>
     </section>
   );

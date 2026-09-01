@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { CheckCircle2, XCircle, X } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -72,9 +73,9 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
     >
       <div className="flex-shrink-0 mt-0.5 flex items-center justify-center">
         {isSuccess ? (
-          <i className="ri-checkbox-circle-fill text-green-600 text-lg leading-none" />
+          <CheckCircle2 className="w-5 h-5 text-green-600" />
         ) : (
-          <i className="ri-close-circle-fill text-red-600 text-lg leading-none" />
+          <XCircle className="w-5 h-5 text-red-600" />
         )}
       </div>
       <p className="flex-1 text-xs font-bold uppercase tracking-wider leading-snug">{toast.message}</p>
@@ -83,7 +84,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
         className="flex-shrink-0 mt-0.5 text-gray-400 hover:text-[#4A3B2C] transition-colors flex items-center justify-center"
         aria-label="Dismiss"
       >
-        <i className="ri-close-line text-base leading-none" />
+        <X className="w-4 h-4" />
       </button>
     </div>
   );

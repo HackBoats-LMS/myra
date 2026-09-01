@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import type { Metadata } from "next";
 import ShippingConfigForm from "./ShippingConfigForm";
+import { Ticket } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Shipping Settings | Admin Portal",
@@ -36,7 +37,7 @@ export default async function AdminShippingPage() {
           href="/admin/coupons/new"
           className="inline-flex items-center gap-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
         >
-          <i className="ri-ticket-2-line text-sm" />
+          <Ticket className="w-4 h-4" />
           Create Shipping Offer
         </Link>
       </div>

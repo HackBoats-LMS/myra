@@ -5,6 +5,7 @@ import Link from "next/link";
 import { deleteReview, setReviewApproved, replyToReview } from "@/actions/review";
 import { useToast } from "@/components/ui/Toast";
 import type { Prisma } from "@/generated/prisma";
+import { Star, Eye, EyeOff, Trash2 } from "lucide-react";
 
 type ReviewWithRelations = Prisma.ReviewGetPayload<{
   include: {
@@ -51,7 +52,6 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
   const handleReply = async (id: string) => {
     if (!replyText.trim()) {
       toast.error("Reply cannot be empty.");
-      return;
     }
     setBusyId(id);
     try {
@@ -105,7 +105,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
               </td>
               <td className="p-4 border-r border-[#B6925B]/10">
                 <div className="flex items-center gap-1">
-                  <i className="ri-star-fill text-[#B6925B] text-base leading-none" />
+                  <Star className="w-4 h-4 fill-[#B6925B] text-[#B6925B] shrink-0" />
                   <span className="font-bold text-[#4A3B2C]">{review.rating}</span>
                 </div>
               </td>
@@ -178,7 +178,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
                     className={review.isApproved ? "text-amber-600 hover:text-amber-800 p-2 hover:bg-amber-50 transition-colors disabled:opacity-50 rounded-none" : "text-green-600 hover:text-green-800 p-2 hover:bg-green-50 transition-colors disabled:opacity-50 rounded-none"}
                     title={review.isApproved ? "Hide from storefront" : "Approve / publish"}
                   >
-                    <i className={review.isApproved ? "ri-eye-off-line text-lg" : "ri-eye-line text-lg"} />
+                    {review.isApproved ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={() => handleDelete(review.id)}
@@ -186,7 +186,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
                     className="text-red-700 hover:text-red-900 p-2 hover:bg-red-50 transition-colors disabled:opacity-50 rounded-none"
                     title="Delete Review"
                   >
-                    <i className="ri-delete-bin-line text-lg" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </td>

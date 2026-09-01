@@ -2,16 +2,22 @@ import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { cleanupExpiredUnpaidOrders } from "@/lib/order-cleanup";
 import { CACHE_TAGS } from "@/lib/cache";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
-  if (!process.env.CRON_SECRET) {
-    return NextResponse.json({ error: "CRON_SECRET is not configured" }, { status: 500 });
-  }
-
+function verifyCronAuth(req: Request): boolean {
+  if (!process.env.CRON_SECRET) return false;
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!auth || !auth.startsWith("Bearer ")) return false;
+  const token = auth.slice(7);
+  const secret = process.env.CRON_SECRET;
+  if (token.length !== secret.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(secret));
+}
+
+export async function POST(req: Request) {
+  if (!verifyCronAuth(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

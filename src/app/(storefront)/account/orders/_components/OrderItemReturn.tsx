@@ -103,16 +103,16 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
           )}
         </div>
       ) : canRequest ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           <button
             onClick={() => { setType("RETURN"); setOpen(true); }}
-            className="text-[9px] font-bold uppercase tracking-widest text-[#4A3B2C] bg-[#FAFAFA] border border-[#B6925B]/30 px-3 py-1.5 hover:bg-[#B6925B] hover:text-white transition-colors rounded-none"
+            className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] bg-white border border-[#B6925B]/30 px-3.5 py-2 hover:bg-[#B6925B] hover:text-white hover:border-[#B6925B] transition-all duration-200 rounded-none shadow-sm"
           >
             Request Return
           </button>
           <button
             onClick={() => { setType("REPLACEMENT"); setOpen(true); }}
-            className="text-[9px] font-bold uppercase tracking-widest text-[#4A3B2C] bg-[#FAFAFA] border border-[#B6925B]/30 px-3 py-1.5 hover:bg-[#B6925B] hover:text-white transition-colors rounded-none"
+            className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] bg-white border border-[#B6925B]/30 px-3.5 py-2 hover:bg-[#B6925B] hover:text-white hover:border-[#B6925B] transition-all duration-200 rounded-none shadow-sm"
           >
             Request Replacement
           </button>

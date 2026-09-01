@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ShipOrderButton from "@/components/shared/ShipOrderButton";
 import { requireWorkerModule } from "@/lib/worker";
+import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -79,9 +80,9 @@ export default async function WorkerOrderDetailsPage({ params }: { params: Promi
                     href={order.trackingUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 normal-case tracking-normal text-[11px]"
+                    className="text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 normal-case tracking-normal text-[11px] inline-flex items-center gap-1"
                   >
-                    Track on Shiprocket <i className="ri-external-link-line text-xs align-middle" />
+                    Track on Shiprocket <ExternalLink className="w-3.5 h-3.5 inline" />
                   </a>
                 </p>
               )}

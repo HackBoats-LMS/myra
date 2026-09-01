@@ -1,7 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
-import { redirect } from "next/navigation";
 
 export async function verifyRole(allowedRoles: string[]) {
   const session = await getServerSession(authOptions);
@@ -41,9 +40,7 @@ export async function verifyMultiWorker() {
   return verifyRole(["MULTI_WORKER", "ADMIN"]);
 }
 
-export async function verifyAdminOrWorker() {
-  return verifyRole(["ADMIN", "MULTI_WORKER"]);
-}
+
 
 export async function verifyWorkerCapability(capability: "inventory" | "shipping") {
   const session = await getServerSession(authOptions);
@@ -61,7 +58,12 @@ export async function verifyWorkerCapability(capability: "inventory" | "shipping
   const role = dbUser?.role ?? session.user.role;
 
   if (role === "ADMIN") {
-    return session.user;
+    // Return fresh DB user data instead of potentially stale JWT data.
+    const adminUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, canManageInventory: true, canManageShipping: true },
+    });
+    return adminUser ?? { ...session.user, role };
   }
   if (role !== "MULTI_WORKER") {
     throw new Error("You do not have permission to perform this action.");
@@ -75,5 +77,6 @@ export async function verifyWorkerCapability(capability: "inventory" | "shipping
   if (!hasCapability) {
     throw new Error("You do not have permission to perform this action.");
   }
-  return session.user;
+  // Return fresh DB data instead of potentially stale JWT data.
+  return { ...session.user, ...dbUser, id };
 }

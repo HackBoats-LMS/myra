@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
@@ -9,6 +10,23 @@ export async function POST(req: Request) {
 
     if (!phoneNumber || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
+    }
+    if (password.length > 128) {
+      return NextResponse.json({ error: "Password must not exceed 128 characters" }, { status: 400 });
+    }
+
+    // Validate phone number format (exactly 10 digits)
+    if (!/^\d{10}$/.test(String(phoneNumber).trim())) {
+      return NextResponse.json({ error: "Phone number must be exactly 10 digits" }, { status: 400 });
+    }
+
+    // Validate name length if provided
+    if (name && String(name).trim().length > 100) {
+      return NextResponse.json({ error: "Name must not exceed 100 characters" }, { status: 400 });
     }
 
     // Rate-limit signup by IP and by identifier to prevent account flooding/brute force.
@@ -37,10 +55,10 @@ export async function POST(req: Request) {
     });
 
     if (existingUser) {
-      return NextResponse.json({ error: "Phone number or email already in use" }, { status: 400 });
+      return NextResponse.json({ error: "An account with these details already exists" }, { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
       data: {
@@ -53,18 +71,23 @@ export async function POST(req: Request) {
     });
 
     if (user.email) {
-      const token = crypto.randomUUID();
+      const rawToken = crypto.randomUUID();
+      const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
       await prisma.verificationToken.create({
         data: {
           email: user.email,
-          token,
+          token: tokenHash,
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
         }
       });
       
       const { sendVerificationEmail, sendWelcomeEmail } = await import("@/lib/email/email");
-      sendVerificationEmail(user.email, token).catch(console.error);
-      sendWelcomeEmail(user.email, user.name || "there").catch(console.error);
+      sendVerificationEmail(user.email, rawToken).catch((err) => {
+        console.error("Failed to send verification email:", err);
+      });
+      sendWelcomeEmail(user.email, user.name || "there").catch((err) => {
+        console.error("Failed to send welcome email:", err);
+      });
     }
 
     return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } }, { status: 201 });

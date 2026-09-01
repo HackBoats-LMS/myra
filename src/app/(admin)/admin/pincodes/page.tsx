@@ -9,7 +9,7 @@ export default async function AdminPincodesPage() {
   try {
     pincodes = await prisma.pincode.findMany({ orderBy: { createdAt: "desc" } });
   } catch (error) {
-    console.warn("Database unreachable in AdminPincodesPage:", error);
+    console.warn("Database unreachable in AdminPincodesPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   return (

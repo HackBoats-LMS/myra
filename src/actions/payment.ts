@@ -6,12 +6,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { sendEmail } from "@/lib/email/email";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
-import { createOrderTransaction, type GiftDetails } from "@/actions/cart";
+import { calculateCartCheckoutPricing, createOrderTransaction, type GiftDetails } from "@/actions/cart";
 import {
   createRazorpayOrder,
   getRazorpayKeyId,
   razorpayConfigured,
   verifyRazorpaySignature,
+  fetchRazorpayPayment,
 } from "@/lib/integrations/razorpay";
 import { CACHE_TAGS } from "@/lib/cache";
 
@@ -42,38 +43,37 @@ export async function initiateRazorpayPayment(input: InitiatePaymentInput): Prom
 
   const userId = session.user.id;
 
-  // Reserve the order (UNPAID) first so the amount charged reflects the exact
-  // reserved totals (coupon, flash, shipping). The Razorpay order is then
-  // created from this authoritative amount and linked back to the order.
-  const result = await createOrderTransaction({
-    addressId: input.addressId,
+  // Calculate totals directly from current cart without creating an unpaid DB order
+  // or clearing the user's cart. The cart items and DB order are only finalized
+  // once the customer successfully authorizes and confirms payment.
+  const pricing = await calculateCartCheckoutPricing({
     couponCode: input.couponCode,
-    phone: input.phone,
-    gift: input.gift,
-    paymentMethod: "RAZORPAY",
-    paymentStatus: "UNPAID",
-    razorpayOrderId: null,
     allowAutoApply: input.allowAutoApply !== false,
   });
 
+  const notes: Record<string, string> = {
+    userId,
+    addressId: input.addressId || "",
+    phone: input.phone || "",
+    couponCode: input.couponCode || "",
+  };
+  if (input.gift) {
+    notes.gift = JSON.stringify(input.gift).slice(0, 250);
+  }
+
   const rzOrder = await createRazorpayOrder({
-    amount: Math.round(result.finalAmount * 100),
+    amount: Math.round(pricing.finalAmount * 100),
     currency: "INR",
     receipt: `${userId.slice(0, 8)}-${Date.now()}`,
-    notes: { userId, orderId: result.orderId },
-  });
-
-  await prisma.order.update({
-    where: { id: result.orderId },
-    data: { razorpayOrderId: rzOrder.id },
+    notes,
   });
 
   return {
     razorpayOrderId: rzOrder.id,
-    amount: Math.round(result.finalAmount * 100),
+    amount: Math.round(pricing.finalAmount * 100),
     currency: "INR",
     keyId: getRazorpayKeyId(),
-    orderId: result.orderId,
+    orderId: rzOrder.id,
   };
 }
 
@@ -106,9 +106,6 @@ export async function retryRazorpayPayment(orderId: string): Promise<{
     throw new Error("This order was cancelled and cannot be paid.");
   }
 
-  // Create a fresh Razorpay order for the existing amount (the previous gateway
-  // order may have been abandoned/expired) and re-link it so the confirmation
-  // step can find this order by its razorpayOrderId.
   const rzOrder = await createRazorpayOrder({
     amount: Math.round(order.totalAmount * 100),
     currency: "INR",
@@ -130,10 +127,15 @@ export async function retryRazorpayPayment(orderId: string): Promise<{
   };
 }
 
-interface ConfirmPaymentInput {
+export interface ConfirmPaymentInput {
   razorpayOrderId: string;
   razorpayPaymentId: string;
   razorpaySignature: string;
+  addressId?: string;
+  couponCode?: string;
+  phone?: string;
+  gift?: GiftDetails;
+  allowAutoApply?: boolean;
 }
 
 export async function confirmRazorpayPayment(input: ConfirmPaymentInput): Promise<{ orderId: string }> {
@@ -152,68 +154,98 @@ export async function confirmRazorpayPayment(input: ConfirmPaymentInput): Promis
     throw new Error("Payment verification failed. Please contact support.");
   }
 
-  const order = await prisma.order.findUnique({ where: { razorpayOrderId } });
-  if (!order) {
-    throw new Error("Order not found for this payment.");
-  }
-  if (order.userId !== session.user.id) {
-    throw new Error("You are not authorized to complete this order.");
+  let existingOrder = await prisma.order.findUnique({ where: { razorpayOrderId } });
+
+  // If order already exists (e.g. from retry flow or webhook already processed):
+  if (existingOrder) {
+    if (existingOrder.userId !== session.user.id) {
+      throw new Error("You are not authorized to complete this order.");
+    }
+
+    const claimed = await prisma.order.updateMany({
+      where: { id: existingOrder.id, paymentStatus: { not: "PAID" }, status: { not: "CANCELLED" } },
+      data: { paymentStatus: "PAID", razorpayPaymentId, razorpaySignature },
+    });
+
+    if (claimed.count === 0) {
+      return { orderId: existingOrder.id };
+    }
+
+    const userName = session.user.name || "Customer";
+    const userEmail = session.user.email;
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId: existingOrder.id },
+      include: { product: { select: { name: true } } },
+    });
+
+    if (userEmail) {
+      sendEmail({
+        to: userEmail,
+        subject: `Your Myra Order Receipt #${existingOrder.id.substring(0, 8)}`,
+        react: OrderConfirmationEmail({
+          orderId: existingOrder.id,
+          customerName: userName,
+          totalAmount: existingOrder.totalAmount,
+          items: orderItems.map((i) => ({
+            productId: i.productId,
+            name: i.product.name,
+            quantity: i.quantity,
+            price: i.price,
+          })),
+        }),
+      }).catch(console.error);
+    }
+
+    revalidatePath("/");
+    updateTag(CACHE_TAGS.products);
+    updateTag(CACHE_TAGS.cart(session.user.id));
+    return { orderId: existingOrder.id };
   }
 
-  // Atomic claim: only the first path (client confirm vs webhook) that flips
-  // UNPAID -> PAID proceeds to send emails, preventing duplicates on a race.
-  // A CANCELLED order (e.g. cleaned up after 30 min) can never be charged.
-  const claimed = await prisma.order.updateMany({
-    where: { id: order.id, paymentStatus: { not: "PAID" }, status: { not: "CANCELLED" } },
-    data: { paymentStatus: "PAID", razorpayPaymentId, razorpaySignature },
+  // Normal fresh checkout flow: create the DB order, decrement stock, and clear cart
+  // only NOW after the payment has been authenticated and captured.
+  const result = await createOrderTransaction({
+    addressId: input.addressId || "",
+    couponCode: input.couponCode,
+    phone: input.phone,
+    gift: input.gift,
+    paymentMethod: "RAZORPAY",
+    paymentStatus: "PAID",
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature,
+    allowAutoApply: input.allowAutoApply !== false,
   });
-
-  // If the webhook already marked it paid, treat this as idempotent success.
-  if (claimed.count === 0) {
-    return { orderId: order.id };
-  }
 
   const userName = session.user.name || "Customer";
   const userEmail = session.user.email;
 
-  const orderItems = await prisma.orderItem.findMany({
-    where: { orderId: order.id },
-    include: { product: { select: { name: true } } },
-  });
-
-  // Email failures must never block the payment confirmation/redirect, since
-  // the order is already marked PAID at this point.
   if (userEmail) {
     sendEmail({
       to: userEmail,
-      subject: `Your Myra Order Receipt #${order.id.substring(0, 8)}`,
+      subject: `Your Myra Order Receipt #${result.orderId.substring(0, 8)}`,
       react: OrderConfirmationEmail({
-        orderId: order.id,
+        orderId: result.orderId,
         customerName: userName,
-        totalAmount: order.totalAmount,
-        items: orderItems.map((i) => ({
-          productId: i.productId,
-          name: i.product.name,
-          quantity: i.quantity,
-          price: i.price,
-        })),
+        totalAmount: result.finalAmount,
+        items: result.items,
       }),
     }).catch(console.error);
   }
 
-  // Notify admin of the new online order (independent of the customer email).
+  // Notify admin of the new online order.
   const { sendAdminNewOrderEmail } = await import("@/lib/email/email");
   sendAdminNewOrderEmail({
-    orderId: order.id,
+    orderId: result.orderId,
     customerName: userName,
-    totalAmount: order.totalAmount,
+    totalAmount: result.finalAmount,
     paymentMethod: "Online (Razorpay)",
-    itemCount: orderItems.reduce((sum, i) => sum + i.quantity, 0),
+    itemCount: result.items.reduce((sum, i) => sum + i.quantity, 0),
   }).catch(console.error);
 
   revalidatePath("/");
   updateTag(CACHE_TAGS.products);
   updateTag(CACHE_TAGS.cart(session.user.id));
 
-  return { orderId: order.id };
+  return { orderId: result.orderId };
 }

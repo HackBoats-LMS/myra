@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import type { Prisma } from "@/generated/prisma";
 import { requireWorkerModule } from "@/lib/worker";
 import { CACHE_TAGS } from "@/lib/cache";
+import { Eye } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function WorkerOrdersPage() {
   try {
     orders = await getCachedWorkerOrders();
   } catch (error) {
-    console.warn("Database unreachable in WorkerOrdersPage:", error);
+    console.warn("Database unreachable in WorkerOrdersPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   return (
@@ -92,7 +93,7 @@ export default async function WorkerOrdersPage() {
                         className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none"
                         title="View Order"
                       >
-                        <i className="ri-eye-line text-lg" />
+                        <Eye className="w-4 h-4" />
                       </Link>
                     </td>
                   </tr>

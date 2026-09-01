@@ -47,14 +47,21 @@ export function verifyRazorpaySignature(orderId: string, paymentId: string, sign
     .createHmac("sha256", KEY_SECRET)
     .update(`${orderId}|${paymentId}`)
     .digest("hex");
-  return expected === signature;
+  return safeHexCompare(expected, signature);
 }
 
 export function verifyWebhookSignature(body: string, signature: string): boolean {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "";
   if (!secret) return false;
   const expected = crypto.createHmac("sha256", secret).update(body).digest("hex");
-  return expected === signature;
+  return safeHexCompare(expected, signature);
+}
+
+function safeHexCompare(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a, "hex");
+  const bBuf = Buffer.from(b, "hex");
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
 export async function fetchRazorpayPayment(paymentId: string) {

@@ -19,6 +19,10 @@ export default async function PublicTrackOrderPage({
   const { orderId } = await params;
   const { email } = await searchParams;
 
+  if (!email || !email.trim()) {
+    notFound();
+  }
+
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
@@ -32,8 +36,7 @@ export default async function PublicTrackOrderPage({
     notFound();
   }
 
-  // If an email was provided, verify it belongs to this order before revealing details.
-  if (email && email.trim().toLowerCase() !== (order.user?.email || "").toLowerCase()) {
+  if (email.trim().toLowerCase() !== (order.user?.email || "").toLowerCase()) {
     notFound();
   }
 

@@ -83,9 +83,10 @@ const productSchema = z.object({
   stockQuantity: z.number().int().min(0, "Stock cannot be negative"),
   collectionId: z.string().optional(),
   productType: z.string().max(50).nullable().optional(),
+  attributes: z.any().optional(),
   material: z.string().max(100).nullable().optional(),
   weight: z.string().max(50).nullable().optional(),
-  videoUrl: z.string().max(500).nullable().optional(),
+  videoUrl: z.string().url("Video URL must be a valid URL").max(500).nullable().optional(),
   images: z.array(z.string().url()).max(5, "Max 5 images allowed"),
   variants: z.array(z.object({
     sku: z.string().nullable().optional(),
@@ -105,6 +106,26 @@ function parseImagesField(formData: FormData): string[] {
     return parsed.filter((v): v is string => typeof v === "string" && Boolean(v));
   } catch {
     return [];
+  }
+}
+
+function parseAttributesField(formData: FormData): any {
+  const raw = formData.get("attributes");
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(String(raw));
+    if (Array.isArray(parsed)) {
+      const obj: Record<string, string> = {};
+      parsed.forEach((item: any) => {
+        if (item.key && item.key.trim() !== "") {
+          obj[item.key.trim()] = item.value || "";
+        }
+      });
+      return obj;
+    }
+    return typeof parsed === "object" && parsed !== null ? parsed : {};
+  } catch {
+    return {};
   }
 }
 
@@ -128,6 +149,7 @@ export async function createProduct(formData: FormData) {
     stockQuantity: parseInt(formData.get("stockQuantity") as string, 10),
     collectionId: formData.get("collectionId") ? String(formData.get("collectionId")).trim() : undefined,
     productType: String(formData.get("productType") || "").trim() || null,
+    attributes: parseAttributesField(formData),
     material: String(formData.get("material") || "").trim() || null,
     weight: String(formData.get("weight") || "").trim() || null,
     videoUrl: String(formData.get("videoUrl") || "").trim() || null,
@@ -157,6 +179,7 @@ export async function createProduct(formData: FormData) {
       stockQuantity: data.stockQuantity,
       collectionId: data.collectionId || null,
       productType: data.productType || null,
+      attributes: data.attributes,
       material: data.material || null,
       weight: data.weight || null,
       videoUrl: data.videoUrl || null,
@@ -205,6 +228,7 @@ export async function updateProduct(id: string, formData: FormData) {
     stockQuantity: parseInt(formData.get("stockQuantity") as string, 10),
     collectionId: formData.get("collectionId") ? String(formData.get("collectionId")).trim() : undefined,
     productType: String(formData.get("productType") || "").trim() || null,
+    attributes: parseAttributesField(formData),
     material: String(formData.get("material") || "").trim() || null,
     weight: String(formData.get("weight") || "").trim() || null,
     videoUrl: String(formData.get("videoUrl") || "").trim() || null,
@@ -235,6 +259,7 @@ export async function updateProduct(id: string, formData: FormData) {
         stockQuantity: data.stockQuantity,
         collectionId: data.collectionId || null,
         productType: data.productType || null,
+        attributes: data.attributes,
         material: data.material || null,
         weight: data.weight || null,
         videoUrl: data.videoUrl || null,
@@ -326,8 +351,14 @@ export async function restoreProduct(id: string) {
   if (prev?.slug) updateTag(CACHE_TAGS.product(prev.slug));
 }
 
+const MAX_BULK_IDS = 100;
+
 export async function bulkDeleteProducts(ids: string[]) {
   await verifyWorkerCapability("inventory");
+
+  if (!Array.isArray(ids) || ids.length === 0 || ids.length > MAX_BULK_IDS) {
+    throw new Error(`Bulk operation must include 1-${MAX_BULK_IDS} items.`);
+  }
 
   await prisma.product.updateMany({
     where: { id: { in: ids } },
@@ -344,6 +375,10 @@ export async function bulkDeleteProducts(ids: string[]) {
 export async function bulkRestoreProducts(ids: string[]) {
   await verifyWorkerCapability("inventory");
 
+  if (!Array.isArray(ids) || ids.length === 0 || ids.length > MAX_BULK_IDS) {
+    throw new Error(`Bulk operation must include 1-${MAX_BULK_IDS} items.`);
+  }
+
   await prisma.product.updateMany({
     where: { id: { in: ids } },
     data: { deletedAt: null }
@@ -358,6 +393,14 @@ export async function bulkRestoreProducts(ids: string[]) {
 
 export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
   await verifyWorkerCapability("inventory");
+
+  if (!Array.isArray(ids) || ids.length === 0 || ids.length > MAX_BULK_IDS) {
+    throw new Error(`Bulk operation must include 1-${MAX_BULK_IDS} items.`);
+  }
+
+  if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
+    throw new Error("Stock quantity must be a non-negative integer.");
+  }
 
   await prisma.product.updateMany({
     where: { id: { in: ids } },
@@ -375,8 +418,32 @@ const collectionSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(150),
   slug: z.string().max(150).optional(),
   description: z.string().max(500, "Description is too long").optional(),
-  image: z.string().url().optional().nullable(),
+  image: z.string().optional().nullable(),
+  banners: z.array(z.string()).optional().default([]),
+  parentId: z.string().uuid().optional().nullable(),
+  order: z.number().int().optional().default(0),
+  showInNav: z.boolean().optional().default(true),
 });
+
+function purgeCollectionCache() {
+  revalidatePath("/admin/collections");
+  revalidatePath("/worker/collections");
+  revalidatePath("/", "layout");
+  try { updateTag(CACHE_TAGS.collections); } catch {}
+  try { updateTag(CACHE_TAGS.navigation); } catch {}
+  try { updateTag(CACHE_TAGS.workerCollections); } catch {}
+}
+
+function parseBannersArray(raw: FormDataEntryValue | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(String(raw));
+    if (Array.isArray(parsed)) return parsed.filter((item): item is string => typeof item === "string" && Boolean(item.trim()));
+    return [];
+  } catch {
+    return [];
+  }
+}
 
 export async function createCollection(formData: FormData) {
   await verifyWorkerCapability("inventory");
@@ -386,6 +453,10 @@ export async function createCollection(formData: FormData) {
     slug: String(formData.get("slug") || "").trim(),
     description: String(formData.get("description") || "").trim(),
     image: formData.get("image") ? String(formData.get("image")).trim() : null,
+    banners: parseBannersArray(formData.get("banners")),
+    parentId: formData.get("parentId") ? String(formData.get("parentId")).trim() : null,
+    order: formData.get("order") ? parseInt(formData.get("order") as string, 10) : 0,
+    showInNav: formData.get("showInNav") === null ? true : formData.get("showInNav") === "true" || formData.get("showInNav") === "on",
   };
 
   const result = collectionSchema.safeParse(rawData);
@@ -393,7 +464,7 @@ export async function createCollection(formData: FormData) {
     throw new Error(result.error.issues[0].message);
   }
 
-  const { name, slug, description, image } = result.data;
+  const { name, slug, description, image, banners, parentId, order, showInNav } = result.data;
 
   const resolvedSlug = slug || slugify(name) || `collection-${Date.now()}`;
 
@@ -402,15 +473,22 @@ export async function createCollection(formData: FormData) {
     throw new Error(`A collection with the slug "${resolvedSlug}" already exists.`);
   }
 
-  const createdCollection = await prisma.collection.create({
-    data: { name, slug: resolvedSlug, description: description || null, image: image || null }
+  const collection = await prisma.collection.create({
+    data: { 
+      name, 
+      slug: resolvedSlug, 
+      description: description || null, 
+      image: image || null,
+      banners: banners || [],
+      parentId: parentId || null,
+      order: order ?? 0,
+      showInNav: showInNav ?? true
+    }
   });
 
-  await logAudit("collection.create", "Collection", createdCollection.id, { slug: resolvedSlug });
+  await logAudit("collection.create", "Collection", collection.id, { name, slug: resolvedSlug });
 
-  revalidatePath("/admin/collections");
-  updateTag(CACHE_TAGS.collections);
-  updateTag(CACHE_TAGS.workerCollections);
+  purgeCollectionCache();
 }
 
 export async function updateCollection(id: string, formData: FormData) {
@@ -421,6 +499,10 @@ export async function updateCollection(id: string, formData: FormData) {
     slug: String(formData.get("slug") || "").trim(),
     description: String(formData.get("description") || "").trim(),
     image: formData.get("image") ? String(formData.get("image")).trim() : null,
+    banners: parseBannersArray(formData.get("banners")),
+    parentId: formData.get("parentId") ? String(formData.get("parentId")).trim() : null,
+    order: formData.get("order") ? parseInt(formData.get("order") as string, 10) : 0,
+    showInNav: formData.get("showInNav") === null ? true : formData.get("showInNav") === "true" || formData.get("showInNav") === "on",
   };
 
   const result = collectionSchema.safeParse(rawData);
@@ -428,7 +510,7 @@ export async function updateCollection(id: string, formData: FormData) {
     throw new Error(result.error.issues[0].message);
   }
 
-  const { name, slug, description } = result.data;
+  const { name, slug, description, image, banners, parentId, order, showInNav } = result.data;
 
   const resolvedSlug = slug || slugify(name) || `collection-${Date.now()}`;
 
@@ -437,20 +519,44 @@ export async function updateCollection(id: string, formData: FormData) {
     throw new Error(`A collection with the slug "${resolvedSlug}" already exists.`);
   }
 
+  // Prevent setting self as parent
+  if (parentId && parentId === id) {
+    throw new Error("A category cannot be its own parent.");
+  }
+
   await prisma.collection.update({
     where: { id },
-    data: { name, slug: resolvedSlug, description: description || null }
+    data: { 
+      name, 
+      slug: resolvedSlug, 
+      description: description || null, 
+      image: image || null,
+      banners: banners || [],
+      parentId: parentId || null,
+      order: order ?? 0,
+      showInNav: showInNav ?? true
+    }
   });
 
   await logAudit("collection.update", "Collection", id, { slug: resolvedSlug });
 
-  revalidatePath("/admin/collections");
-  updateTag(CACHE_TAGS.collections);
-  updateTag(CACHE_TAGS.workerCollections);
+  purgeCollectionCache();
 }
 
 export async function deleteCollection(id: string) {
   await verifyWorkerCapability("inventory");
+
+  // Unlink products from this collection so they are preserved
+  await prisma.product.updateMany({
+    where: { collectionId: id },
+    data: { collectionId: null }
+  });
+
+  // Unlink child subcategories if this was a parent category
+  await prisma.collection.updateMany({
+    where: { parentId: id },
+    data: { parentId: null }
+  });
 
   await prisma.collection.delete({
     where: { id }
@@ -458,9 +564,57 @@ export async function deleteCollection(id: string) {
 
   await logAudit("collection.delete", "Collection", id);
 
-  revalidatePath("/admin/collections");
-  updateTag(CACHE_TAGS.collections);
-  updateTag(CACHE_TAGS.workerCollections);
+  purgeCollectionCache();
+}
+
+export async function updateCollectionOrder(id: string, newOrder: number) {
+  await verifyWorkerCapability("inventory");
+
+  await prisma.collection.update({
+    where: { id },
+    data: { order: newOrder }
+  });
+
+  await logAudit("collection.reorder", "Collection", id, { order: newOrder });
+
+  purgeCollectionCache();
+}
+
+export async function swapCollectionOrder(
+  id1: string,
+  order1: number,
+  id2: string,
+  order2: number
+) {
+  await verifyWorkerCapability("inventory");
+
+  await prisma.$transaction([
+    prisma.collection.update({
+      where: { id: id1 },
+      data: { order: order1 }
+    }),
+    prisma.collection.update({
+      where: { id: id2 },
+      data: { order: order2 }
+    })
+  ]);
+
+  await logAudit("collection.swap_order", "Collection", id1, { id1, order1, id2, order2 });
+
+  purgeCollectionCache();
+}
+
+export async function toggleCollectionShowInNav(id: string, showInNav: boolean) {
+  await verifyWorkerCapability("inventory");
+
+  await prisma.collection.update({
+    where: { id },
+    data: { showInNav }
+  });
+
+  await logAudit("collection.toggle_show_in_nav", "Collection", id, { showInNav });
+
+  purgeCollectionCache();
 }
 
 export async function toggleBestSeller(productId: string, bestSeller: boolean) {
@@ -512,6 +666,17 @@ export async function processRefund(orderId: string, formData: FormData) {
 
   if (amount > totalRefundable) {
     throw new Error(`Cannot refund more than the remaining refundable amount (₹${totalRefundable.toFixed(2)})`);
+  }
+
+  // Per-item guard: refund cannot exceed the sum of order item line totals.
+  const orderItems = await prisma.orderItem.findMany({
+    where: { orderId },
+    select: { price: true, quantity: true },
+  });
+  const itemLineTotalSum = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalAlreadyRefunded = order.refundedAmount || 0;
+  if (totalAlreadyRefunded + amount > itemLineTotalSum) {
+    throw new Error(`Cannot refund more than the item total (₹${itemLineTotalSum.toFixed(2)}). Refund is capped at ₹${Math.max(0, itemLineTotalSum - totalAlreadyRefunded).toFixed(2)}.`);
   }
 
   const isOnlineRefund = order.paymentMethod === "RAZORPAY" && !!order.razorpayPaymentId;
@@ -640,6 +805,9 @@ export async function updateCustomerProfile(
   }
 
   if (email) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new Error("Invalid email address format.");
+    }
     const emailConflict = await prisma.user.findFirst({
       where: { email, id: { not: userId } },
     });
@@ -648,6 +816,9 @@ export async function updateCustomerProfile(
     }
   }
   if (phoneNumber) {
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      throw new Error("Phone number must be exactly 10 digits.");
+    }
     const phoneConflict = await prisma.user.findFirst({
       where: { phoneNumber, id: { not: userId } },
     });
@@ -730,7 +901,11 @@ export async function createWorker(formData: FormData) {
 
   if (!name) throw new Error("Name is required.");
   if (!email) throw new Error("Email is required.");
-  if (password.length < 6) throw new Error("Password must be at least 6 characters.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("Invalid email address format.");
+  }
+  if (password.length < 8) throw new Error("Password must be at least 8 characters.");
+  if (password.length > 128) throw new Error("Password must not exceed 128 characters.");
 
   const existing = await prisma.user.findFirst({
     where: { OR: [{ email }, ...(phoneNumber ? [{ phoneNumber }] : [])] },
@@ -739,7 +914,7 @@ export async function createWorker(formData: FormData) {
     throw new Error("A user with that email or phone already exists.");
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
   const user = await prisma.user.create({
     data: {
@@ -835,9 +1010,12 @@ export async function shipOrder(orderId: string) {
 export async function updateOrderInternalNotes(orderId: string, internalNotes: string) {
   await verifyAdmin();
 
+  // Sanitize: strip HTML tags and limit length to prevent stored XSS
+  const sanitized = (internalNotes || "").replace(/<[^>]*>/g, "").trim().substring(0, 2000);
+
   await prisma.order.update({
     where: { id: orderId },
-    data: { internalNotes: internalNotes || null }
+    data: { internalNotes: sanitized || null }
   });
 
   await logAudit("order.notesUpdate", "Order", orderId);

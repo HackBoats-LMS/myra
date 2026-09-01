@@ -106,7 +106,7 @@ export default async function WishlistPage() {
       }
     }
   } catch (error) {
-    console.warn("Database unreachable in WishlistPage:", error);
+    console.warn("Database unreachable in WishlistPage:", error instanceof Error ? error.message : "unknown error");
     // Silent fail to empty wishlist UI
   }
 

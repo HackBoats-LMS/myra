@@ -5,7 +5,7 @@ export default function AdminLoginPage() {
     <StaffLoginForm
       title="Admin Portal"
       subtitle="Authorized Personnel Only"
-      icon="ri-lock-line"
+      iconName="lock"
       redirectUrl="/admin/products"
       placeholderEmail="admin@myra.com"
     />

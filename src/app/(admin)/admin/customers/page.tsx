@@ -71,7 +71,7 @@ export default async function AdminCustomersPage({
     customers = result.customers;
     totalCustomers = result.total;
   } catch (error) {
-    console.warn("Database unreachable in AdminCustomersPage:", error);
+    console.warn("Database unreachable in AdminCustomersPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const totalPages = Math.max(1, Math.ceil(totalCustomers / ITEMS_PER_PAGE));

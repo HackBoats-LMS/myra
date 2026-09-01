@@ -2,8 +2,26 @@ import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import Link from "next/link";
+import {
+  Archive,
+  AlertTriangle,
+  FolderOpen,
+  Truck,
+  Clock,
+  MapPin,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+interface StatItem {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  href: string;
+  color: string;
+}
 
 export default async function WorkerDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -23,16 +41,16 @@ export default async function WorkerDashboardPage() {
 
   const [productCount, lowStockCount, collectionCount, pendingOrders, shippedOrders, outForDelivery] = counts;
 
-  const inventoryStats = [
-    { label: "Products", value: productCount, icon: "ri-archive-line", href: "/worker/products", color: "text-[#B6925B]" },
-    { label: "Low Stock", value: lowStockCount, icon: "ri-error-warning-line", href: "/worker/products", color: "text-red-600" },
-    { label: "Collections", value: collectionCount, icon: "ri-folder-open-line", href: "/worker/collections", color: "text-[#B6925B]" },
+  const inventoryStats: StatItem[] = [
+    { label: "Products", value: productCount, icon: Archive, href: "/worker/products", color: "text-[#B6925B]" },
+    { label: "Low Stock", value: lowStockCount, icon: AlertTriangle, href: "/worker/products", color: "text-red-600" },
+    { label: "Collections", value: collectionCount, icon: FolderOpen, href: "/worker/collections", color: "text-[#B6925B]" },
   ];
 
-  const shippingStats = [
-    { label: "To Ship", value: pendingOrders, icon: "ri-truck-line", href: "/worker/orders", color: "text-[#B6925B]" },
-    { label: "In Transit", value: shippedOrders, icon: "ri-timer-line", href: "/worker/orders", color: "text-[#B6925B]" },
-    { label: "Out for Delivery", value: outForDelivery, icon: "ri-map-pin-2-line", href: "/worker/orders", color: "text-[#B6925B]" },
+  const shippingStats: StatItem[] = [
+    { label: "To Ship", value: pendingOrders, icon: Truck, href: "/worker/orders", color: "text-[#B6925B]" },
+    { label: "In Transit", value: shippedOrders, icon: Clock, href: "/worker/orders", color: "text-[#B6925B]" },
+    { label: "Out for Delivery", value: outForDelivery, icon: MapPin, href: "/worker/orders", color: "text-[#B6925B]" },
   ];
 
   const stats = [
@@ -58,7 +76,7 @@ export default async function WorkerDashboardPage() {
       {!canInventory && !canShipping && (
         <div className="bg-white border border-[#B6925B]/20 p-8 text-center shadow-sm">
           <div className="w-12 h-12 bg-[#FAFAFA] border border-[#B6925B]/20 flex items-center justify-center mx-auto mb-4">
-            <i className="ri-tools-line text-2xl text-[#B6925B]" />
+            <Wrench className="w-6 h-6 text-[#B6925B]" />
           </div>
           <h3 className="font-serif text-lg text-[#4A3B2C] mb-2">No Modules Assigned</h3>
           <p className="text-xs text-gray-500 max-w-md mx-auto">
@@ -70,21 +88,24 @@ export default async function WorkerDashboardPage() {
 
       {stats.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          {stats.map((stat) => (
-            <Link
-              key={stat.label}
-              href={stat.href}
-              className="bg-white p-6 border border-[#B6925B]/20 shadow-sm flex items-center justify-between rounded-none hover:border-[#B6925B]/50 transition-colors"
-            >
-              <div>
-                <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-2">{stat.label}</span>
-                <span className={`text-3xl font-serif font-bold ${stat.color}`}>{stat.value}</span>
-              </div>
-              <div className="w-10 h-10 bg-[#FAFAFA] border border-[#B6925B]/20 flex items-center justify-center rounded-none">
-                <i className={`${stat.icon} text-xl ${stat.color}`} />
-              </div>
-            </Link>
-          ))}
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Link
+                key={stat.label}
+                href={stat.href}
+                className="bg-white p-6 border border-[#B6925B]/20 shadow-sm flex items-center justify-between rounded-none hover:border-[#B6925B]/50 transition-colors"
+              >
+                <div>
+                  <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-2">{stat.label}</span>
+                  <span className={`text-3xl font-serif font-bold ${stat.color}`}>{stat.value}</span>
+                </div>
+                <div className="w-10 h-10 bg-[#FAFAFA] border border-[#B6925B]/20 flex items-center justify-center rounded-none">
+                  <Icon className={`w-5 h-5 ${stat.color}`} />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
 
@@ -92,7 +113,7 @@ export default async function WorkerDashboardPage() {
         {canInventory && (
           <Link href="/worker/products" className="bg-white border border-[#B6925B]/20 shadow-sm p-6 space-y-2 rounded-none hover:border-[#B6925B]/50 transition-colors">
             <div className="flex items-center gap-3">
-              <i className="ri-archive-line text-2xl text-[#B6925B]" />
+              <Archive className="w-6 h-6 text-[#B6925B]" />
               <h3 className="font-serif text-lg text-[#4A3B2C]">Inventory Management</h3>
             </div>
             <p className="text-xs text-gray-500">Manage products, stock quantities, variants, and collections.</p>
@@ -102,7 +123,7 @@ export default async function WorkerDashboardPage() {
         {canShipping && (
           <Link href="/worker/orders" className="bg-white border border-[#B6925B]/20 shadow-sm p-6 space-y-2 rounded-none hover:border-[#B6925B]/50 transition-colors">
             <div className="flex items-center gap-3">
-              <i className="ri-truck-line text-2xl text-[#B6925B]" />
+              <Truck className="w-6 h-6 text-[#B6925B]" />
               <h3 className="font-serif text-lg text-[#4A3B2C]">Shipping Management</h3>
             </div>
             <p className="text-xs text-gray-500">Review orders and create Shiprocket shipments with AWB tracking.</p>

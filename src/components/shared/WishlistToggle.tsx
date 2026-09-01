@@ -4,7 +4,17 @@ import { toggleWishlist } from "@/actions/wishlist";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
-export default function WishlistButton({ productId, isWishlisted = false }: { productId: string, isWishlisted?: boolean }) {
+export default function WishlistButton({
+  productId,
+  isWishlisted = false,
+  className = "w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white backdrop-blur-sm shadow-sm transition-all rounded-full",
+  iconClassName = "text-base leading-none",
+}: {
+  productId: string;
+  isWishlisted?: boolean;
+  className?: string;
+  iconClassName?: string;
+}) {
   const router = useRouter();
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -12,6 +22,7 @@ export default function WishlistButton({ productId, isWishlisted = false }: { pr
 
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsProcessing(true);
     try {
       const result = await toggleWishlist(productId);
@@ -29,12 +40,13 @@ export default function WishlistButton({ productId, isWishlisted = false }: { pr
     <button 
       onClick={handleToggle}
       disabled={isProcessing}
-      className="w-8 h-8 flex items-center justify-center bg-white/90 hover:bg-white backdrop-blur-sm shadow-sm transition-all rounded-full"
+      aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+      className={className}
     >
       {isProcessing ? (
-        <i className="ri-loader-4-line animate-spin text-base text-gray-500 leading-none" />
+        <i className="ri-loader-4-line animate-spin text-gray-500 leading-none" />
       ) : (
-        <i className={`text-base leading-none ${wishlisted ? 'ri-heart-fill text-red-500' : 'ri-heart-line text-gray-600'}`} />
+        <i className={`${iconClassName} ${wishlisted ? 'ri-heart-fill text-red-500' : 'ri-heart-line text-gray-600 hover:text-black'}`} />
       )}
     </button>
   );

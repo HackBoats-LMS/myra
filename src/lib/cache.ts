@@ -7,6 +7,7 @@ import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "@/lib/storage/imag
 export const CACHE_TAGS = {
   products: "products",
   collections: "collections",
+  navigation: "navigation",
   product: (slug: string) => `product-${slug}`,
   collection: (slug: string) => `collection-${slug}`,
   reviews: (productId: string) => `reviews-${productId}`,
@@ -18,6 +19,8 @@ export const CACHE_TAGS = {
   workerProducts: "worker-products",
   workerCollections: "worker-collections",
   deliveryOrders: "delivery-orders",
+  banners: "banners",
+  brandStories: "brand-stories",
 } as const;
 
 // Cache durations (in seconds)
@@ -168,11 +171,52 @@ export const getCachedAllCollections = createCachedQuery(
   async () => {
     return prisma.collection.findMany({
       include: {
+        parent: true,
+        children: {
+          include: { _count: { select: { products: true } } },
+          orderBy: [{ order: "asc" }, { name: "asc" }]
+        },
         _count: { select: { products: true } }
-      }
+      },
+      orderBy: [{ order: "asc" }, { name: "asc" }]
     });
   },
-  { tags: [CACHE_TAGS.collections], revalidate: CACHE_TTL.long }
+  { tags: [CACHE_TAGS.collections], revalidate: 31536000 }
+);
+
+// Navigation Tree for Storefront Header
+export const getCachedNavigationTree = createCachedQuery(
+  ["navigation", "tree"],
+  async () => {
+    try {
+      const topLevel = await prisma.collection.findMany({
+        where: { parentId: null, showInNav: true },
+        include: {
+          children: {
+            where: { showInNav: true },
+            orderBy: [{ order: "asc" }, { name: "asc" }]
+          }
+        },
+        orderBy: [{ order: "asc" }, { name: "asc" }]
+      });
+
+      if (!topLevel || topLevel.length === 0) {
+        return null;
+      }
+
+      return topLevel.map((cat) => ({
+        label: cat.name,
+        href: `/collections/${cat.slug}`,
+        children: cat.children.map((sub) => ({
+          label: sub.name,
+          href: `/collections/${sub.slug}`
+        }))
+      }));
+    } catch {
+      return null;
+    }
+  },
+  { tags: [CACHE_TAGS.collections, CACHE_TAGS.navigation], revalidate: 31536000 }
 );
 
 // Reviews - derived tag per product so revalidation with CACHE_TAGS.reviews(productId) invalidates correctly
@@ -229,7 +273,7 @@ export const getCachedSearchSuggestions = createCachedQuery(
 
 // Per-user cart/wishlist counts used in the storefront shell. Short TTL keeps
 // them cheap while avoiding a DB hit on every page navigation; mutations call
-// updateTag(CACHE_TAGS.*(userId)) to refresh immediately.
+// revalidateTag(CACHE_TAGS.*(userId)) to refresh immediately.
 export const getCachedCartCount = createCachedQuery(
   ["cart", "count"],
   async (userId: string) => {
@@ -267,6 +311,29 @@ export const getCachedSitemapData = createCachedQuery(
   { tags: [CACHE_TAGS.products, CACHE_TAGS.collections], revalidate: CACHE_TTL.veryLong }
 );
 
+// Banners (SSR cached for maximum performance with on-demand invalidation)
+export const getCachedBanners = createCachedQuery(
+  ["banners", "all"],
+  async () => {
+    return prisma.banner.findMany({
+      where: { isActive: true },
+    });
+  },
+  { tags: [CACHE_TAGS.banners], revalidate: CACHE_TTL.veryLong }
+);
+
+// Brand Stories (SSR cached for maximum performance with on-demand invalidation)
+export const getCachedBrandStories = createCachedQuery(
+  ["brand-stories", "all"],
+  async () => {
+    return prisma.brandStory.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+    });
+  },
+  { tags: [CACHE_TAGS.brandStories], revalidate: CACHE_TTL.veryLong }
+);
+
 // Revalidation helpers - use revalidateTag from next/cache at call site
 export const CACHE_REVALIDATE = {
   products: () => CACHE_TAGS.products,
@@ -276,4 +343,6 @@ export const CACHE_REVALIDATE = {
   reviews: (productId: string) => CACHE_TAGS.reviews(productId),
   wishlist: (userId: string) => CACHE_TAGS.wishlist(userId),
   cart: (userId: string) => CACHE_TAGS.cart(userId),
+  banners: () => CACHE_TAGS.banners,
+  brandStories: () => CACHE_TAGS.brandStories,
 };

@@ -91,14 +91,14 @@ export default function PayNowButton({ orderId, amount }: { orderId: string; amo
     <button
       onClick={handlePay}
       disabled={isProcessing}
-      className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-4 text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-50 rounded-none"
+      className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-6 py-3 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 rounded-none shadow-sm"
     >
       {isProcessing ? (
-        <i className="ri-loader-4-line animate-spin text-lg" />
+        <i className="ri-loader-4-line animate-spin text-base" />
       ) : (
-        <i className="ri-bank-card-line text-lg" />
+        <i className="ri-bank-card-line text-base" />
       )}
-      Pay ₹{amount.toLocaleString("en-IN")} Now
+      <span>Pay ₹{amount.toLocaleString("en-IN")} Now</span>
     </button>
   );
 }

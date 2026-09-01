@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import crypto from "crypto";
 import Link from "next/link";
 
 export default async function VerifyEmailPage({
@@ -21,8 +22,11 @@ export default async function VerifyEmailPage({
     );
   }
 
+  // Hash the token to match against stored hash
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
   const verificationToken = await prisma.verificationToken.findUnique({
-    where: { token }
+    where: { token: tokenHash }
   });
 
   if (!verificationToken || verificationToken.expiresAt < new Date()) {

@@ -53,7 +53,7 @@ export default async function AdminAuditLogsPage({
     total = results[1];
     distinctActions = results[2];
   } catch (error) {
-    console.warn("Database unreachable in AdminAuditLogsPage:", error);
+    console.warn("Database unreachable in AdminAuditLogsPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

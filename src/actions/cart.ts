@@ -129,6 +129,26 @@ export async function addToCart(
   const qty = Math.max(1, Math.min(quantity, 99));
   const session = await getServerSession(authOptions);
   
+  // Validate product exists and is not deleted
+  const product = await prisma.product.findFirst({
+    where: { id: productId, deletedAt: null },
+    select: { id: true }
+  });
+  if (!product) {
+    throw new Error("Product not found or unavailable.");
+  }
+
+  // Validate variant exists if provided
+  if (variantId) {
+    const variant = await prisma.productVariant.findUnique({
+      where: { id: variantId },
+      select: { id: true, productId: true }
+    });
+    if (!variant || variant.productId !== productId) {
+      throw new Error("Invalid product variant.");
+    }
+  }
+
   if (session?.user?.id) {
     const cart = await getOrCreateCart(session.user.id);
     await upsertCartItem(cart.id, productId, qty, variantId);
@@ -151,7 +171,13 @@ export async function addToCart(
       cartItems.push({ productId, quantity: qty, variantId });
     }
     
-    cookieStore.set('guest_cart', JSON.stringify(cartItems), { maxAge: 60 * 60 * 24 * 30 });
+    cookieStore.set('guest_cart', JSON.stringify(cartItems), {
+      maxAge: 60 * 60 * 24 * 30,
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
+    });
   }
 
   revalidatePath("/");
@@ -187,7 +213,13 @@ export async function updateCartQuantity(productId: string, quantity: number, va
             parsed[index].quantity = qty;
           }
         }
-        cookieStore.set('guest_cart', JSON.stringify(parsed), { maxAge: 60 * 60 * 24 * 30 });
+        cookieStore.set('guest_cart', JSON.stringify(parsed), {
+          maxAge: 60 * 60 * 24 * 30,
+          httpOnly: true,
+          sameSite: "lax",
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+        });
       } catch {
         // Ignore malformed cookie
       }
@@ -261,6 +293,77 @@ export async function estimateCheckoutTotal(opts: {
     finalAmount: pricing.finalAmount,
     appliedCouponCode: dbCoupon?.code ?? null,
     discountAmount: pricing.discountAmount,
+  };
+}
+
+export async function calculateCartCheckoutPricing(opts: {
+  couponCode?: string;
+  allowAutoApply?: boolean;
+}) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to checkout.");
+  }
+  const userId = session.user.id;
+
+  const cart = await prisma.cart.findUnique({
+    where: { userId },
+    include: { items: { include: { product: true, variant: true } } },
+  });
+
+  if (!cart || cart.items.length === 0) {
+    throw new Error("Your cart is empty.");
+  }
+
+  const sales = await getActiveFlashSales();
+  const unitPrice = (item: { product: { price: number; originalPrice: number | null }; variant?: { priceOffset: number } | null }) =>
+    flashUnitPrice(item.product, item.variant?.priceOffset || 0, sales);
+
+  const items = cart.items.map((item) => ({
+    price: unitPrice(item),
+    quantity: item.quantity,
+  }));
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const [{ getStoreSettings }] = await Promise.all([import("@/lib/settings")]);
+  const [shippingConfig, settings] = await Promise.all([
+    loadShippingConfig(prisma as unknown as Prisma.TransactionClient),
+    getStoreSettings(),
+  ]);
+  const { coupon: dbCoupon } = await resolveCheckoutCoupon(
+    prisma as unknown as Prisma.TransactionClient,
+    userId,
+    opts.couponCode,
+    subtotal,
+    opts.allowAutoApply !== false
+  );
+
+  const { calculateOrderTotal } = await import("@/lib/pricing");
+  const pricing = calculateOrderTotal(
+    items,
+    dbCoupon
+      ? {
+          type: dbCoupon.type,
+          isActive: dbCoupon.isActive,
+          expiresAt: dbCoupon.expiresAt,
+          maxUses: dbCoupon.maxUses,
+          timesUsed: dbCoupon.timesUsed,
+          minOrderAmount: dbCoupon.minOrderAmount,
+          discountType: dbCoupon.discountType,
+          discountValue: dbCoupon.discountValue,
+        }
+      : null,
+    shippingConfig,
+    settings.taxPercent
+  );
+
+  return {
+    finalAmount: pricing.finalAmount,
+    subtotal,
+    discountAmount: pricing.discountAmount,
+    shippingAmount: pricing.shippingAmount,
+    appliedCouponCode: dbCoupon ? dbCoupon.code : null,
+    itemsCount: cart.items.length,
   };
 }
 
@@ -417,15 +520,22 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
     const appliedCouponCode = dbCoupon ? dbCoupon.code : null;
 
     if (dbCoupon) {
-      // Coupon usage is reserved here (order creation) so a coupon cannot be
-      // over-consumed by concurrent checkouts. If the order is later cancelled,
-      // `cancelOrder` decrements `timesUsed` and the per-user usage. Abandoned
-      // UNPAID orders are cleaned up (stock + coupon restored) by the periodic
-      // stale-order job, so the reservation is not permanent.
-      await tx.coupon.update({
-        where: { id: dbCoupon.id },
-        data: { timesUsed: { increment: 1 } }
+      // Atomic coupon reservation: only increment if the coupon hasn't hit its
+      // max uses yet. This prevents the TOCTOU race where two concurrent
+      // checkouts both read timesUsed < maxUses and both succeed.
+      const reserved = await tx.coupon.updateMany({
+        where: {
+          id: dbCoupon.id,
+          isActive: true,
+          ...(typeof dbCoupon.maxUses === "number"
+            ? { timesUsed: { lt: dbCoupon.maxUses } }
+            : {}),
+        },
+        data: { timesUsed: { increment: 1 } },
       });
+      if (reserved.count === 0) {
+        throw new Error("This coupon code has reached its usage limit.");
+      }
       if (dbCoupon.maxUsesPerUser || dbCoupon.type === "FIRST_ORDER" || dbCoupon.type === "SINGLE_USE") {
         await tx.couponUsage.upsert({
           where: { couponId_userId: { couponId: dbCoupon.id, userId } },
@@ -662,6 +772,21 @@ export async function getCart() {
 }
 
 export async function validateCouponAction(code: string, cartTotal: number) {
+  // Rate-limit coupon validation to prevent brute-force of coupon codes
+  const session = await getServerSession(authOptions);
+  if (session?.user?.id) {
+    const { checkRateLimit } = await import("@/lib/rate-limit");
+    try {
+      await checkRateLimit({ bucket: "coupon:id", key: session.user.id, limit: 20, windowSeconds: 300 });
+    } catch {
+      throw new Error("Too many coupon attempts. Please try again later.");
+    }
+  }
+
+  if (typeof cartTotal !== "number" || isNaN(cartTotal) || cartTotal < 0) {
+    throw new Error("Invalid cart total.");
+  }
+
   const codeUpper = code.trim().toUpperCase();
   const dbCoupon = await prisma.coupon.findUnique({ where: { code: codeUpper } });
   
@@ -682,7 +807,6 @@ export async function validateCouponAction(code: string, cartTotal: number) {
   }
 
   // Per-user rules require a logged-in user.
-  const session = await getServerSession(authOptions);
   if (session?.user?.id) {
     const allowed = await isCouponAllowedForUser(prisma, dbCoupon, session.user.id);
     if (!allowed) {

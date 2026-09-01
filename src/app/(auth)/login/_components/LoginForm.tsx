@@ -8,6 +8,7 @@ function LoginFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const safeCallbackUrl = callbackUrl.startsWith("/") && !callbackUrl.includes("://") ? callbackUrl : "/";
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -29,7 +30,7 @@ function LoginFormInner() {
       if (res?.error) {
         setError(res.error);
       } else {
-        router.push(callbackUrl);
+        router.push(safeCallbackUrl);
         router.refresh();
       }
     } catch {
@@ -41,7 +42,7 @@ function LoginFormInner() {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    await signIn("google", { callbackUrl });
+    await signIn("google", { callbackUrl: safeCallbackUrl });
   };
 
   return (

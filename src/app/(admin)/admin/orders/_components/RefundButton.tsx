@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { processRefund } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
+import { IndianRupee, Loader2 } from "lucide-react";
 
 interface RefundButtonProps {
   orderId: string;
@@ -49,7 +50,7 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
         onClick={() => setIsOpen(true)}
         className="print:hidden flex items-center px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 text-[10px] font-bold uppercase tracking-widest rounded-none border border-red-200 transition-colors gap-1.5"
       >
-        <i className="ri-money-rupee-circle-line text-sm" />
+        <IndianRupee className="w-3.5 h-3.5" />
         Issue Refund
       </button>
 
@@ -91,7 +92,7 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
                   disabled={isSubmitting || !amount}
                   className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 gap-1.5"
                 >
-                  {isSubmitting && <i className="ri-loader-4-line animate-spin text-sm" />}
+                  {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   Confirm Refund
                 </button>
               </div>

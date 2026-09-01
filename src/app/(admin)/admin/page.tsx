@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import DashboardWidgets from "@/app/(admin)/admin/_components/DashboardWidgets";
 import { Prisma } from "@/generated/prisma";
+import { ShoppingCart, TrendingUp, Package, Users, AlertTriangle, type LucideIcon } from "lucide-react";
 
 type OrderAggregate = {
   _sum: { totalAmount: number | null; refundedAmount: number | null } | null;
@@ -91,7 +92,7 @@ export default async function AdminDashboard() {
       };
     }).filter((p) => p.id);
   } catch (error) {
-    console.warn("Database unreachable in AdminDashboard:", error);
+    console.warn("Database unreachable in AdminDashboard:", error instanceof Error ? error.message : "unknown error");
     // Silent fail to empty state
   }
 
@@ -99,39 +100,45 @@ export default async function AdminDashboard() {
   const totalRefunded = revenueData._sum?.refundedAmount ?? 0;
   const totalRevenue = grossRevenue - totalRefunded;
 
-  const stats = [
+  const stats: {
+    label: string;
+    value: string;
+    icon: LucideIcon;
+    color: string;
+    bg: string;
+  }[] = [
     {
       label: "Total Orders",
       value: totalOrders.toLocaleString("en-IN"),
-      iconClass: "ri-shopping-cart-2-line",
+      icon: ShoppingCart,
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Total Revenue",
       value: `Rs. ${totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      iconClass: "ri-funds-line",
+      icon: TrendingUp,
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Total Products",
       value: totalProducts.toLocaleString("en-IN"),
-      iconClass: "ri-archive-line",
+      icon: Package,
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Customers",
       value: totalCustomers.toLocaleString("en-IN"),
-      iconClass: "ri-group-line",
+      icon: Users,
       color: "text-[#B6925B]",
       bg: "bg-[#B6925B]/10",
     },
     {
       label: "Low Stock",
       value: lowStockCount.toLocaleString("en-IN"),
-      iconClass: "ri-error-warning-line",
+      icon: AlertTriangle,
       color: lowStockCount > 0 ? "text-red-700" : "text-[#B6925B]",
       bg: lowStockCount > 0 ? "bg-red-50" : "bg-[#B6925B]/10",
     },
@@ -145,10 +152,10 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
-        {stats.map(({ label, value, iconClass, color, bg }) => (
+        {stats.map(({ label, value, icon: IconComponent, color, bg }) => (
           <div key={label} className="bg-white border border-[#B6925B]/20 p-6 flex items-start gap-4 shadow-sm rounded-none">
             <div className={`${bg} ${color} w-11 h-11 flex-shrink-0 border border-[#B6925B]/20 flex items-center justify-center rounded-none`}>
-              <i className={`${iconClass} text-xl`} />
+              <IconComponent className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>

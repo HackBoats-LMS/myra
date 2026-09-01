@@ -10,6 +10,7 @@ import {
 } from "@/actions/returns";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { CheckCheck, XCircle, CheckCircle2, Truck, IndianRupee, RefreshCw } from "lucide-react";
 
 interface AdminReturnProcessorProps {
   request: {
@@ -73,14 +74,14 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
               disabled={loading}
               className="flex items-center gap-1.5 px-4 py-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
             >
-              <i className="ri-check-double-line text-sm" /> Approve
+              <CheckCheck className="w-4 h-4" /> Approve
             </button>
             <button
               onClick={() => run(() => rejectReturn(request.id, adminNote), "Return rejected.")}
               disabled={loading}
               className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
             >
-              <i className="ri-close-circle-line text-sm" /> Reject
+              <XCircle className="w-4 h-4" /> Reject
             </button>
           </>
         )}
@@ -89,8 +90,8 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
           <>
             {request.reversePickupScheduledAt ? (
               <div className="w-full space-y-2 border border-[#B6925B]/20 bg-[#FAFAFA] p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-green-700">
-                  <i className="ri-checkbox-circle-line mr-1 align-middle" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-green-700 flex items-center">
+                  <CheckCircle2 className="w-4 h-4 mr-1 shrink-0" />
                   Reverse pickup scheduled via Shiprocket
                 </p>
                 {request.shipmentId && (
@@ -104,7 +105,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
                   disabled={loading}
                   className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
                 >
-                  <i className="ri-truck-fill text-sm" /> Mark as Picked Up (restocks item)
+                  <Truck className="w-4 h-4" /> Mark as Picked Up (restocks item)
                 </button>
               </div>
             ) : (
@@ -113,7 +114,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
                 disabled={loading}
                 className="flex items-center gap-1.5 px-4 py-2 bg-[#4A3B2C] hover:bg-[#B6925B] text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
               >
-                <i className="ri-truck-line text-sm" /> Schedule Reverse Pickup via Shiprocket
+                <Truck className="w-4 h-4" /> Schedule Reverse Pickup via Shiprocket
               </button>
             )}
           </>
@@ -141,7 +142,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
               disabled={loading || !refundAmount}
               className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
             >
-              <i className="ri-money-rupee-circle-line text-sm" /> Issue Refund
+              <IndianRupee className="w-4 h-4" /> Issue Refund
             </button>
           </div>
         )}
@@ -152,7 +153,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
             disabled={loading}
             className="flex items-center gap-1.5 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
           >
-            <i className="ri-refresh-line text-sm" /> Mark Replacement Shipped
+            <RefreshCw className="w-4 h-4" /> Mark Replacement Shipped
           </button>
         )}
 

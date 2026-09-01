@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CouponActions from "./CouponActions";
 import { Coupon } from "@/generated/prisma";
+import { Plus } from "lucide-react";
 
 const TYPE_LABELS: Record<string, { label: string; classes: string }> = {
   STANDARD: { label: "Standard", classes: "bg-gray-50 text-gray-700 border-gray-200" },
@@ -23,7 +24,7 @@ export default async function AdminCouponsPage() {
       orderBy: { createdAt: 'desc' },
     });
   } catch (error) {
-    console.warn("Database unreachable in AdminCouponsPage:", error);
+    console.warn("Database unreachable in AdminCouponsPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   return (
@@ -37,7 +38,7 @@ export default async function AdminCouponsPage() {
           href="/admin/coupons/new"
           className="inline-flex items-center gap-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
         >
-          <i className="ri-plus-line text-sm" />
+          <Plus className="w-4 h-4" />
           Create Coupon
         </Link>
       </div>

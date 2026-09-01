@@ -19,8 +19,35 @@ export async function updateStoreSettings(formData: FormData) {
   if (!storeName) {
     throw new Error("Store name cannot be empty.");
   }
+  if (storeName.length > 100) {
+    throw new Error("Store name must not exceed 100 characters.");
+  }
+  if (supportEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(supportEmail)) {
+    throw new Error("Invalid support email address format.");
+  }
   if (isNaN(taxPercent) || taxPercent < 0 || taxPercent > 100) {
     throw new Error("Tax percentage must be between 0 and 100.");
+  }
+  if (promoText.length > 500) {
+    throw new Error("Promo text must not exceed 500 characters.");
+  }
+  if (promoLink.length > 500) {
+    throw new Error("Promo link must not exceed 500 characters.");
+  }
+  if (promoLink) {
+    try {
+      const parsed = new URL(promoLink, "https://placeholder.local");
+      if (/^(javascript|data|vbscript):/i.test(parsed.protocol)) {
+        throw new Error("Promo link contains a disallowed URL scheme.");
+      }
+    } catch {
+      if (promoLink.startsWith("//") || /^(javascript|data|vbscript):/i.test(promoLink)) {
+        throw new Error("Promo link contains a disallowed URL scheme.");
+      }
+    }
+  }
+  if (footerAbout.length > 1000) {
+    throw new Error("Footer text must not exceed 1000 characters.");
   }
 
   const values: Record<string, string> = {

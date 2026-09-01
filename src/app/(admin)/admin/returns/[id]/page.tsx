@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AdminReturnProcessor from "@/app/(admin)/admin/returns/_components/AdminReturnProcessor";
 import { createReturnImageSignedUrls } from "@/lib/return-images";
+import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +86,7 @@ export default async function AdminReturnDetailPage({ params }: { params: Promis
               href={`/admin/orders/${request.orderId}`}
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors"
             >
-              View Original Order <i className="ri-external-link-line text-xs" />
+              View Original Order <ExternalLink className="w-3.5 h-3.5" />
             </Link>
           </div>
 

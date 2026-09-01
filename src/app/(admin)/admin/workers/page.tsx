@@ -3,6 +3,7 @@ import Link from "next/link";
 import CreateWorkerForm from "@/app/(admin)/admin/workers/_components/CreateWorkerForm";
 import WorkerCapabilitiesSelect from "@/app/(admin)/admin/customers/_components/WorkerCapabilitiesSelect";
 import DisableUserButton from "@/app/(admin)/admin/customers/_components/DisableUserButton";
+import { Eye } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function AdminWorkersPage() {
       orderBy: { createdAt: "desc" },
     });
   } catch (error) {
-    console.warn("Database unreachable in AdminWorkersPage:", error);
+    console.warn("Database unreachable in AdminWorkersPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   return (
@@ -77,7 +78,7 @@ export default async function AdminWorkersPage() {
                           className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none"
                           title="View Profile"
                         >
-                          <i className="ri-eye-line text-lg" />
+                          <Eye className="w-4 h-4" />
                         </Link>
                         <DisableUserButton userId={w.id} initialDisabled={w.isDisabled} />
                       </div>

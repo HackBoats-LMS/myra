@@ -1,6 +1,16 @@
 "use client";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import {
+  LayoutDashboard,
+  Archive,
+  FolderOpen,
+  ShoppingCart,
+  Shield,
+  LogOut,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -8,20 +18,26 @@ interface SidebarProps {
   canShipping: boolean;
 }
 
+interface NavLinkItem {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+}
+
 export default function WorkerSidebar({ onNavigate, canInventory, canShipping }: SidebarProps) {
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/worker/login" });
   };
 
-  const links = [
-    { href: "/worker", icon: "ri-dashboard-3-line", label: "Dashboard" },
+  const links: NavLinkItem[] = [
+    { href: "/worker", icon: LayoutDashboard, label: "Dashboard" },
     ...(canInventory
       ? [
-          { href: "/worker/products", icon: "ri-archive-line", label: "Inventory" },
-          { href: "/worker/collections", icon: "ri-folder-open-line", label: "Collections" },
+          { href: "/worker/products", icon: Archive, label: "Inventory" },
+          { href: "/worker/collections", icon: FolderOpen, label: "Collections" },
         ]
       : []),
-    ...(canShipping ? [{ href: "/worker/orders", icon: "ri-shopping-cart-2-line", label: "Shipping" }] : []),
+    ...(canShipping ? [{ href: "/worker/orders", icon: ShoppingCart, label: "Shipping" }] : []),
   ];
 
   return (
@@ -37,24 +53,27 @@ export default function WorkerSidebar({ onNavigate, canInventory, canShipping }:
             className="lg:hidden p-1 text-[#B6925B] hover:text-white transition-colors flex items-center justify-center"
             aria-label="Close menu"
           >
-            <i className="ri-close-line text-2xl" />
+            <X className="w-6 h-6" />
           </button>
         )}
       </div>
 
       <nav className="flex-1 p-4 space-y-1 mt-4">
         <p className="px-4 pb-2 text-[9px] text-[#B6925B]/70 uppercase tracking-widest font-bold">Management</p>
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            onClick={onNavigate}
-            className="flex items-center gap-3 px-4 py-3 rounded-none hover:bg-[#B6925B] transition-colors text-xs font-bold uppercase tracking-widest"
-          >
-            <i className={`${link.icon} text-sm opacity-70`} />
-            {link.label}
-          </Link>
-        ))}
+        {links.map((link) => {
+          const Icon = link.icon;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={onNavigate}
+              className="flex items-center gap-3 px-4 py-3 rounded-none hover:bg-[#B6925B] transition-colors text-xs font-bold uppercase tracking-widest"
+            >
+              <Icon className="w-4 h-4 opacity-70" />
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="p-4 border-t border-[#B6925B]/20">
@@ -62,14 +81,14 @@ export default function WorkerSidebar({ onNavigate, canInventory, canShipping }:
           href="/admin/login"
           className="flex items-center gap-3 px-4 py-3 rounded-none hover:bg-[#B6925B]/20 text-[#B6925B] transition-colors text-xs font-bold uppercase tracking-widest"
         >
-          <i className="ri-admin-line text-sm opacity-70" />
+          <Shield className="w-4 h-4 opacity-70" />
           Admin Portal
         </Link>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-3 w-full rounded-none hover:bg-red-500/20 text-red-300 transition-colors text-xs font-bold uppercase tracking-widest"
         >
-          <i className="ri-logout-box-r-line text-sm opacity-70" />
+          <LogOut className="w-4 h-4 opacity-70" />
           Logout
         </button>
       </div>

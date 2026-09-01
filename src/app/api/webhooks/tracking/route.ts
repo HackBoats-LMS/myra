@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { revalidateTag } from "next/cache";
+import crypto from "crypto";
 import { mapShiprocketStatus } from "@/lib/integrations/shiprocket";
 import { CACHE_TAGS } from "@/lib/cache";
 
@@ -21,7 +22,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "webhook_not_configured" }, { status: 503 });
   }
   const provided = req.headers.get("x-api-key");
-  if (!provided || provided !== secret) {
+  if (!provided) {
+    return NextResponse.json({ ok: false }, { status: 401 });
+  }
+  const a = Buffer.from(provided);
+  const b = Buffer.from(secret);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

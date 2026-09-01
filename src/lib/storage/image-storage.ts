@@ -4,7 +4,16 @@ function toObjectPath(bucket: string, value: string): string {
   const marker = `${bucket}/`;
   const idx = value.indexOf(marker);
   if (idx !== -1) {
-    return value.slice(idx + marker.length);
+    const path = value.slice(idx + marker.length);
+    // Prevent path traversal — reject paths containing ".." or absolute paths.
+    if (path.includes("..") || path.startsWith("/")) {
+      throw new Error("Invalid storage path.");
+    }
+    return path;
+  }
+  // If value doesn't contain the bucket prefix, validate it's a simple filename.
+  if (value.includes("..") || value.startsWith("/")) {
+    throw new Error("Invalid storage path.");
   }
   return value;
 }
@@ -30,6 +39,7 @@ export async function uploadImageObject(
       "Content-Type": mime,
     },
     body: file,
+    signal: AbortSignal.timeout(60_000),
   });
   if (!res.ok) {
     const err = await res.text();
@@ -56,6 +66,7 @@ export async function createSignedObjectUrl(bucket: string, value: string): Prom
         method: "POST",
         headers: { Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json" },
         body: "{}",
+        signal: AbortSignal.timeout(15_000),
       }
     );
     if (!res.ok) return value;

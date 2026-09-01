@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { toggleUserDisabled } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
+import { Loader2, Lock, Unlock } from "lucide-react";
 
 export default function DisableUserButton({ userId, initialDisabled }: { userId: string; initialDisabled: boolean }) {
   const [disabled, setDisabled] = useState(initialDisabled);
@@ -33,11 +34,11 @@ export default function DisableUserButton({ userId, initialDisabled }: { userId:
           : "bg-red-700 hover:bg-red-800 text-white"}`}
     >
       {loading ? (
-        <i className="ri-loader-4-line animate-spin text-sm leading-none" />
+        <Loader2 className="w-3.5 h-3.5 animate-spin leading-none" />
       ) : disabled ? (
-        <i className="ri-lock-unlock-line text-sm leading-none" />
+        <Unlock className="w-3.5 h-3.5 leading-none" />
       ) : (
-        <i className="ri-lock-line text-sm leading-none" />
+        <Lock className="w-3.5 h-3.5 leading-none" />
       )}
       <span>{disabled ? "Activate Account" : "Disable Account"}</span>
     </button>

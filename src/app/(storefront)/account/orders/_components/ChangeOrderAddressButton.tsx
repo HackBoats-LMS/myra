@@ -52,7 +52,7 @@ export default function ChangeOrderAddressButton({
           setSelectedId(null);
           setOpen(true);
         }}
-        className="flex items-center gap-1.5 bg-[#FAFAFA] hover:bg-[#4A3B2C] hover:text-white border border-[#B6925B]/30 text-[#4A3B2C] px-5 py-2.5 rounded-none text-xs font-bold uppercase tracking-widest transition-colors"
+        className="inline-flex items-center justify-center gap-2 bg-white hover:bg-[#FAFAFA] text-[#4A3B2C] hover:text-[#B6925B] border border-[#B6925B]/30 hover:border-[#B6925B] px-4 sm:px-5 py-2.5 rounded-none text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-200 shadow-sm flex-1 sm:flex-initial"
       >
         <i className="ri-map-pin-2-line text-sm" />
         <span>Change Address</span>

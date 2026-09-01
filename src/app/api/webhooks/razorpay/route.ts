@@ -15,6 +15,7 @@ interface RazorpayWebhookPayload {
         order_id?: string;
         status?: string;
         amount?: number;
+        notes?: Record<string, string>;
       };
     };
   };
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
         // (Razorpay reports amounts in paise). Reject if amount is missing.
         if (!amount || Math.round(order.totalAmount * 100) !== amount) {
           console.error("Amount mismatch on capture", { order: order.id, expected: order.totalAmount, got: amount });
-          return NextResponse.json({ ok: false, error: "amount_mismatch" }, { status: 400 });
+          return NextResponse.json({ ok: false, error: "Payment verification failed" }, { status: 400 });
         }
 
         // Atomic claim: only the first path (webhook vs client confirm) that

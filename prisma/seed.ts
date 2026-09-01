@@ -3,6 +3,7 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const connectionString = String(process.env.DATABASE_URL || '')
   .replace(/^"|"$/g, '');
@@ -10,50 +11,60 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+function generateStrongPassword(): string {
+  return crypto.randomBytes(18).toString('base64url');
+}
+
 async function main() {
-  // Create admin
-  const adminPassword = await bcrypt.hash('admin123', 10);
+  // Create admin with a random strong password (printed to stdout for first login)
+  const adminPassword = generateStrongPassword();
+  const adminHash = await bcrypt.hash(adminPassword, 12);
   await prisma.user.upsert({
     where: { email: 'admin@myra.com' },
     update: {},
     create: {
       email: 'admin@myra.com',
       phoneNumber: '9999999999',
-      password: adminPassword,
+      password: adminHash,
       name: 'Admin User',
       role: 'ADMIN',
     },
   });
+  console.log(`[SEED] Admin password: ${adminPassword}`);
 
-  // Create delivery agent
-  const deliveryPassword = await bcrypt.hash('delivery123', 10);
+  // Create delivery agent with a random strong password
+  const deliveryPassword = generateStrongPassword();
+  const deliveryHash = await bcrypt.hash(deliveryPassword, 12);
   await prisma.user.upsert({
     where: { email: 'delivery@myra.com' },
     update: {},
     create: {
       email: 'delivery@myra.com',
       phoneNumber: '8888888888',
-      password: deliveryPassword,
+      password: deliveryHash,
       name: 'Delivery Agent',
       role: 'DELIVERY',
     },
   });
+  console.log(`[SEED] Delivery password: ${deliveryPassword}`);
 
-  // Create multi-worker
-  const workerPassword = await bcrypt.hash('worker123', 10);
+  // Create multi-worker with a random strong password
+  const workerPassword = generateStrongPassword();
+  const workerHash = await bcrypt.hash(workerPassword, 12);
   await prisma.user.upsert({
     where: { email: 'worker@myra.com' },
     update: {},
     create: {
       email: 'worker@myra.com',
       phoneNumber: '7777777777',
-      password: workerPassword,
+      password: workerHash,
       name: 'Multi-Worker',
       role: 'MULTI_WORKER',
       canManageInventory: true,
       canManageShipping: true,
     },
   });
+  console.log(`[SEED] Worker password: ${workerPassword}`);
 
   // Create Collections
   const womenCollection = await prisma.collection.upsert({
@@ -80,10 +91,18 @@ async function main() {
     create: { name: 'Sarees', slug: 'sarees', description: 'Traditional sarees for every occasion' },
   });
 
+  const bridalCollection = await prisma.collection.upsert({
+    where: { slug: 'bridal' },
+    update: {},
+    create: { name: 'Bridal', slug: 'bridal', description: 'Exclusive Bridal Wear' },
+  });
+
   // Create dummy products
   await prisma.product.upsert({
     where: { slug: 'elegant-orange-saree' },
-    update: {},
+    update: {
+      images: ['/displaypics/saree1.png'],
+    },
     create: {
       name: 'Elegant Orange Saree',
       slug: 'elegant-orange-saree',
@@ -91,13 +110,15 @@ async function main() {
       price: 4999.00,
       stockQuantity: 10,
       collectionId: womenCollection.id,
-      images: ['/displaypics/50offsale.png'],
+      images: ['/displaypics/saree1.png'],
     },
   });
 
   await prisma.product.upsert({
     where: { slug: 'casual-blue-top' },
-    update: {},
+    update: {
+      images: ['/displaypics/women1.png'],
+    },
     create: {
       name: 'Casual Blue Top',
       slug: 'casual-blue-top',
@@ -105,13 +126,15 @@ async function main() {
       price: 1299.00,
       stockQuantity: 50,
       collectionId: womenCollection.id,
-      images: ['/displaypics/dressesthatdefine.png'],
+      images: ['/displaypics/women1.png'],
     },
   });
 
   await prisma.product.upsert({
     where: { slug: 'kids-party-wear' },
-    update: {},
+    update: {
+      images: ['/displaypics/kids1.png'],
+    },
     create: {
       name: 'Kids Party Wear',
       slug: 'kids-party-wear',
@@ -119,13 +142,15 @@ async function main() {
       price: 899.00,
       stockQuantity: 30,
       collectionId: kidsCollection.id,
-      images: ['/displaypics/70offsale.png'],
+      images: ['/displaypics/kids1.png'],
     },
   });
 
   await prisma.product.upsert({
     where: { slug: 'men-ethnic-kurta' },
-    update: {},
+    update: {
+      images: ['/displaypics/saree2.png'],
+    },
     create: {
       name: 'Men Ethnic Kurta',
       slug: 'men-ethnic-kurta',
@@ -136,13 +161,15 @@ async function main() {
       material: 'Cotton Blend',
       weight: '350 g',
       collectionId: menCollection.id,
-      images: ['/displaypics/50offsale.png'],
+      images: ['/displaypics/saree2.png'],
     },
   });
 
   await prisma.product.upsert({
     where: { slug: 'banarasi-silk-saree' },
-    update: {},
+    update: {
+      images: ['/displaypics/saree2.png'],
+    },
     create: {
       name: 'Banarasi Silk Saree',
       slug: 'banarasi-silk-saree',
@@ -153,7 +180,84 @@ async function main() {
       material: 'Pure Silk',
       weight: '850 g',
       collectionId: sareesCollection.id,
-      images: ['/displaypics/70offsale.png'],
+      images: ['/displaypics/saree2.png'],
+    },
+  });
+
+  // New Products for Bridal, Sarees, Women, Kids (Best Sellers and New Arrivals)
+  await prisma.product.upsert({
+    where: { slug: 'designer-bridal-lehenga' },
+    update: {
+      images: ['/displaypics/bridal poster.png'],
+      bestSeller: true,
+      createdAt: new Date(),
+    },
+    create: {
+      name: 'Designer Bridal Lehenga',
+      slug: 'designer-bridal-lehenga',
+      description: 'Stunning designer bridal lehenga for your special day.',
+      price: 25999.00,
+      stockQuantity: 5,
+      collectionId: bridalCollection.id,
+      images: ['/displaypics/bridal poster.png'],
+      bestSeller: true,
+    },
+  });
+
+  await prisma.product.upsert({
+    where: { slug: 'silk-kanjeevaram-saree' },
+    update: {
+      images: ['/displaypics/saree1.png'],
+      bestSeller: true,
+      createdAt: new Date(),
+    },
+    create: {
+      name: 'Silk Kanjeevaram Saree',
+      slug: 'silk-kanjeevaram-saree',
+      description: 'Authentic silk Kanjeevaram saree in vibrant red.',
+      price: 15999.00,
+      stockQuantity: 8,
+      collectionId: sareesCollection.id,
+      images: ['/displaypics/saree1.png'],
+      bestSeller: true,
+    },
+  });
+
+  await prisma.product.upsert({
+    where: { slug: 'women-designer-suit' },
+    update: {
+      images: ['/displaypics/women1.png'],
+      bestSeller: true,
+      createdAt: new Date(),
+    },
+    create: {
+      name: 'Women Designer Suit',
+      slug: 'women-designer-suit',
+      description: 'Elegant designer suit for festive wear.',
+      price: 3999.00,
+      stockQuantity: 15,
+      collectionId: womenCollection.id,
+      images: ['/displaypics/women1.png'],
+      bestSeller: true,
+    },
+  });
+
+  await prisma.product.upsert({
+    where: { slug: 'kids-ethnic-lehenga' },
+    update: {
+      images: ['/displaypics/kids1.png'],
+      bestSeller: true,
+      createdAt: new Date(),
+    },
+    create: {
+      name: 'Kids Ethnic Lehenga',
+      slug: 'kids-ethnic-lehenga',
+      description: 'Cute ethnic lehenga for kids.',
+      price: 1999.00,
+      stockQuantity: 20,
+      collectionId: kidsCollection.id,
+      images: ['/displaypics/kids1.png'],
+      bestSeller: true,
     },
   });
 

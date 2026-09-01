@@ -23,16 +23,21 @@ const DEFAULT_SETTINGS: StoreSettings = {
 };
 
 export async function getStoreSettings(): Promise<StoreSettings> {
-  const settings = await prisma.storeSetting.findMany();
-  const map = new Map(settings.map((s) => [s.key, s.value]));
-  return {
-    storeName: map.get("storeName") || DEFAULT_SETTINGS.storeName,
-    supportEmail: map.get("supportEmail") || DEFAULT_SETTINGS.supportEmail,
-    supportPhone: map.get("supportPhone") || DEFAULT_SETTINGS.supportPhone,
-    footerAbout: map.get("footerAbout") || DEFAULT_SETTINGS.footerAbout,
-    taxPercent: parseFloat(map.get("taxPercent") || "0") || 0,
-    promoEnabled: map.get("promoEnabled") === "true",
-    promoText: map.get("promoText") ?? DEFAULT_SETTINGS.promoText,
-    promoLink: map.get("promoLink") ?? DEFAULT_SETTINGS.promoLink,
-  };
+  try {
+    const settings = await prisma.storeSetting.findMany();
+    const map = new Map(settings.map((s) => [s.key, s.value]));
+    return {
+      storeName: map.get("storeName") || DEFAULT_SETTINGS.storeName,
+      supportEmail: map.get("supportEmail") || DEFAULT_SETTINGS.supportEmail,
+      supportPhone: map.get("supportPhone") || DEFAULT_SETTINGS.supportPhone,
+      footerAbout: map.get("footerAbout") || DEFAULT_SETTINGS.footerAbout,
+      taxPercent: parseFloat(map.get("taxPercent") || "0") || 0,
+      promoEnabled: map.get("promoEnabled") === "true",
+      promoText: map.get("promoText") ?? DEFAULT_SETTINGS.promoText,
+      promoLink: map.get("promoLink") ?? DEFAULT_SETTINGS.promoLink,
+    };
+  } catch (error) {
+    console.warn("Database unreachable in getStoreSettings, using defaults:", error instanceof Error ? error.message : "unknown error");
+    return DEFAULT_SETTINGS;
+  }
 }

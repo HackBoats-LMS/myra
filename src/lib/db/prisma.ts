@@ -7,13 +7,26 @@ const globalForPrisma = global as unknown as {
   pool: Pool;
 };
 
-const connectionString = process.env.DATABASE_URL;
+const rawConnectionString = process.env.DATABASE_URL;
+// Strip any sslmode=require from the URL so pg-connection-string doesn't override our SSL options
+const connectionString = rawConnectionString?.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '');
 
-const pool = globalForPrisma.pool || new Pool({ connectionString });
+const pool =
+  globalForPrisma.pool ||
+  new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+    max: 10,
+    idleTimeoutMillis: 20000,
+    connectionTimeoutMillis: 5000,
+  });
 if (process.env.NODE_ENV !== "production") globalForPrisma.pool = pool;
 
 const adapter = new PrismaPg(pool);
 
-export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
+export const prisma =
+  globalForPrisma.prisma && "brandStory" in globalForPrisma.prisma
+    ? globalForPrisma.prisma
+    : new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

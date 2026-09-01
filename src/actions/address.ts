@@ -21,6 +21,9 @@ export async function createAddress(formData: FormData) {
   if (phone && !/^\d{10}$/.test(phone)) {
     throw new Error("Phone number must be exactly 10 digits.");
   }
+  if (!/^\d{6}$/.test(postalCode)) {
+    throw new Error("Postal code must be a 6-digit number.");
+  }
 
   await prisma.$transaction(async (tx) => {
     // Count user's existing addresses
@@ -72,6 +75,9 @@ export async function updateAddress(addressId: string, formData: FormData) {
   }
   if (phone && !/^\d{10}$/.test(phone)) {
     throw new Error("Phone number must be exactly 10 digits.");
+  }
+  if (!/^\d{6}$/.test(postalCode)) {
+    throw new Error("Postal code must be a 6-digit number.");
   }
 
   // Verify ownership

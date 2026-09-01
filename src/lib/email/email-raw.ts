@@ -14,11 +14,13 @@ interface RawSendOptions {
  */
 export async function resendSend({ to, subject, html }: RawSendOptions) {
   if (!resend) {
-    console.log("=========================================");
-    console.log("📧 MOCK EMAIL SENT");
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log("=========================================");
+    if (process.env.NODE_ENV === "development") {
+      console.log("=========================================");
+      console.log("📧 MOCK EMAIL SENT");
+      console.log(`To: ${to}`);
+      console.log(`Subject: ${subject}`);
+      console.log("=========================================");
+    }
     return;
   }
   await resend.emails.send({

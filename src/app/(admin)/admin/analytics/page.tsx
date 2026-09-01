@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAnalyticsData } from "@/lib/analytics";
+import { TrendingUp, CreditCard, RotateCcw, ShoppingCart, LineChart, type LucideIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function AdminAnalyticsPage({
   try {
     analytics = await getAnalyticsData(days);
   } catch (error) {
-    console.warn("Database unreachable in AdminAnalyticsPage:", error);
+    console.warn("Database unreachable in AdminAnalyticsPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const {
@@ -43,12 +44,12 @@ export default async function AdminAnalyticsPage({
 
   const currency = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
-  const summaryCards = [
-    { label: "Net Revenue", value: currency(netRevenue), icon: "ri-funds-line" },
-    { label: "Gross Revenue", value: currency(grossRevenue), icon: "ri-bank-card-line" },
-    { label: "Refunds", value: currency(totalRefunds), icon: "ri-refund-2-line" },
-    { label: "Orders", value: ordersCount.toLocaleString("en-IN"), icon: "ri-shopping-cart-2-line" },
-    { label: "Avg Order Value", value: currency(aov), icon: "ri-line-chart-line" },
+  const summaryCards: { label: string; value: string; icon: LucideIcon }[] = [
+    { label: "Net Revenue", value: currency(netRevenue), icon: TrendingUp },
+    { label: "Gross Revenue", value: currency(grossRevenue), icon: CreditCard },
+    { label: "Refunds", value: currency(totalRefunds), icon: RotateCcw },
+    { label: "Orders", value: ordersCount.toLocaleString("en-IN"), icon: ShoppingCart },
+    { label: "Avg Order Value", value: currency(aov), icon: LineChart },
   ];
 
   return (
@@ -76,10 +77,10 @@ export default async function AdminAnalyticsPage({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-5 mb-8">
-        {summaryCards.map(({ label, value, icon }) => (
+        {summaryCards.map(({ label, value, icon: IconComponent }) => (
           <div key={label} className="bg-white border border-[#B6925B]/20 p-6 shadow-sm rounded-none">
             <div className="w-11 h-11 bg-[#B6925B]/10 text-[#B6925B] flex items-center justify-center mb-3">
-              <i className={`${icon} text-xl`} />
+              <IconComponent className="w-5 h-5" />
             </div>
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>
             <p className="text-xl font-bold text-[#4A3B2C] mt-1">{value}</p>

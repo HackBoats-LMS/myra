@@ -4,6 +4,7 @@ import { addPincode, deletePincode, togglePincodeActive } from "@/actions/admin"
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import type { Pincode } from "@/generated/prisma";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 
 export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
               disabled={loading}
               className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-70 rounded-none"
             >
-              {loading ? <i className="ri-loader-4-line animate-spin text-sm" /> : <i className="ri-add-line text-sm" />}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Add
             </button>
           </div>
@@ -138,7 +139,7 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
                       className="inline-flex items-center justify-center text-red-600 hover:text-red-800 transition-colors p-1 rounded-none"
                       title="Delete Pincode"
                     >
-                      <i className="ri-delete-bin-line text-lg" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>

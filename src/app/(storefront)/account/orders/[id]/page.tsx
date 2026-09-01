@@ -73,67 +73,70 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
   const canReview = order.status === "DELIVERED";
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 md:py-16 min-h-screen space-y-6">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          body {
-            background: white !important;
-            color: black !important;
+    <div className="w-full bg-[#FAFAFA] min-h-screen py-6 sm:py-10 md:py-14">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            body {
+              background: white !important;
+              color: black !important;
+            }
+            nav, header, footer, .print\\:hidden, button, select, a {
+              display: none !important;
+            }
+            main {
+              padding: 0 !important;
+            }
+            .shadow-sm, .border {
+              box-shadow: none !important;
+              border: none !important;
+            }
           }
-          /* Hide storefront header, mobile menus, footers, buttons */
-          nav, header, footer, .print\\:hidden, button, select, a {
-            display: none !important;
-          }
-          main {
-            padding: 0 !important;
-          }
-          .shadow-sm, .border {
-            box-shadow: none !important;
-            border: none !important;
-          }
-        }
-      `}} />
+        `}} />
 
-      <OrderHeader 
-        orderId={order.id} 
-        createdAt={order.createdAt} 
-        status={order.status} 
-        canChangeAddress={canChangeAddress} 
-        savedAddresses={savedAddresses} 
-      />
-
-      {/* Tracking Timeline */}
-      <OrderTrackingTimeline status={order.status} order={order} />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Left Column: Items */}
-        <OrderItemsList 
-          orderItems={order.orderItems} 
+        <OrderHeader 
+          orderId={order.id} 
+          createdAt={order.createdAt} 
           status={order.status} 
-          canReview={canReview} 
-          reviewByProduct={reviewByProduct} 
-          totalAmount={order.totalAmount} 
+          canChangeAddress={canChangeAddress} 
+          savedAddresses={savedAddresses} 
         />
 
-        {/* Right Column: Status & Shipping */}
-        <div className="space-y-6">
-          {/* Order Info */}
-          <OrderStatus 
-            orderId={order.id} 
-            status={order.status} 
-            paymentMethod={order.paymentMethod} 
-            paymentStatus={order.paymentStatus} 
-            awbNumber={order.awbNumber} 
-            trackingUrl={order.trackingUrl} 
-          />
+        {/* Tracking Timeline */}
+        <OrderTrackingTimeline status={order.status} order={order} />
 
-          {/* Payment */}
-          {needsPayment && (
-            <OrderPaymentAlert orderId={order.id} totalAmount={order.totalAmount} />
-          )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
+          {/* Left Column: Items */}
+          <div className="lg:col-span-2">
+            <OrderItemsList 
+              orderItems={order.orderItems} 
+              status={order.status} 
+              canReview={canReview} 
+              reviewByProduct={reviewByProduct} 
+              totalAmount={order.totalAmount} 
+            />
+          </div>
 
-          {/* Delivery Address */}
-          <OrderAddress user={order.user} address={order.address} />
+          {/* Right Column: Status & Shipping */}
+          <div className="space-y-6">
+            {/* Order Info */}
+            <OrderStatus 
+              orderId={order.id} 
+              status={order.status} 
+              paymentMethod={order.paymentMethod} 
+              paymentStatus={order.paymentStatus} 
+              awbNumber={order.awbNumber} 
+              trackingUrl={order.trackingUrl} 
+            />
+
+            {/* Payment Alert if unpaid */}
+            {needsPayment && (
+              <OrderPaymentAlert orderId={order.id} totalAmount={order.totalAmount} />
+            )}
+
+            {/* Delivery Address */}
+            <OrderAddress user={order.user} address={order.address} />
+          </div>
         </div>
       </div>
     </div>

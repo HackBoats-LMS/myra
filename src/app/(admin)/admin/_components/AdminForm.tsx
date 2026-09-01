@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
+import { Loader2 } from "lucide-react";
 
 interface AdminFormProps<T> {
   initialData?: T | null;
@@ -71,7 +72,7 @@ export default function AdminForm<T extends { id?: string }>({
           disabled={isSubmitting}
           className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center disabled:opacity-50 rounded-none"
         >
-          {isSubmitting && <i className="ri-loader-4-line animate-spin text-sm mr-2" />}
+          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           {initialData?.id ? "Save Changes" : "Create"}
         </button>
       </div>

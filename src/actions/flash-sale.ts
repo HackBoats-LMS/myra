@@ -22,6 +22,15 @@ export async function createFlashSale(input: {
   if (input.discountType === "PERCENTAGE" && input.value > 100) throw new Error("Percentage discount cannot exceed 100.");
   if (input.discountType === "FIXED" && input.value < 0) throw new Error("Fixed discount cannot be negative.");
 
+  // Validate collectionId exists if provided
+  if (input.collectionId) {
+    const collection = await prisma.collection.findUnique({
+      where: { id: input.collectionId },
+      select: { id: true }
+    });
+    if (!collection) throw new Error("Collection not found.");
+  }
+
   const startAt = new Date(input.startAt);
   const endAt = new Date(input.endAt);
   if (isNaN(startAt.getTime()) || isNaN(endAt.getTime())) throw new Error("Invalid start/end time.");

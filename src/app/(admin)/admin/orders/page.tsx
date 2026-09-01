@@ -4,6 +4,7 @@ import { Prisma } from '@/generated/prisma';
 import { unstable_cache } from 'next/cache';
 import AdminFilters from '@/app/(admin)/admin/_components/AdminFilters';
 import Pagination from '@/components/shared/Pagination';
+import { Eye } from 'lucide-react';
 
 const ORDER_STATUSES = [
   'PENDING', 'READY_TO_SHIP', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
@@ -76,7 +77,7 @@ export default async function AdminOrdersPage({
     orders = result.orders;
     totalOrders = result.total;
   } catch (error) {
-    console.warn("Database unreachable in AdminOrdersPage:", error);
+    console.warn("Database unreachable in AdminOrdersPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const totalPages = Math.max(1, Math.ceil(totalOrders / ITEMS_PER_PAGE));
@@ -144,7 +145,7 @@ export default async function AdminOrdersPage({
                   </td>
                   <td className="px-6 py-4 text-right">
                     <Link href={`/admin/orders/${order.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="View Details">
-                      <i className="ri-eye-line text-lg" />
+                      <Eye className="w-4 h-4" />
                     </Link>
                   </td>
                 </tr>

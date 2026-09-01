@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@/generated/prisma";
 import Pagination from "@/components/shared/Pagination";
+import { ArrowRightCircle } from "lucide-react";
 
 type ReturnRow = Prisma.ReturnRequestGetPayload<{
   include: {
@@ -50,7 +51,7 @@ export default async function AdminReturnsPage({
     returns = result.returns;
     totalReturns = result.total;
   } catch (error) {
-    console.warn("Database unreachable in AdminReturnsPage:", error);
+    console.warn("Database unreachable in AdminReturnsPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const totalPages = Math.max(1, Math.ceil(totalReturns / ITEMS_PER_PAGE));
@@ -122,7 +123,7 @@ export default async function AdminReturnsPage({
                       className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none"
                       title="Process Request"
                     >
-                      <i className="ri-arrow-right-circle-line text-lg" />
+                      <ArrowRightCircle className="w-5 h-5" />
                     </Link>
                   </td>
                 </tr>

@@ -19,8 +19,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
-  const title = (body.title || "").trim();
-  const text = (body.body || "").trim();
+  const title = (body.title || "").trim().replace(/<[^>]*>/g, "");
+  const text = (body.body || "").trim().replace(/<[^>]*>/g, "");
   if (!title) {
     return NextResponse.json({ error: "Title is required." }, { status: 400 });
   }

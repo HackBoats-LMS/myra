@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inria_Serif } from "next/font/google";
 import "./globals.css";
+import "remixicon/fonts/remixicon.css";
 import { ToastProvider } from "@/components/ui/Toast";
 
 const inria = Inria_Serif({
@@ -32,6 +33,7 @@ export const metadata: Metadata = {
 };
 
 import { WebVitals } from "@/components/shared/WebVitals";
+import { NavigationProgressBar } from "@/components/shared/NavigationProgressBar";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -40,16 +42,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${inria.variable} h-full antialiased scroll-smooth`}
     >
       <head>
-        <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (sessionStorage.getItem('myra_animation_played')) {
+                  var style = document.createElement('style');
+                  style.innerHTML = '#myra-opening-anim { display: none !important; }';
+                  document.head.appendChild(style);
+              }
+            `
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {/* Skip to main content — keyboard/screen-reader accessibility */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-[#4A3B2C] focus:text-white focus:px-6 focus:py-3 focus:border focus:border-[#B6925B] focus:text-xs focus:font-bold focus:uppercase focus:tracking-widest focus:shadow-2xl"
-        >
-          Skip to main content
-        </a>
+        <NavigationProgressBar />
         <WebVitals />
         <ToastProvider>
           {children}

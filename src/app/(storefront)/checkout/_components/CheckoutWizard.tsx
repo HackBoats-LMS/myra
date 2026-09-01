@@ -220,6 +220,11 @@ const refreshAddresses = async () => {
             name: isGift ? gift.name : undefined,
             contact: isGift ? gift.phone : deliveryPhone || undefined,
           },
+          addressId: isGift ? "" : selectedAddressId,
+          couponCode: appliedCoupon || undefined,
+          phone: deliveryPhone,
+          gift: giftPayload,
+          allowAutoApply: !couponRemoved,
         });
       } else {
         const result = await checkoutCart(

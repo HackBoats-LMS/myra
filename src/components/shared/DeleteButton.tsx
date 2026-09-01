@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
+import { Loader2, Trash2 } from "lucide-react";
 
 interface DeleteButtonProps {
   id: string;
@@ -53,7 +54,7 @@ export default function DeleteButton({
       className={`text-gray-400 hover:text-red-600 transition-colors p-1 disabled:opacity-50 flex items-center justify-center ${className}`}
       title={`Delete ${entityName}`}
     >
-      {isDeleting ? <i className="ri-loader-4-line animate-spin text-lg" /> : <i className="ri-delete-bin-line text-lg" />}
+      {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
     </button>
   );
 }

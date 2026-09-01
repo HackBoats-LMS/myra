@@ -19,6 +19,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Incomplete subscription." }, { status: 400 });
   }
 
+  // Validate endpoint is a legitimate push service URL.
+  try {
+    const url = new URL(body.endpoint);
+    const allowedHosts = [
+      "fcm.googleapis.com",
+      "updates.push.apple.com",
+      "wns2-amt3.windows.com",
+      "android.googleapis.com",
+    ];
+    if (!allowedHosts.some((host) => url.hostname.endsWith(host) || url.hostname === host)) {
+      return NextResponse.json({ error: "Invalid push endpoint." }, { status: 400 });
+    }
+    if (url.protocol !== "https:") {
+      return NextResponse.json({ error: "Push endpoint must use HTTPS." }, { status: 400 });
+    }
+  } catch {
+    return NextResponse.json({ error: "Invalid push endpoint URL." }, { status: 400 });
+  }
+
   let userId: string | null = null;
   try {
     const session = await getServerSession(authOptions);

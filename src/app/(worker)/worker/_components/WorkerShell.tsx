@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import WorkerSidebar from "./WorkerSidebar";
+import { Menu } from "lucide-react";
 
 export default function WorkerShell({
   children,
@@ -22,7 +23,7 @@ export default function WorkerShell({
           className="p-2 text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center"
           aria-label="Open menu"
         >
-          <i className="ri-menu-line text-2xl leading-none" />
+          <Menu className="w-6 h-6 leading-none" />
         </button>
         <h1 className="text-xs font-bold text-[#4A3B2C] tracking-widest uppercase">Myra Multi-Worker</h1>
         <span className="w-9" />

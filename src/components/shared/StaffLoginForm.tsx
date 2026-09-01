@@ -1,17 +1,18 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Loader2, Lock, Wrench } from "lucide-react";
 
 interface StaffLoginFormProps {
   title: string;
   subtitle: string;
-  icon: string;
+  iconName?: "lock" | "wrench";
   redirectUrl: string;
   placeholderEmail: string;
 }
 
-export default function StaffLoginForm({ title, subtitle, icon, redirectUrl, placeholderEmail }: StaffLoginFormProps) {
+export default function StaffLoginForm({ title, subtitle, iconName = "lock", redirectUrl, placeholderEmail }: StaffLoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,12 +44,19 @@ export default function StaffLoginForm({ title, subtitle, icon, redirectUrl, pla
     }
   };
 
+  const renderIcon = () => {
+    if (iconName === "wrench") {
+      return <Wrench className="w-6 h-6 text-[#B6925B]" />;
+    }
+    return <Lock className="w-6 h-6 text-[#B6925B]" />;
+  };
+
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-[#FAFAFA] rounded-none">
       <div className="w-full max-w-md bg-white p-8 border border-[#B6925B]/20 shadow-sm rounded-none">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-[#4A3B2C] flex items-center justify-center mb-4 rounded-none">
-            <i className={`${icon} text-xl text-[#B6925B]`} />
+            {renderIcon()}
           </div>
           <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">{title}</h1>
           <p className="text-xs text-[#B6925B] uppercase tracking-widest mt-2 font-bold">{subtitle}</p>
@@ -86,7 +94,7 @@ export default function StaffLoginForm({ title, subtitle, icon, redirectUrl, pla
             disabled={isLoading}
             className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-xs font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 mt-6 rounded-none"
           >
-            {isLoading ? <i className="ri-loader-4-line animate-spin text-sm" /> : "AUTHENTICATE"}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "AUTHENTICATE"}
           </button>
         </form>
       </div>

@@ -5,7 +5,7 @@ export default function WorkerLoginPage() {
     <StaffLoginForm
       title="Worker Portal"
       subtitle="Inventory & Shipping Staff"
-      icon="ri-tools-line"
+      iconName="wrench"
       redirectUrl="/worker"
       placeholderEmail="worker@myra.com"
     />

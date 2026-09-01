@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { updateCustomerProfile } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
+import { Pencil } from "lucide-react";
 
 interface EditCustomerFormProps {
   userId: string;
@@ -35,7 +36,7 @@ export default function EditCustomerForm({ userId, name, email, phoneNumber }: E
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FAFAFA] transition-colors rounded-none"
       >
-        <i className="ri-pencil-line text-sm" />
+        <Pencil className="w-3.5 h-3.5" />
         {open ? "Cancel" : "Edit Profile"}
       </button>
 

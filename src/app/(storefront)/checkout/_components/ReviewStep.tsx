@@ -76,7 +76,7 @@ export default function ReviewStep({
       <section className="bg-white border border-[#B6925B]/20 p-6 text-left">
         <h3 className="text-base font-serif font-bold text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3">Payment</h3>
         <p className="text-sm text-[#4A3B2C] font-bold uppercase tracking-wider">
-          {paymentMethod === "RAZORPAY" ? "Online Payment (Razorpay)" : "Cash on Delivery"}
+          {paymentMethod === "RAZORPAY" ? "UPI & Online Payment (Razorpay)" : "Cash on Delivery"}
         </p>
       </section>
 

@@ -45,6 +45,10 @@ export async function subscribeStockAlert(productId: string, email: string) {
  * and from the stock-alerts cron route.
  */
 export async function notifyStockSubscribers(productId: string) {
+  // Require admin or inventory-worker auth to prevent abuse
+  const { verifyWorkerCapability } = await import("@/lib/auth/auth-utils");
+  await verifyWorkerCapability("inventory");
+
   const product = await prisma.product.findUnique({
     where: { id: productId },
     select: { id: true, name: true, slug: true, stockQuantity: true },

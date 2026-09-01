@@ -5,6 +5,7 @@ import { unstable_cache } from 'next/cache';
 import Pagination from '@/components/shared/Pagination';
 import ProductListTable from '@/components/shared/ProductListTable';
 import AdminFilters from '@/app/(admin)/admin/_components/AdminFilters';
+import { Archive, Plus } from 'lucide-react';
 
 type ProductWithCollection = Prisma.ProductGetPayload<{ include: { collection: true } }>;
 
@@ -71,7 +72,7 @@ export default async function AdminProductsPage({
     totalProducts = result.totalProducts;
     collections = result.collections;
   } catch (error) {
-    console.warn("Database unreachable in AdminProductsPage:", error);
+    console.warn("Database unreachable in AdminProductsPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / ITEMS_PER_PAGE));
@@ -94,12 +95,12 @@ export default async function AdminProductsPage({
             href={archived ? '/admin/products' : '/admin/products?view=archived'}
             className="border border-[#B6925B]/30 hover:bg-[#FAFAFA] text-[#4A3B2C] px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors rounded-none"
           >
-            <i className={archived ? "ri-archive-drawer-line text-sm" : "ri-archive-line text-sm"} />
+            <Archive className="w-4 h-4" />
             {archived ? 'Active Products' : 'Archived'}
           </Link>
           {!archived && (
             <Link href="/admin/products/new" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none">
-              <i className="ri-plus-line text-sm" />
+              <Plus className="w-4 h-4" />
               Add Product
             </Link>
           )}

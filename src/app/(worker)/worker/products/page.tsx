@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import ProductListTable from "@/components/shared/ProductListTable";
 import { requireWorkerModule } from "@/lib/worker";
 import { CACHE_TAGS } from "@/lib/cache";
+import { Plus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function WorkerProductsPage({
     products = result.products;
     totalProducts = result.totalProducts;
   } catch (error) {
-    console.warn("Database unreachable in WorkerProductsPage:", error);
+    console.warn("Database unreachable in WorkerProductsPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / ITEMS_PER_PAGE));
@@ -53,7 +54,7 @@ export default async function WorkerProductsPage({
           <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage storefront products and stock</p>
         </div>
         <Link href="/worker/products/new" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none">
-          <i className="ri-plus-line text-sm" />
+          <Plus className="w-4 h-4" />
           Add Product
         </Link>
       </div>

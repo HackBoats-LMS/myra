@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { checkPincodeAvailability } from "@/actions/pincode";
+import { Truck } from "lucide-react";
 
 export default function PincodeChecker() {
   const [code, setCode] = useState("");
@@ -9,6 +10,7 @@ export default function PincodeChecker() {
 
   const handleCheck = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (code.length !== 6) return;
     setLoading(true);
     try {
       const res = await checkPincodeAvailability(code);
@@ -19,8 +21,9 @@ export default function PincodeChecker() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleCheck} className="flex items-stretch gap-2">
+    <div className="w-full max-w-sm">
+      <form onSubmit={handleCheck} className="flex items-center border border-[#b88e4f] bg-white px-3 py-2">
+        <Truck className="w-4 h-4 text-[#171717] shrink-0 mr-2.5" />
         <input
           value={code}
           onChange={(e) => {
@@ -29,20 +32,22 @@ export default function PincodeChecker() {
           }}
           inputMode="numeric"
           pattern="[0-9]{6}"
-          placeholder="Enter pincode"
-          className="w-40 rounded-none border border-[#B6925B]/30 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+          placeholder="Check your pincode ..."
+          className="flex-1 bg-transparent text-xs sm:text-sm text-[#171717] placeholder:text-gray-500 focus:outline-none"
         />
-        <button
-          type="submit"
-          disabled={loading || code.length !== 6}
-          className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-60 rounded-none"
-        >
-          {loading ? <i className="ri-loader-4-line animate-spin text-sm" /> : "Check"}
-        </button>
+        {code.length === 6 && (
+          <button
+            type="submit"
+            disabled={loading}
+            className="text-[11px] font-serif text-[#b88e4f] hover:underline font-semibold uppercase tracking-wider ml-2 shrink-0 disabled:opacity-50"
+          >
+            {loading ? "Checking..." : "Check"}
+          </button>
+        )}
       </form>
       {result && (
         <p
-          className={`mt-2 text-[11px] font-bold tracking-wide ${result.available ? "text-green-700" : "text-red-600"}`}
+          className={`mt-1.5 text-[11px] font-sans ${result.available ? "text-emerald-700 font-medium" : "text-red-600"}`}
         >
           <i className={`${result.available ? "ri-checkbox-circle-line" : "ri-close-circle-line"} mr-1 align-middle`} />
           {result.message}
@@ -50,4 +55,4 @@ export default function PincodeChecker() {
       )}
     </div>
   );
-}
+}

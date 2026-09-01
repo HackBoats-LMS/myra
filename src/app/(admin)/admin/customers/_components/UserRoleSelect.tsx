@@ -3,6 +3,7 @@ import { useState } from "react";
 import { updateUserRole } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 const ROLE_LABELS: Record<string, string> = {
   CUSTOMER: "Customer",
@@ -56,7 +57,7 @@ export default function UserRoleSelect({ userId, currentRole }: { userId: string
       </select>
       {loading && (
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center">
-          <i className="ri-loader-4-line animate-spin text-sm text-[#B6925B]" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#B6925B]" />
         </div>
       )}
     </div>

@@ -26,6 +26,7 @@ async function login(): Promise<string> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
     cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!res.ok) {
@@ -58,11 +59,17 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...(init.headers || {}),
     },
     cache: "no-store",
+    signal: init.signal ?? AbortSignal.timeout(30_000),
   });
 
   if (res.status === 401) {
+    // Only retry once after a fresh login to prevent infinite recursion.
+    if (init && (init as Record<string, unknown>)._retried) {
+      throw new Error("Shiprocket authentication failed after retry.");
+    }
     cachedToken = null;
-    return api<T>(path, init);
+    await login(); // Force fresh token
+    return api<T>(path, { ...init, _retried: true } as RequestInit);
   }
 
   if (!res.ok) {

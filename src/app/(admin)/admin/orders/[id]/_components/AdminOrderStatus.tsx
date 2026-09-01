@@ -1,3 +1,5 @@
+import { ExternalLink } from "lucide-react";
+
 interface AdminOrderStatusProps {
   status: string;
   awbNumber: string | null;
@@ -19,9 +21,9 @@ export default function AdminOrderStatus({ status, awbNumber, courierName, track
               href={trackingUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 normal-case tracking-normal text-[11px]"
+              className="inline-flex items-center gap-1 text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 normal-case tracking-normal text-[11px]"
             >
-              Track on Shiprocket <i className="ri-external-link-line text-xs align-middle" />
+              Track on Shiprocket <ExternalLink className="w-3 h-3" />
             </a>
           </p>
         )}

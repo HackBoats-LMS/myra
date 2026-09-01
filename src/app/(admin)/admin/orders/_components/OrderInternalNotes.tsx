@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { updateOrderInternalNotes } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
+import { FileText, Loader2 } from "lucide-react";
 
 export default function OrderInternalNotes({ orderId, initialNotes }: { orderId: string; initialNotes: string | null }) {
   const [notes, setNotes] = useState(initialNotes || "");
@@ -23,7 +24,7 @@ export default function OrderInternalNotes({ orderId, initialNotes }: { orderId:
   return (
     <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-4 print:hidden rounded-none">
       <div className="flex items-center gap-1.5 border-b border-[#B6925B]/20 pb-3">
-        <i className="ri-file-list-3-line text-[#B6925B] text-base leading-none" />
+        <FileText className="w-4 h-4 text-[#B6925B] shrink-0" />
         <h3 className="font-serif text-[#4A3B2C] text-lg tracking-wide">Internal Order Notes</h3>
       </div>
       <textarea
@@ -38,7 +39,7 @@ export default function OrderInternalNotes({ orderId, initialNotes }: { orderId:
           disabled={loading}
           className="inline-flex items-center gap-1.5 bg-[#4A3B2C] hover:bg-[#34291f] text-white px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 rounded-none"
         >
-          {loading && <i className="ri-loader-4-line animate-spin text-sm leading-none" />}
+          {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
           <span>Save Note</span>
         </button>
       </div>

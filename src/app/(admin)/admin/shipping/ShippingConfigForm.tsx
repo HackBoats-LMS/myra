@@ -3,6 +3,7 @@ import { useState } from "react";
 import { updateShippingConfig } from "@/actions/coupons";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   initial: { flatRate: number; freeShippingThreshold: number };
@@ -68,7 +69,7 @@ export default function ShippingConfigForm({ initial }: Props) {
           disabled={loading}
           className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 rounded-none"
         >
-          {loading && <i className="ri-loader-4-line animate-spin text-base" />}
+          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           <span>Save Settings</span>
         </button>
       </div>

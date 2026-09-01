@@ -1,3 +1,5 @@
+import { ExternalLink, CreditCard } from "lucide-react";
+
 interface OrderStatusProps {
   orderId: string;
   status: string;
@@ -8,59 +10,85 @@ interface OrderStatusProps {
 }
 
 export default function OrderStatus({ orderId, status, paymentMethod, paymentStatus, awbNumber, trackingUrl }: OrderStatusProps) {
+  const shortId = orderId.split('-')[0].toUpperCase();
+
   return (
-    <div className="bg-white p-6 border border-[#B6925B]/20 shadow-sm space-y-4">
-      <div>
-        <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-2">Status</span>
-        <span className={`inline-flex items-center px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest
-          ${status === 'DELIVERED' ? 'bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30' : 
-            status === 'SHIPPED' || status === 'READY_TO_SHIP' || status === 'OUT_FOR_DELIVERY' ? 'bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30' : 
-            status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-200' : 
-            'bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30'}`}>
-          {status}
-        </span>
-      </div>
-      <div>
-        <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">Order ID</span>
-        <span className="text-sm font-mono text-[#4A3B2C]">{orderId.split('-')[0].toUpperCase()}</span>
-      </div>
-      <div>
-        <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">Payment Method</span>
-        <span className="text-sm font-bold text-[#4A3B2C]">
-          {paymentMethod === "RAZORPAY" ? "Online (Razorpay)" : "Cash on Delivery"}
-          {paymentStatus === "PAID" && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-green-50 text-green-700 border border-green-200">
-              Paid
-            </span>
-          )}
-          {paymentStatus === "UNPAID" && paymentMethod === "RAZORPAY" && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-yellow-50 text-yellow-700 border border-yellow-200">
-              Unpaid
-            </span>
-          )}
-          {paymentStatus === "REFUNDED" && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200">
-              Refunded
-            </span>
-          )}
-        </span>
-      </div>
-      {awbNumber && (
-        <div>
-          <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">AWB / Tracking</span>
-          <span className="text-sm font-mono text-[#4A3B2C]">{awbNumber}</span>
-          {trackingUrl && (
-            <a
-              href={trackingUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors"
-            >
-              Track on Shiprocket <i className="ri-external-link-line text-xs" />
-            </a>
-          )}
+    <div className="bg-white p-5 sm:p-6 border border-[#B6925B]/20 shadow-sm space-y-4">
+      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-3">
+        <div className="flex items-center gap-2">
+          <CreditCard className="w-4 h-4 text-[#B6925B]" />
+          <h3 className="font-serif text-[#4A3B2C] text-base sm:text-lg tracking-wide">
+            Order Status
+          </h3>
         </div>
-      )}
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
+            status === "DELIVERED"
+              ? "bg-green-50 text-green-700 border border-green-200"
+              : status === "CANCELLED"
+              ? "bg-red-50 text-red-700 border border-red-200"
+              : "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30"
+          }`}
+        >
+          {status.replace(/_/g, " ")}
+        </span>
+      </div>
+
+      <div className="space-y-3.5 divide-y divide-[#B6925B]/10">
+        <div className="pt-0.5">
+          <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">
+            Order Reference
+          </span>
+          <span className="text-sm font-mono font-bold text-[#4A3B2C]">#{shortId}</span>
+        </div>
+
+        <div className="pt-3">
+          <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1.5">
+            Payment Method
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-[#4A3B2C]">
+              {paymentMethod === "RAZORPAY" ? "Online Payment (Razorpay)" : "Cash on Delivery"}
+            </span>
+            {paymentStatus === "PAID" && (
+              <span className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-green-50 text-green-700 border border-green-200">
+                Paid
+              </span>
+            )}
+            {paymentStatus === "UNPAID" && paymentMethod === "RAZORPAY" && (
+              <span className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-yellow-50 text-yellow-700 border border-yellow-200">
+                Unpaid
+              </span>
+            )}
+            {paymentStatus === "REFUNDED" && (
+              <span className="inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-red-50 text-red-700 border border-red-200">
+                Refunded
+              </span>
+            )}
+          </div>
+        </div>
+
+        {awbNumber && (
+          <div className="pt-3">
+            <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">
+              Courier AWB
+            </span>
+            <p className="text-sm font-mono font-bold text-[#4A3B2C]">{awbNumber}</p>
+            {trackingUrl && (
+              <a
+                href={trackingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 transition-colors"
+              >
+                <span>Track on Shiprocket</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+

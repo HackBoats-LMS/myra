@@ -20,11 +20,13 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, react }: SendEmailOptions) {
   if (!resend) {
-    console.log("=========================================");
-    console.log("📧 MOCK EMAIL SENT");
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log("=========================================");
+    if (process.env.NODE_ENV === "development") {
+      console.log("=========================================");
+      console.log("📧 MOCK EMAIL SENT");
+      console.log(`To: ${to}`);
+      console.log(`Subject: ${subject}`);
+      console.log("=========================================");
+    }
     return;
   }
 
@@ -63,7 +65,6 @@ export async function sendVerificationEmail(email: string, token: string) {
     console.log("📧 MOCK EMAIL SENT");
     console.log(`To: ${email}`);
     console.log(`Subject: Verify your email address - Myra Shopping Mall`);
-    console.log(`Verification URL: ${verificationUrl}`);
     console.log("=========================================");
     return;
   }
@@ -175,7 +176,9 @@ export async function sendAbandonedCartEmail(email: string, items: { name: strin
 
 export async function sendStockBackInStockEmail(email: string, productName: string, productUrl: string) {
   if (!resend) {
-    console.log("📧 [BACK IN STOCK] Notifying:", productName, "->", email);
+    if (process.env.NODE_ENV === "development") {
+      console.log("📧 [BACK IN STOCK] Notifying:", productName, "->", email);
+    }
     return;
   }
   await retry(() =>

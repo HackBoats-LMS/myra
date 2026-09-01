@@ -41,14 +41,14 @@ export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount
       {/* Hamburger trigger */}
       <button
         onClick={() => setIsOpen((o) => !o)}
-        className="p-2 text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center"
+        className="p-1 sm:p-1.5 text-[#171717] hover:text-[#B6925B] transition-colors flex items-center justify-center cursor-pointer"
         aria-label={isOpen ? "Close menu" : "Open menu"}
         aria-expanded={isOpen}
       >
         {isOpen ? (
-          <i className="ri-close-line text-2xl leading-none" />
+          <i className="ri-close-line text-xl sm:text-2xl leading-none" />
         ) : (
-          <i className="ri-menu-line text-2xl leading-none" />
+          <i className="ri-menu-line text-xl sm:text-2xl leading-none" />
         )}
       </button>
 

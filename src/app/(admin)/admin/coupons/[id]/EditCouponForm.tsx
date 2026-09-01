@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
-import { updateCoupon } from "@/actions/coupons";
 import { useRouter } from "next/navigation";
+import { updateCoupon } from "@/actions/coupons";
 import { useToast } from "@/components/ui/Toast";
+import { Loader2 } from "lucide-react";
 
 interface EditCouponFormProps {
   coupon: {
@@ -182,7 +183,7 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
           disabled={loading}
           className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 rounded-none"
         >
-          {loading && <i className="ri-loader-4-line animate-spin text-base" />}
+          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           <span>Save Changes</span>
         </button>
       </div>

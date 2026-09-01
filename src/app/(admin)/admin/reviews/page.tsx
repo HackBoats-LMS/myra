@@ -69,7 +69,7 @@ export default async function AdminReviewsPage({
     );
     totalReviews = result.total;
   } catch (error) {
-    console.warn("Database unreachable in AdminReviewsPage:", error);
+    console.warn("Database unreachable in AdminReviewsPage:", error instanceof Error ? error.message : "unknown error");
   }
 
   const totalPages = Math.max(1, Math.ceil(totalReviews / ITEMS_PER_PAGE));

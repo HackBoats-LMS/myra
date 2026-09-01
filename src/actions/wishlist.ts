@@ -21,6 +21,12 @@ function parseGuestWishlistCookie(value: string | undefined): string[] {
 }
 
 export async function toggleWishlist(productId: string) {
+  // Validate that the product exists before toggling.
+  const product = await prisma.product.findUnique({ where: { id: productId, deletedAt: null }, select: { id: true } });
+  if (!product) {
+    throw new Error("Product not found.");
+  }
+
   const session = await getServerSession(authOptions);
   if (session?.user?.id) {
     const userId = session.user.id;
@@ -66,12 +72,19 @@ export async function toggleWishlist(productId: string) {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
+    secure: process.env.NODE_ENV === "production",
   });
 
   return added;
 }
 
-export async function mergeGuestWishlist(userId: string, cookieValue: string | undefined) {
+export async function mergeGuestWishlist(cookieValue: string | undefined) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    throw new Error("You must be logged in to merge wishlist.");
+  }
+  const userId = session.user.id;
+
   const productIds = parseGuestWishlistCookie(cookieValue);
   if (productIds.length === 0) return;
 

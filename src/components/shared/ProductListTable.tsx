@@ -5,6 +5,7 @@ import DeleteButton from "./DeleteButton";
 import { bulkDeleteProducts, bulkUpdateStock, deleteProduct, restoreProduct, bulkRestoreProducts } from "@/actions/admin";
 import { useToast } from "@/components/ui/Toast";
 import type { Prisma } from "@/generated/prisma";
+import { Loader2, Pencil, RefreshCw } from "lucide-react";
 
 type ProductWithCollection = Prisma.ProductGetPayload<{ include: { collection: true } }>;
 
@@ -129,7 +130,7 @@ export default function ProductListTable({
       <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
         {isProcessing && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10">
-            <i className="ri-loader-4-line text-2xl text-[#B6925B] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#B6925B] animate-spin" />
           </div>
         )}
         
@@ -190,7 +191,7 @@ export default function ProductListTable({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
                       <Link href={`${basePath}/${product.id}`} className="flex items-center justify-center text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 rounded-none" title="Edit Product">
-                        <i className="ri-edit-box-line text-lg" />
+                        <Pencil className="w-4 h-4" />
                       </Link>
                       {archived ? (
                         <button
@@ -205,7 +206,7 @@ export default function ProductListTable({
                           className="flex items-center justify-center text-green-600 hover:text-green-800 transition-colors p-1 rounded-none"
                           title="Restore Product"
                         >
-                          <i className="ri-refresh-line text-lg" />
+                          <RefreshCw className="w-4 h-4" />
                         </button>
                       ) : (
                         <DeleteButton 

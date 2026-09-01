@@ -31,13 +31,14 @@ export async function checkRateLimit({ bucket, key, limit, windowSeconds }: Rate
   const existing = await prisma.rateLimit.findUnique({ where: { id } });
 
   if (!existing) {
-    try {
-      await prisma.rateLimit.create({
-        data: { id, bucket, key, count: 1, windowStart: new Date(now) },
-      });
-    } catch {
-      // Concurrent create race — fall through to the read/increment path below.
-    }
+    // Use upsert to avoid race condition on initial create
+    await prisma.rateLimit.upsert({
+      where: { id },
+      create: { id, bucket, key, count: 1, windowStart: new Date(now) },
+      update: {
+        count: { increment: 1 },
+      },
+    });
     return;
   }
 

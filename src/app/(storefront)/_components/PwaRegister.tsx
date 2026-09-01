@@ -83,27 +83,5 @@ export default function PwaRegister() {
 
   const showInstall = deferredPrompt && !installed && !pushSupported;
 
-  return (
-    <>
-      {showInstall && (
-        <button
-          onClick={handleInstall}
-          className="fixed bottom-20 right-4 md:right-6 z-40 flex items-center gap-2 bg-[#4A3B2C] text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-lg rounded-none"
-        >
-          <i className="ri-mobile-download-line text-sm" />
-          Install Myra
-        </button>
-      )}
-      {pushSupported && !pushEnabled && (
-        <button
-          onClick={() => void handleEnablePush()}
-          disabled={busy}
-          className="fixed bottom-20 right-4 md:right-6 z-40 flex items-center gap-2 bg-[#B6925B] text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-lg rounded-none disabled:opacity-50"
-        >
-          <i className="ri-notification-3-line text-sm" />
-          {busy ? "Enabling..." : "Enable Notifications"}
-        </button>
-      )}
-    </>
-  );
+  return null;
 }

@@ -72,7 +72,7 @@ export async function requestReturn(
   orderItemId: string,
   type: "RETURN" | "REPLACEMENT",
   reason: string,
-  images: string[] = []
+  rawImages: string[] = []
 ) {
   const session = await requireCustomer();
   const userId = session;
@@ -110,6 +110,13 @@ export async function requestReturn(
     throw new Error("A return or replacement request is already active for this item.");
   }
 
+  const images: string[] = [];
+  for (const img of rawImages.slice(0, 5)) {
+    if (typeof img === "string" && img.startsWith("return-images/")) {
+      images.push(img);
+    }
+  }
+
   const created = await prisma.returnRequest.create({
     data: {
       orderId: item.orderId,
@@ -117,7 +124,7 @@ export async function requestReturn(
       userId,
       type,
       reason: cleanReason,
-      images: images.slice(0, 5),
+      images,
     },
   });
 

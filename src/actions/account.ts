@@ -5,6 +5,11 @@ import { authOptions } from "@/lib/auth/auth";
 
 function csvEscape(value: string | number | null | undefined): string {
   const s = value == null ? "" : String(value);
+  // Neutralize spreadsheet formula injection (fields beginning with =, +, -, @).
+  const trimmed = s.trim();
+  if (/^[=+\-@]/.test(trimmed)) {
+    return `'${s.replace(/"/g, '""')}`;
+  }
   if (/[",\n\r]/.test(s)) {
     return `"${s.replace(/"/g, '""')}"`;
   }

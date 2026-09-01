@@ -92,6 +92,14 @@ export async function changePassword(formData: FormData) {
   const newPassword = String(formData.get("newPassword") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
 
+  // Rate-limit password change attempts to prevent brute-force
+  const { checkRateLimit, getClientIp } = await import("@/lib/rate-limit");
+  try {
+    await checkRateLimit({ bucket: "pwchange:id", key: userId, limit: 5, windowSeconds: 900 });
+  } catch {
+    throw new Error("Too many password change attempts. Please try again later.");
+  }
+
   if (!currentPassword || !newPassword || !confirmPassword) {
     throw new Error("All fields are required.");
   }
@@ -100,8 +108,11 @@ export async function changePassword(formData: FormData) {
     throw new Error("New passwords do not match.");
   }
 
-  if (newPassword.length < 6) {
-    throw new Error("Password must be at least 6 characters long.");
+  if (newPassword.length < 8) {
+    throw new Error("Password must be at least 8 characters long.");
+  }
+  if (newPassword.length > 128) {
+    throw new Error("Password must not exceed 128 characters.");
   }
 
   const user = await prisma.user.findUnique({
@@ -119,7 +130,7 @@ export async function changePassword(formData: FormData) {
     throw new Error("Incorrect current password.");
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
   await prisma.user.update({
     where: { id: userId },
     data: { password: hashedPassword }
@@ -139,8 +150,11 @@ export async function setPassword(formData: FormData) {
     throw new Error("Passwords do not match.");
   }
 
-  if (newPassword.length < 6) {
-    throw new Error("Password must be at least 6 characters long.");
+  if (newPassword.length < 8) {
+    throw new Error("Password must be at least 8 characters long.");
+  }
+  if (newPassword.length > 128) {
+    throw new Error("Password must not exceed 128 characters.");
   }
 
   const user = await prisma.user.findUnique({
@@ -152,11 +166,11 @@ export async function setPassword(formData: FormData) {
   }
 
   if (user.password) {
-    throw new Error("Password already set. Use change password instead.");
+    throw new Error("Password already set.");
   }
 
   const bcrypt = await import("bcryptjs");
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
 
   await prisma.user.update({
     where: { id: userId },
@@ -219,27 +233,20 @@ export async function reorderOrder(orderId: string) {
 export async function cancelOrder(orderId: string) {
   const userId = await verifyUser();
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId }
-  });
-
-  if (!order) {
-    throw new Error("Order not found");
-  }
-
-  if (order.userId !== userId) {
-    throw new Error("Unauthorized");
-  }
-
-  if (order.status !== "PENDING") {
-    throw new Error("Only pending orders can be cancelled.");
-  }
-
-  if (order.paymentStatus === "PAID") {
-    throw new Error("This order is already paid. Please request a return/refund instead.");
-  }
-
+  // Atomic status flip: only cancel if order is PENDING. This prevents two
+  // concurrent cancel requests from both succeeding and double-restoring stock.
   await prisma.$transaction(async (tx) => {
+    const order = await tx.order.updateMany({
+      where: { id: orderId, userId, status: "PENDING", paymentStatus: { not: "PAID" } },
+      data: { status: "CANCELLED", cancelledAt: new Date() },
+    });
+    if (order.count === 0) {
+      throw new Error("Only pending unpaid orders can be cancelled.");
+    }
+
+    const fullOrder = await tx.order.findUnique({ where: { id: orderId } });
+    if (!fullOrder) throw new Error("Order not found");
+
     const orderItems = await tx.orderItem.findMany({
       where: { orderId },
       select: { id: true, productId: true, variantId: true, quantity: true },
@@ -259,14 +266,13 @@ export async function cancelOrder(orderId: string) {
       }
     }
 
-    if (order.couponCode) {
+    if (fullOrder.couponCode) {
       await tx.coupon.updateMany({
-        where: { code: order.couponCode, timesUsed: { gt: 0 } },
+        where: { code: fullOrder.couponCode, timesUsed: { gt: 0 } },
         data: { timesUsed: { decrement: 1 } },
       });
 
-      // Release one per-user usage so the coupon can be used again.
-      const coupon = await tx.coupon.findUnique({ where: { code: order.couponCode } });
+      const coupon = await tx.coupon.findUnique({ where: { code: fullOrder.couponCode } });
       if (coupon) {
         const usage = await tx.couponUsage.findUnique({
           where: { couponId_userId: { couponId: coupon.id, userId } },
@@ -283,11 +289,6 @@ export async function cancelOrder(orderId: string) {
         }
       }
     }
-
-    await tx.order.update({
-      where: { id: orderId },
-      data: { status: "CANCELLED", cancelledAt: new Date() },
-    });
   });
 
   revalidatePath("/account");

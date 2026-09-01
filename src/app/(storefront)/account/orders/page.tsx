@@ -40,7 +40,14 @@ export default async function OrdersPage({
   const statusFilter = filter && VALID_STATUSES.includes(filter) ? filter : undefined;
 
   const orders = await prisma.order.findMany({
-    where: { userId: session.user.id, ...(statusFilter ? { status: statusFilter as never } : {}) },
+    where: {
+      userId: session.user.id,
+      NOT: {
+        paymentMethod: "RAZORPAY",
+        paymentStatus: "UNPAID",
+      },
+      ...(statusFilter ? { status: statusFilter as never } : {}),
+    },
     orderBy: { createdAt: "desc" },
     include: {
       orderItems: {

@@ -12,7 +12,7 @@ import { getActiveFlashSales, applyFlashDiscount, applyFlashToProductList } from
 import { getCachedReviews, getCachedRelatedProducts } from "@/lib/cache";
 
 function safeJsonLd(value: unknown): string {
-  return JSON.stringify(value).replace(/</g, "\\u003c");
+  return JSON.stringify(value).replace(/</g, "\\u003c").replace(/\>/g, "\\u003e").replace(/<\//g, "\\u003c/");
 }
 
 export const revalidate = 3600; // 1 hour ISR
@@ -37,6 +37,8 @@ export async function generateMetadata(
     },
   };
 }
+
+import ProductBackButton from "@/app/(storefront)/products/[slug]/_components/ProductBackButton";
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -140,11 +142,15 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16 min-h-screen">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-10 min-h-screen">
+        {/* Back Navigation Arrow */}
+        <div className="mb-2">
+          <ProductBackButton />
+        </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start">
           {/* Image Gallery & Video */}
-          <div>
+          <div className="lg:col-span-7">
             <ImageGallery images={product.images} alt={product.name} />
             {product.videoUrl && (
               <ProductVideoEmbed url={product.videoUrl} />
@@ -152,12 +158,14 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           </div>
 
           {/* Product Info Section */}
-          <ProductInfo 
-            product={product} 
-            displayPrice={displayPrice} 
-            displayOriginal={displayOriginal} 
-            flashPercent={flashPercent} 
-          />
+          <div className="lg:col-span-5">
+            <ProductInfo 
+              product={product} 
+              displayPrice={displayPrice} 
+              displayOriginal={displayOriginal} 
+              flashPercent={flashPercent} 
+            />
+          </div>
         </div>
 
         {/* Ratings & Reviews Section */}

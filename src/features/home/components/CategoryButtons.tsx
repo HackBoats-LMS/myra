@@ -1,119 +1,186 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-interface CategoryButtonImageStyle {
-  left: string;
-  width: string;
-  height: string;
-  zIndex: number;
+export interface CategoryImageStyle {
+  width?: string;      // e.g. '46%', '50%', '60px'
+  height?: string;     // e.g. '180%', '100%', '120px'
+  left?: string;       // e.g. '16px', '0%', '10px'
+  bottom?: string;     // e.g. '0px', '-4px', '8px'
+  scale?: number;      // e.g. 1.0, 1.15, 0.95
+  transform?: string;  // e.g. 'translateY(2px)'
 }
 
-interface CategoryButton {
+export interface CategoryButton {
   name: string;
   href: string;
-  images: string[];
-  imgStyles?: CategoryButtonImageStyle[];
+  image: string;
+  images?: string[];
+  style?: {
+    desktop?: CategoryImageStyle;
+    mobile?: CategoryImageStyle;
+  };
 }
 
+/**
+ * Categories configuration with customizable sizing and positioning.
+ * Modify `style.desktop` and `style.mobile` for fine-tuning each category image.
+ */
 const categories: CategoryButton[] = [
-  { 
-    name: 'BRIBAL', 
-    href: '/collections/bridal', 
-    images: ['/displaypics/Bridel.png'] 
+  {
+    name: 'BRIDAL',
+    href: '/collections/bridal',
+    image: '/displaypics/home/bridal/image.png',
+    style: {
+      desktop: { width: '46%', height: '180%', left: '16px', bottom: '0px', scale: 1.15 },
+      mobile: { width: '80%', height: '140%', bottom: '0px', scale: 1.15 },
+    },
   },
-  { 
-    name: 'SAREES', 
-    href: '/collections/sarees', 
-    images: ['/displaypics/saree1.png', '/displaypics/saree2.png'],
-    imgStyles: [
-      { left: '0%', width: '65%', height: '90%', zIndex: 1 },
-      { left: '22%', width: '70%', height: '105%', zIndex: 2 }
-    ]
+  {
+    name: 'SAREES',
+    href: '/collections/sarees',
+    image: '/displaypics/home/sarees/image.png',
+    style: {
+      desktop: { width: '46%', height: '180%', left: '16px', bottom: '0px', scale: 1.0 },
+      mobile: { width: '80%', height: '140%', bottom: '0px', scale: 1.1 },
+    },
   },
-  { 
-    name: 'WOMEN', 
-    href: '/collections/women', 
-    images: ['/displaypics/women1.png', '/displaypics/women2.png'],
-    imgStyles: [
-      { left: '5%', width: '65%', height: '95%', zIndex: 1 },
-      { left: '25%', width: '70%', height: '98%', zIndex: 2 }
-    ]
+  {
+    name: 'WOMEN',
+    href: '/collections/women',
+    image: '/displaypics/home/women/image.png',
+    style: {
+      desktop: { width: '46%', height: '150%', left: '16px', bottom: '0px', scale: 1.0 },
+      mobile: { width: '80%', height: '130%', bottom: '0px', scale: 1.1 },
+    },
   },
-  { 
-    name: 'KIDS', 
-    href: '/collections/kids', 
-    images: ['/displaypics/kids1.png', '/displaypics/kids2.png'],
-    imgStyles: [
-      { left: '8%', width: '65%', height: '92%', zIndex: 1 },
-      { left: '28%', width: '70%', height: '96%', zIndex: 2 }
-    ]
+  {
+    name: 'KIDS',
+    href: '/collections/kids',
+    image: '/displaypics/home/kids/image.png',
+    style: {
+      desktop: { width: '46%', height: '180%', left: '16px', bottom: '0px', scale: 1.0 },
+      mobile: { width: '80%', height: '140%', bottom: '0px', scale: 1.1 },
+    },
   },
 ];
 
 export default function CategoryButtons() {
-  const renderImageGroup = (cat: CategoryButton) => (
-    <div className="absolute bottom-0 left-[2px] md:left-[15px] w-[45px] md:w-[145px] h-[48px] md:h-[140px] pointer-events-none z-10 origin-bottom">
-      {cat.images.length === 1 ? (
+  const getImgSrc = (cat: CategoryButton) => cat.image || cat.images?.[0] || '';
+
+  const renderDesktopImages = (cat: CategoryButton) => {
+    const d = cat.style?.desktop;
+    const imgSrc = getImgSrc(cat);
+
+    return (
+      <div
+        className="absolute bottom-0 pointer-events-none z-10 origin-bottom"
+        style={{
+          left: d?.left ?? '12px',
+          width: d?.width ?? '46%',
+          height: d?.height ?? '180%',
+          bottom: d?.bottom ?? '0px',
+          transform: d?.transform ?? (d?.scale && d.scale !== 1 ? `scale(${d.scale})` : undefined),
+        }}
+      >
         <div className="relative w-full h-full">
           <Image
-            src={cat.images[0]}
+            src={imgSrc}
             alt={cat.name}
             fill
             quality={100}
-            sizes="(max-width: 768px) 50px, 180px"
-            className="object-contain object-bottom drop-shadow-lg"
+            sizes="260px"
+            className="object-contain object-bottom drop-shadow-md"
           />
         </div>
-      ) : (
-        <div className="relative w-full h-full flex justify-center items-end">
-          {cat.images.map((img: string, i: number) => (
-            <div
-              key={img}
-              className="absolute bottom-0"
-              style={cat.imgStyles ? cat.imgStyles[i] : {}}
-            >
-              <Image
-                src={img}
-                alt={cat.name}
-                fill
-                quality={100}
-                sizes="(max-width: 768px) 50px, 140px"
-                className="object-contain object-bottom drop-shadow-lg"
-              />
-            </div>
-          ))}
+      </div>
+    );
+  };
+
+  const renderMobileImages = (cat: CategoryButton) => {
+    const m = cat.style?.mobile;
+    const imgSrc = getImgSrc(cat);
+
+    return (
+      <div className="absolute bottom-0 left-0 right-0 h-[56px] sm:h-[72px] md:h-[98px] lg:h-[115px] pointer-events-none z-10 flex justify-center items-end origin-bottom">
+        <div
+          className="relative w-[50px] sm:w-[65px] md:w-[90px] lg:w-[105px] h-full"
+          style={{
+            width: m?.width,
+            height: m?.height,
+            bottom: m?.bottom,
+            transform: m?.transform ?? (m?.scale && m.scale !== 1 ? `scale(${m.scale})` : undefined),
+          }}
+        >
+          <Image
+            src={imgSrc}
+            alt={cat.name}
+            fill
+            quality={100}
+            sizes="(max-width: 640px) 70px, 150px"
+            className="object-contain object-bottom drop-shadow-sm"
+          />
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   return (
-    <section className="w-full max-w-[1400px] mx-auto px-2 md:px-8 py-10 md:py-20 bg-transparent overflow-x-hidden">
-      <div className="flex justify-between items-center md:flex-wrap md:justify-center md:gap-x-12 gap-x-1 gap-y-24">
-        {categories.map((cat) => (
-          <Link
-            href={cat.href}
-            key={cat.name}
-            className="relative group block w-[84px] md:w-[280px] h-[30px] md:h-[85px] cursor-pointer shrink-0"
-          >
-            <div className="absolute inset-0 bg-[#E8D3BA] rounded-full overflow-hidden shadow-sm">
-              {renderImageGroup(cat)}
-            </div>
-            
-            {/* Top Layer: Allows overflow on top for heads to pop out, but clips the bottom curvature */}
-            <div className="absolute inset-0 pointer-events-none [clip-path:inset(-100px_-100px_16px_-100px)] md:[clip-path:inset(-100px_-100px_43px_-100px)]">
-              {renderImageGroup(cat)}
-            </div>
+    <>
+      {/* Mobile, Tablet & iPad Pro Layout (< 1280px): Scaled Oval Capsules with Labels Below (at top of page) */}
+      <section className="xl:hidden w-full px-2 sm:px-4 md:px-8 lg:px-12 pt-12 sm:pt-16 md:pt-24 lg:pt-28 pb-2.5 sm:pb-3 md:pb-4 lg:pb-5 bg-white border-b border-[#B6925B]/15">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8 items-start justify-items-center max-w-[960px] mx-auto">
+          {categories.map((cat) => (
+            <Link
+              href={cat.href}
+              key={cat.name}
+              className="flex flex-col items-center gap-1.5 sm:gap-2.5 md:gap-3 w-full max-w-[85px] sm:max-w-[110px] md:max-w-[145px] lg:max-w-[170px] group cursor-pointer"
+            >
+              {/* Oval Capsule */}
+              <div className="relative w-[74px] sm:w-[96px] md:w-[130px] lg:w-[155px] h-[40px] sm:h-[52px] md:h-[68px] lg:h-[80px] rounded-full bg-[#E8D3BA] shadow-sm transition-transform duration-200 group-hover:scale-105">
+                {/* Popout Image Layer */}
+                <div className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-50px_0px_-50px)]">
+                  {renderMobileImages(cat)}
+                </div>
+              </div>
 
-            {/* Text Container */}
-            <div className="absolute inset-y-0 right-0 left-[48px] md:left-[150px] flex items-center justify-center pointer-events-none z-20">
-              <span className="font-serif font-bold tracking-widest text-[#1a1a1a] text-[8px] md:text-xl">
+              {/* Label Below */}
+              <span className="font-serif font-bold text-[10px] sm:text-xs md:text-sm lg:text-base tracking-wider text-[#111111] uppercase text-center leading-tight">
                 {cat.name}
               </span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </section>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 15-inch Laptop & Desktop Layout (1280px+): Horizontal Pills with Embedded Text */}
+      <section className="hidden xl:block w-full max-w-[1500px] mx-auto px-6 xl:px-8 py-16 bg-transparent">
+        <div className="grid grid-cols-4 gap-12 xl:gap-18 items-center justify-items-center">
+          {categories.map((cat) => (
+            <Link
+              href={cat.href}
+              key={cat.name}
+              className="relative group block w-full max-w-[325px] h-[112px] xl:h-[125px] cursor-pointer transition-transform duration-300 hover:scale-[1.03]"
+            >
+              {/* Base Pill Capsule Layer */}
+              <div className="absolute inset-0 bg-[#E8D3BA] rounded-full overflow-hidden shadow-sm transition-shadow duration-300 group-hover:shadow-md">
+                {renderDesktopImages(cat)}
+              </div>
+              
+              {/* Top Layer: Allows overflow on top for heads/bodies to pop out */}
+              <div className="absolute inset-0 pointer-events-none [clip-path:inset(-200px_-100px_50%_-100px)]">
+                {renderDesktopImages(cat)}
+              </div>
+
+              {/* Text Container: Perfectly centered in right half */}
+              <div className="absolute inset-y-0 right-2 sm:right-4 md:right-6 left-[44%] sm:left-[46%] flex items-center justify-center pointer-events-none z-20">
+                <span className="font-serif font-bold tracking-[0.08em] text-[#000000] text-xl xl:text-[26px] text-center leading-none select-none">
+                  {cat.name}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }

@@ -11,6 +11,9 @@ export async function createCoupon(formData: FormData) {
   const type = String(formData.get("discountType"));
   const value = parseFloat(formData.get("discountValue") as string);
   const minOrderAmount = parseFloat(formData.get("minOrderAmount") as string) || 0;
+  if (minOrderAmount < 0) {
+    throw new Error("Minimum order amount cannot be negative.");
+  }
   
   const couponTypeStr = String(formData.get("type") || "STANDARD");
   const COUPON_TYPES = ["STANDARD", "FIRST_ORDER", "SINGLE_USE", "FESTIVAL", "SHIPPING"] as const;
@@ -19,12 +22,21 @@ export async function createCoupon(formData: FormData) {
 
   const maxUsesStr = formData.get("maxUses") as string;
   const maxUses = maxUsesStr ? parseInt(maxUsesStr, 10) : null;
+  if (maxUses !== null && (isNaN(maxUses) || maxUses < 0)) {
+    throw new Error("Max uses must be a non-negative integer.");
+  }
   
   const maxUsesPerUserStr = formData.get("maxUsesPerUser") as string;
   const maxUsesPerUser = maxUsesPerUserStr ? parseInt(maxUsesPerUserStr, 10) : null;
+  if (maxUsesPerUser !== null && (isNaN(maxUsesPerUser) || maxUsesPerUser < 0)) {
+    throw new Error("Max uses per user must be a non-negative integer.");
+  }
   
   const expiresAtStr = formData.get("expiresAt") as string;
   const expiresAt = expiresAtStr ? new Date(expiresAtStr) : null;
+  if (expiresAt && isNaN(expiresAt.getTime())) {
+    throw new Error("Invalid expiry date.");
+  }
 
   if (!code || code.length < 3 || code.length > 20) {
     throw new Error("Coupon code must be between 3 and 20 characters.");
@@ -85,6 +97,9 @@ export async function updateCoupon(id: string, formData: FormData) {
   const type = String(formData.get("discountType"));
   const value = parseFloat(formData.get("discountValue") as string);
   const minOrderAmount = parseFloat(formData.get("minOrderAmount") as string) || 0;
+  if (minOrderAmount < 0) {
+    throw new Error("Minimum order amount cannot be negative.");
+  }
 
   const couponTypeStr = String(formData.get("type") || "STANDARD");
   const COUPON_TYPES = ["STANDARD", "FIRST_ORDER", "SINGLE_USE", "FESTIVAL", "SHIPPING"] as const;
@@ -93,12 +108,21 @@ export async function updateCoupon(id: string, formData: FormData) {
 
   const maxUsesStr = formData.get("maxUses") as string;
   const maxUses = maxUsesStr ? parseInt(maxUsesStr, 10) : null;
+  if (maxUses !== null && (isNaN(maxUses) || maxUses < 0)) {
+    throw new Error("Max uses must be a non-negative integer.");
+  }
 
   const maxUsesPerUserStr = formData.get("maxUsesPerUser") as string;
   const maxUsesPerUser = maxUsesPerUserStr ? parseInt(maxUsesPerUserStr, 10) : null;
+  if (maxUsesPerUser !== null && (isNaN(maxUsesPerUser) || maxUsesPerUser < 0)) {
+    throw new Error("Max uses per user must be a non-negative integer.");
+  }
 
   const expiresAtStr = formData.get("expiresAt") as string;
   const expiresAt = expiresAtStr ? new Date(expiresAtStr) : null;
+  if (expiresAt && isNaN(expiresAt.getTime())) {
+    throw new Error("Invalid expiry date.");
+  }
 
   if (!code || code.length < 3 || code.length > 20) {
     throw new Error("Coupon code must be between 3 and 20 characters.");

@@ -50,7 +50,7 @@ export default async function AccountPage() {
       }
     });
   } catch (error) {
-    console.warn("Database unreachable in AccountPage:", error);
+    console.warn("Database unreachable in AccountPage:", error instanceof Error ? error.message : "unknown error");
     return (
       <div className="w-full bg-[#FAFAFA] min-h-screen flex items-center justify-center">
         <div className="max-w-md w-full bg-white p-8 border border-[#B6925B]/20 text-center">

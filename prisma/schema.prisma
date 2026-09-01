@@ -83,15 +83,23 @@ model WishlistItem {
   @@unique([wishlistId, productId, variantId])
 }
 model Collection {
-  id        String    @id @default(uuid())
-  name        String    @unique
-  slug        String    @unique
+  id          String       @id @default(uuid())
+  name        String       @unique
+  slug        String       @unique
   description String?
   image       String?
+  banners     String[]     @default([])
+  parentId    String?
+  parent      Collection?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Collection[] @relation("SubCategories")
+  order       Int          @default(0)
+  showInNav   Boolean      @default(true)
   products    Product[]
   flashSales  FlashSale[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([parentId])
 }
 
 model Product {
@@ -106,6 +114,7 @@ model Product {
   sku                String?             @unique
   images             String[]
   productType        String?
+  attributes         Json?               @default("{}")
   material           String?
   weight             String?
   bestSeller         Boolean             @default(false)
@@ -182,6 +191,7 @@ model Order {
   shiprocketOrderId String?
   shipmentId        String?
   trackingUrl       String?
+  stockReleased     Boolean         @default(false)
 
   @@index([userId])
   @@index([awbNumber])
@@ -488,4 +498,37 @@ model Pincode {
   createdAt DateTime @default(now())
 
   @@index([code])
+}
+
+model Banner {
+  id          String   @id @default(uuid())
+  slot        String   @unique // e.g. "hero_main", "hero_right_top", "hero_right_bottom", "bridal_banner", "curated_story_1", "curated_story_2"
+  title       String?
+  subtitle    String?
+  description String?
+  imageUrl    String
+  linkUrl     String?
+  altText     String?
+  isActive    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@index([slot])
+}
+
+model BrandStory {
+  id          String   @id @default(uuid())
+  title       String
+  subtitle    String?
+  description String?
+  imageUrl    String
+  linkUrl     String?
+  altText     String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([isActive])
 }

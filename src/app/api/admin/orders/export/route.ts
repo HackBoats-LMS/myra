@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { NextResponse } from "next/server";
 
+const MAX_EXPORT_ROWS = 10000;
+
 export async function GET() {
   const session = await getServerSession(authOptions);
 
@@ -12,6 +14,7 @@ export async function GET() {
 
   try {
     const orders = await prisma.order.findMany({
+      take: MAX_EXPORT_ROWS,
       include: {
         user: {
           select: {
@@ -26,10 +29,10 @@ export async function GET() {
     // Helper to sanitize CSV fields
     const escapeCsv = (str: string | null | undefined) => {
       if (!str) return '""';
-      // Neutralize spreadsheet formula injection (fields beginning with =, +, -, @).
       const clean = str.replace(/["]/g, '""');
+      // Neutralize spreadsheet formula injection (fields beginning with =, +, -, @).
       if (/^[=+\-@]/.test(clean.trim())) {
-        return `"'${clean}"`;
+        return `'${clean}'`;
       }
       return `"${clean}"`;
     };

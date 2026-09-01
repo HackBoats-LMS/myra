@@ -34,25 +34,38 @@ export default function PaymentStep({ paymentMethod, setPaymentMethod }: Payment
         </label>
 
         <label className={optionCls(paymentMethod === "RAZORPAY")}>
-          <span className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="payment-method"
-              value="RAZORPAY"
-              checked={paymentMethod === "RAZORPAY"}
-              onChange={() => setPaymentMethod("RAZORPAY")}
-              className="accent-[#B6925B]"
-            />
-            <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
-              Online Payment <span className="text-[#B6925B]">(Razorpay)</span>
+          <div className="flex flex-col gap-1.5 py-1">
+            <span className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="payment-method"
+                value="RAZORPAY"
+                checked={paymentMethod === "RAZORPAY"}
+                onChange={() => setPaymentMethod("RAZORPAY")}
+                className="accent-[#B6925B]"
+              />
+              <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
+                UPI & Online Payment <span className="text-[#B6925B]">(Razorpay)</span>
+              </span>
             </span>
-          </span>
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">UPI / Card / NetBanking</span>
+            <div className="flex flex-wrap items-center gap-1.5 pl-5">
+              <span className="inline-block bg-[#FAFAFA] border border-[#B6925B]/30 text-[#4A3B2C] text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
+                UPI (GPay / PhonePe / Paytm / QR)
+              </span>
+              <span className="inline-block bg-[#FAFAFA] border border-[#B6925B]/20 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
+                Cards
+              </span>
+              <span className="inline-block bg-[#FAFAFA] border border-[#B6925B]/20 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
+                NetBanking
+              </span>
+            </div>
+          </div>
+          <span className="text-[10px] text-[#B6925B] font-bold uppercase tracking-widest hidden sm:inline">Instant</span>
         </label>
       </div>
 
       <p className="text-[10px] text-gray-500 leading-relaxed pt-2">
-        You will be asked to review your order before the payment is processed.
+        Pay securely with UPI (Google Pay, PhonePe, Paytm, UPI QR, UPI ID), Credit/Debit Cards, or Net Banking via Razorpay.
       </p>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
+import { Menu } from "lucide-react";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -14,7 +15,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           className="p-2 text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center"
           aria-label="Open menu"
         >
-          <i className="ri-menu-line text-2xl leading-none" />
+          <Menu className="w-6 h-6 leading-none" />
         </button>
         <h1 className="text-xs font-bold text-[#4A3B2C] tracking-widest uppercase">Myra Admin</h1>
         <span className="w-9" />

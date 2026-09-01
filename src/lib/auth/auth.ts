@@ -10,11 +10,18 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { CACHE_TAGS } from "@/lib/cache";
 import { revalidateTag } from "next/cache";
 
-// A fixed bcrypt hash used when an account has no password (e.g. Google-only),
-// so the compare always runs and timing doesn't reveal whether a password exists.
-const DUMMY_PASSWORD_HASH = "$2b$10$nDofhNs0/keiqBZ1Kw.UNug/yevi6H21OiA3nzxuRn3DFMWTKEqba";
+// Lazy-init bcrypt hash used when an account has no password (e.g. Google-only).
+// Avoids blocking the event loop at startup with bcrypt.hashSync.
+let _dummyPasswordHash: string | null = null;
+function getDummyPasswordHash(): string {
+  if (!_dummyPasswordHash) {
+    _dummyPasswordHash = bcrypt.hashSync("dummy-password-not-real", 12);
+  }
+  return _dummyPasswordHash;
+}
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -61,7 +68,7 @@ export const authOptions: NextAuthOptions = {
         // Always compare against a hash so timing is uniform whether or not the
         // account has a password, and never reveal account state before the
         // password is proven correct (prevents account enumeration).
-        const hashToCheck = user.password ?? DUMMY_PASSWORD_HASH;
+        const hashToCheck = user.password ?? getDummyPasswordHash();
         const isPasswordValid = await bcrypt.compare(credentials.password, hashToCheck);
 
         if (!isPasswordValid) {
@@ -143,8 +150,8 @@ export const authOptions: NextAuthOptions = {
       try {
         const cookieStore = await cookies();
         const guestWishlist = cookieStore.get("guest_wishlist");
-        if (guestWishlist?.value && user.id) {
-          await mergeGuestWishlist(user.id, guestWishlist.value);
+        if (guestWishlist?.value) {
+          await mergeGuestWishlist(guestWishlist.value);
           cookieStore.delete("guest_wishlist");
         }
       } catch {
