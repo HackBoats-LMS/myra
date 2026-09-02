@@ -2,8 +2,8 @@
 import { useCartDrawer } from "@/context/CartContext";
 import { CartIcon } from "@/components/icons/NavIcons";
 
-export default function CartButton({ cartCount }: { cartCount: number }) {
-  const { openCart } = useCartDrawer();
+export default function CartButton({ cartCount: _ignoredCartCount }: { cartCount: number }) {
+  const { openCart, cartCount } = useCartDrawer();
 
   return (
     <button

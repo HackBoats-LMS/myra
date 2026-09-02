@@ -3,6 +3,7 @@ import { useState } from "react";
 import { addToCart } from "@/actions/cart";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
+import { useCartDrawer } from "@/context/CartContext";
 
 interface Variant {
   id: string;
@@ -32,6 +33,7 @@ export default function AddToCartButton({
 }: AddToCartProps) {
   const router = useRouter();
   const toast = useToast();
+  const { setCartCount } = useCartDrawer();
   const [isAdding, setIsAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
@@ -73,6 +75,7 @@ export default function AddToCartButton({
         toast.error(res.message || "Unable to add item to cart.");
         return;
       }
+      setCartCount(prev => prev + quantity);
       toast.success("Added to cart!");
       if (redirect) {
         router.push("/cart");

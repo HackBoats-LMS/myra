@@ -16,8 +16,11 @@ export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount
   const [isOpen, setIsOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { openCart } = useCartDrawer();
+  const { openCart, cartCount: contextCartCount } = useCartDrawer();
   const { openWishlist } = useWishlistDrawer();
+
+  // Use context count, fallback to prop if not available
+  const actualCartCount = contextCartCount !== undefined ? contextCartCount : cartCount;
 
   // Close on outside click
   useEffect(() => {
@@ -142,13 +145,13 @@ export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount
           >
             <div className="relative flex items-center">
               <i className="ri-shopping-bag-line text-[#B6925B] text-base leading-none" />
-              {cartCount > 0 && (
+              {actualCartCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 px-0.5 bg-[#4A3B2C] text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
-                  {cartCount > 99 ? "99+" : cartCount}
+                  {actualCartCount > 99 ? "99+" : actualCartCount}
                 </span>
               )}
             </div>
-            Cart{cartCount > 0 && ` (${cartCount})`}
+            Cart{actualCartCount > 0 && ` (${actualCartCount})`}
           </button>
           <button
             onClick={() => {

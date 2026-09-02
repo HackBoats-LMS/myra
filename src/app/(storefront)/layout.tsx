@@ -78,7 +78,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
   }
 
   return (
-    <CartProvider>
+    <CartProvider initialCartCount={cartCount}>
       <WishlistProvider>
         <CompareProvider initialIds={compareIds}>
           <div className="w-full min-h-screen flex flex-col bg-white">

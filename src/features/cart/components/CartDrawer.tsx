@@ -25,13 +25,21 @@ interface DrawerItem {
 }
 
 export default function CartDrawer() {
-  const { isCartOpen, closeCart } = useCartDrawer();
+  const { isCartOpen, closeCart, setCartCount } = useCartDrawer();
   const router = useRouter();
   const [items, setItems] = useState<DrawerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [rendered, setRendered] = useState(false);
   const [closing, setClosing] = useState(false);
   const toast = useToast();
+
+  // Sync total count back to context whenever items change
+  useEffect(() => {
+    if (!loading) {
+      const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
+      setCartCount(totalCount);
+    }
+  }, [items, loading, setCartCount]);
 
   const fetchCart = async () => {
     try {
