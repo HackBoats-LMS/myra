@@ -65,39 +65,47 @@ export default async function AccountPage() {
 
   return (
     <div className="w-full bg-[#FAFAFA] min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-16">
-        <div className="mb-12 text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">My Account</h1>
-          <p className="text-sm text-gray-500 mt-2 uppercase tracking-widest">Welcome back, {user.name || user.phoneNumber}</p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
+        <header className="mb-10 pb-8 border-b border-[#B6925B]/20 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">My Account</h1>
+            <p className="text-xs md:text-sm text-gray-500 mt-3 uppercase tracking-widest">Welcome back, {user.name || user.phoneNumber}</p>
+          </div>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Col: Profile Form & Change Password & Addresses */}
-          <div className="lg:col-span-1 flex flex-col gap-6">
+        <div className="flex flex-col lg:flex-row gap-10">
+          {/* Left Col: Profile Form & Addresses */}
+          <aside className="w-full lg:w-1/3 flex flex-col gap-8">
             <ProfileForm user={user} />
             <AddressManager addresses={user.addresses} />
-          </div>
+          </aside>
 
           {/* Right Col: Recent Orders summary */}
-          <div className="lg:col-span-2">
+          <main className="w-full lg:w-2/3 flex flex-col">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide">Order History</h3>
+              <h2 className="text-2xl font-serif text-[#4A3B2C] tracking-wide">Order History</h2>
               {user.orders.length > 0 && (
-                <Link href="/account/orders" className="text-xs font-bold text-[#B6925B] hover:text-[#9c7d4e] uppercase tracking-widest transition-colors flex items-center gap-1">
+                <Link href="/account/orders" className="text-xs font-bold text-[#B6925B] hover:text-[#4A3B2C] uppercase tracking-widest transition-colors flex items-center gap-1">
                   View All Orders <i className="ri-arrow-right-s-line" />
                 </Link>
               )}
             </div>
 
             {user.orders.length === 0 ? (
-              <div className="bg-white border border-[#B6925B]/20 shadow-sm p-12 text-center">
-                <p className="text-gray-500">You haven&rsquo;t placed any orders yet.</p>
-                <Link href="/collections" className="inline-block mt-6 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 text-xs font-bold uppercase tracking-widest transition-colors rounded-none">
+              <div className="bg-white border border-[#B6925B]/20 p-12 md:p-20 text-center flex flex-col items-center justify-center flex-grow min-h-[400px]">
+                <div className="w-20 h-20 rounded-full bg-[#FAFAFA] border border-[#B6925B]/20 flex items-center justify-center mb-6">
+                  <i className="ri-shopping-bag-3-line text-3xl text-[#B6925B]" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-serif text-[#4A3B2C] mb-3">No Orders Yet</h3>
+                <p className="text-gray-500 mb-10 max-w-sm mx-auto leading-relaxed">
+                  You haven&rsquo;t placed any orders yet. Discover our latest collections and find something you love.
+                </p>
+                <Link href="/collections" className="inline-block bg-[#B6925B] hover:bg-[#4A3B2C] text-white px-10 py-4 text-sm font-bold uppercase tracking-widest transition-colors rounded-none">
                   Start Shopping
                 </Link>
               </div>
             ) : (
-              <div className="bg-white border border-[#B6925B]/20 shadow-sm overflow-hidden">
+              <div className="bg-white border border-[#B6925B]/20 overflow-hidden">
                 <ul className="divide-y divide-[#B6925B]/10">
                   {user.orders.slice(0, 3).map((order: AccountOrderWithItems) => (
                     <li key={order.id}>
@@ -105,21 +113,21 @@ export default async function AccountPage() {
                         href={`/account/orders/${order.id}`}
                         className="flex items-center justify-between gap-4 px-6 py-5 hover:bg-[#FAFAFA] transition-colors"
                       >
-                        <div className="flex items-center gap-4 min-w-0">
-                          <div className="relative w-14 h-[72px] bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0">
+                        <div className="flex items-center gap-5 min-w-0">
+                          <div className="relative w-16 h-20 bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0">
                             {order.orderItems[0]?.product.images[0] && (
                               <Image src={order.orderItems[0].product.images[0]} alt={order.orderItems[0].product.name} fill quality={100} className="object-cover" />
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">
                               {new Date(order.createdAt).toLocaleDateString()}
                             </p>
-                            <p className="text-sm font-medium text-[#4A3B2C] truncate">
+                            <p className="text-base font-serif text-[#4A3B2C] truncate">
                               {order.orderItems[0]?.product.name || `Order #${order.id.split('-')[0]}`}
                               {order.orderItems.length > 1 && ` +${order.orderItems.length - 1} more`}
                             </p>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-widest mt-2
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-none text-[9px] font-bold uppercase tracking-widest mt-2
                               ${order.status === 'DELIVERED' ? 'bg-[#FAFAFA] text-green-700 border border-[#B6925B]/20' :
                                 order.status === 'SHIPPED' ? 'bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30' :
                                 order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-200' :
@@ -129,8 +137,8 @@ export default async function AccountPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3 flex-shrink-0">
-                          <p className="text-sm font-bold text-[#4A3B2C]">₹{order.totalAmount.toLocaleString('en-IN')}</p>
-                          <i className="ri-arrow-right-s-line text-lg text-[#B6925B]" />
+                          <p className="text-base font-bold text-[#4A3B2C]">₹{order.totalAmount.toLocaleString('en-IN')}</p>
+                          <i className="ri-arrow-right-s-line text-xl text-[#B6925B]" />
                         </div>
                       </Link>
                     </li>
@@ -138,7 +146,7 @@ export default async function AccountPage() {
                 </ul>
               </div>
             )}
-          </div>
+          </main>
         </div>
       </div>
     </div>

@@ -44,7 +44,6 @@ export default function DeliveryStep({
   const [isAddressOpen, setIsAddressOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [phoneError, setPhoneError] = useState("");
-  const [giftError, setGiftError] = useState("");
   const addressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -189,39 +188,7 @@ export default function DeliveryStep({
         <h3 className="text-base font-serif font-bold text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3">
           Delivery Contact
         </h3>
-        {phones.length > 0 ? (
-          <div className="space-y-2">
-            {phones.map((ph, idx) => {
-              const normalized = normalizeIndianPhone(ph);
-              return (
-                <label
-                  key={ph}
-                  className={`flex items-center justify-between gap-3 px-3 py-2 border cursor-pointer transition-colors rounded-none ${
-                    selectedPhone === normalized ? "border-[#B6925B] bg-[#B6925B]/5" : "border-[#B6925B]/30 bg-white"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="delivery-phone"
-                      value={normalized}
-                      checked={selectedPhone === normalized}
-                      onChange={() => {
-                        setSelectedPhone(normalized);
-                        saveDeliveryPhone(normalized);
-                        setPhoneError("");
-                      }}
-                      className="accent-[#B6925B]"
-                    />
-                    <span className="text-xs font-mono text-[#4A3B2C]">{normalized}</span>
-                  </span>
-                  {idx === 0 && <span className="text-[9px] uppercase tracking-widest text-gray-400 font-bold">Primary</span>}
-                </label>
-              );
-            })}
-          </div>
-        ) : (
-          <input
+        <input
             type="tel"
             inputMode="numeric"
             maxLength={10}
@@ -238,64 +205,6 @@ export default function DeliveryStep({
         )}
         <p className="text-[10px] text-gray-500 leading-relaxed">We use this number to confirm and deliver your order.</p>
         {phoneError && <p className="text-[11px] text-red-600 font-medium">{phoneError}</p>}
-      </section>
-
-      {/* Gift toggle */}
-      <section className="bg-white border border-[#B6925B]/20 p-6 text-left space-y-3">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isGift}
-            onChange={(e) => {
-              setIsGift(e.target.checked);
-              setGiftError("");
-              if (!e.target.checked) setGift(EMPTY_GIFT);
-            }}
-            className="w-4 h-4 accent-[#B6925B]"
-          />
-          <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">
-            This is a gift — ship to someone else
-          </span>
-        </label>
-
-        {isGift && (
-          <div className="space-y-3 pt-2">
-            <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider">Recipient Details *</label>
-            <input
-              type="text"
-              placeholder="Recipient name"
-              value={gift.name}
-              onChange={(e) => setGiftField("name", e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
-            />
-            <input
-              type="tel"
-              inputMode="numeric"
-              maxLength={10}
-              placeholder="Recipient phone (10 digits)"
-              value={gift.phone}
-              onChange={(e) => setGiftField("phone", normalizeIndianPhone(e.target.value))}
-              className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
-            />
-            <input
-              type="text"
-              placeholder="Address line"
-              value={gift.addressLine1}
-              onChange={(e) => setGiftField("addressLine1", e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <input type="text" placeholder="City" value={gift.city} onChange={(e) => setGiftField("city", e.target.value)} className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none" />
-              <input type="text" placeholder="State" value={gift.state} onChange={(e) => setGiftField("state", e.target.value)} className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none" />
-              <input type="text" placeholder="Postal code" value={gift.postalCode} onChange={(e) => setGiftField("postalCode", e.target.value)} className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none" />
-              <input type="text" placeholder="Country" value={gift.country} onChange={(e) => setGiftField("country", e.target.value)} className="w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none" />
-            </div>
-            <p className="text-[10px] text-gray-500 leading-relaxed">
-              Your order will be delivered to this recipient&rsquo;s address. This address is not saved to your account.
-            </p>
-            {giftError && <p className="text-[11px] text-red-600 font-medium">{giftError}</p>}
-          </div>
-        )}
       </section>
     </div>
   );
