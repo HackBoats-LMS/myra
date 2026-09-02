@@ -202,7 +202,6 @@ export default function DeliveryStep({
             placeholder="e.g. 9876543210"
             className={`w-full px-3 py-2 text-xs focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none border ${phoneError ? "border-red-400" : "border-[#B6925B]/30"}`}
           />
-        )}
         <p className="text-[10px] text-gray-500 leading-relaxed">We use this number to confirm and deliver your order.</p>
         {phoneError && <p className="text-[11px] text-red-600 font-medium">{phoneError}</p>}
       </section>
