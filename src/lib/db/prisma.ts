@@ -16,9 +16,10 @@ const pool =
   new Pool({
     connectionString,
     ssl: { rejectUnauthorized: false },
-    max: 10,
-    idleTimeoutMillis: 20000,
-    connectionTimeoutMillis: 5000,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 20000,
+    allowExitOnIdle: true,
   });
 if (process.env.NODE_ENV !== "production") globalForPrisma.pool = pool;
 

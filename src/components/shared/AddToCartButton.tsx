@@ -21,7 +21,6 @@ interface AddToCartProps {
   flashPercent?: number | null;
 }
 
-const DEFAULT_SIZES = ["S", "M", "L", "XL"];
 
 export default function AddToCartButton({ 
   productId, 
@@ -41,7 +40,6 @@ export default function AddToCartButton({
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
     hasDbVariants ? variants[0].id : null
   );
-  const [fallbackSize, setFallbackSize] = useState<string>("S");
 
   const selectedVariant = variants.find(v => v.id === selectedVariantId);
   const isCurrentlyOutOfStock = hasDbVariants 
@@ -91,9 +89,9 @@ export default function AddToCartButton({
   return (
     <div className="space-y-5">
       {/* Sizes Section */}
-      <div className="flex flex-wrap gap-3">
-        {hasDbVariants ? (
-          variants.map((v) => {
+      {hasDbVariants && (
+        <div className="flex flex-wrap gap-3">
+          {variants.map((v) => {
             const isSelected = selectedVariantId === v.id;
             const isOutOfStock = v.stockQuantity <= 0;
             return (
@@ -111,27 +109,9 @@ export default function AddToCartButton({
                 {v.size || "S"}
               </button>
             );
-          })
-        ) : (
-          DEFAULT_SIZES.map((size) => {
-            const isSelected = fallbackSize === size;
-            return (
-              <button
-                key={size}
-                type="button"
-                onClick={() => setFallbackSize(size)}
-                className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-sm font-serif border transition-all ${
-                  isSelected
-                    ? "border-[#b88e4f] bg-[#b88e4f] text-white font-medium shadow-xs"
-                    : "border-[#b88e4f]/60 text-[#b88e4f] hover:border-[#b88e4f] bg-white cursor-pointer"
-                }`}
-              >
-                {size}
-              </button>
-            );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
 
       {/* Quantity Selector */}
       <div className="flex items-center w-28 h-9 sm:h-10 border border-[#b88e4f] bg-white">

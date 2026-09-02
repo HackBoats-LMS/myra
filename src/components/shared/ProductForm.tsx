@@ -461,6 +461,27 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
               <input defaultValue={initialData?.videoUrl || ""} name="videoUrl" type="url" placeholder="https://..." className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
             </div>
 
+            {/* Mark as Best Seller */}
+            <div className="bg-[#FAFAFA] p-4 border border-[#B6925B]/20">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  name="bestSeller"
+                  defaultChecked={initialData?.bestSeller ?? false}
+                  value="true"
+                  className="w-4 h-4 accent-[#B6925B] cursor-pointer"
+                />
+                <div>
+                  <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider block">
+                    Mark as Best Seller
+                  </span>
+                  <span className="text-[10px] text-gray-500 block">
+                    Force this product to appear at the top of the Best Sellers list.
+                  </span>
+                </div>
+              </label>
+            </div>
+
             {/* 6. Variants & Stock Management Workflow */}
             <div className="pt-6 border-t border-[#B6925B]/20 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-4">

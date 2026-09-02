@@ -15,7 +15,7 @@ export default function BestSellersSection({ products }: BestSellersSectionProps
       <SectionHeading title="Best Sellers" />
       <ProductCarousel products={products} />
       <div className="flex justify-center mt-8 md:mt-12">
-        <Link href="/collections" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors shadow-sm">
+        <Link href="/collections/best-sellers" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors shadow-sm">
           View All
         </Link>
       </div>

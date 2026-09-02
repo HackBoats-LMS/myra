@@ -592,10 +592,17 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
             `Insufficient stock for ${item.product.name} (${item.variant?.size}/${item.variant?.color}).`
           );
         }
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { salesCount: { increment: item.quantity } }
+        });
       } else {
         const res = await tx.product.updateMany({
           where: { id: item.productId, stockQuantity: { gte: item.quantity } },
-          data: { stockQuantity: { decrement: item.quantity } }
+          data: { 
+            stockQuantity: { decrement: item.quantity },
+            salesCount: { increment: item.quantity }
+          }
         });
         if (res.count === 0) {
           throw new Error(`Insufficient stock for "${item.product.name}".`);

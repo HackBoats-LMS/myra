@@ -110,9 +110,9 @@ export const getCachedBestSellers = createCachedQuery(
   ["products", "best-sellers"],
   async (take: number = 4) => {
     return prisma.product.findMany({
-      where: { deletedAt: null, bestSeller: true },
+      where: { deletedAt: null },
       take,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ bestSeller: "desc" }, { salesCount: "desc" }],
       include: { 
         collection: true,
         reviews: { select: { rating: true } }

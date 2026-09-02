@@ -15,7 +15,7 @@ export default function NewArrivalsSection({ products }: NewArrivalsSectionProps
       <SectionHeading title="New Arrivals" />
       <ProductCarousel products={products} />
       <div className="flex justify-center mt-8 md:mt-12">
-        <Link href="/collections" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors shadow-sm">
+        <Link href="/collections/new-arrivals" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-colors shadow-sm">
           View All
         </Link>
       </div>
