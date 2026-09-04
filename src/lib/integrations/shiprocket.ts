@@ -73,8 +73,8 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Shiprocket API error (${res.status}): ${text}`);
+    await res.text(); // consume response body
+    throw new Error(`Shiprocket API error (${res.status})`);
   }
 
   return (await res.json()) as T;
@@ -146,7 +146,17 @@ function digits(value: string | null | undefined): string {
 export function buildAdhocPayload(order: NonNullable<OrderForShipment>): AdhocOrderPayload {
   const user = order.user;
   const addr = order.address;
-  const shippingName = order.giftName || user.name || "Customer";
+  
+  const billingNameFull = user.name || "Customer";
+  const billingNameParts = billingNameFull.split(" ");
+  const billingFirstName = billingNameParts[0];
+  const billingLastName = billingNameParts.slice(1).join(" ") || "Customer";
+
+  const shippingNameFull = order.giftName || user.name || "Customer";
+  const shippingNameParts = shippingNameFull.split(" ");
+  const shippingFirstName = shippingNameParts[0];
+  const shippingLastName = shippingNameParts.slice(1).join(" ") || "Customer";
+
   const shippingAddress = order.giftAddressLine1 || addr?.addressLine1 || user.addressLine1 || "Address";
   const shippingCity = order.giftCity || addr?.city || user.city || "City";
   const shippingState = order.giftState || addr?.state || user.state || "State";
@@ -164,7 +174,8 @@ export function buildAdhocPayload(order: NonNullable<OrderForShipment>): AdhocOr
       .toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" })
       .replace("T", " "),
     pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || "Main Store",
-    billing_customer_name: user.name || "Customer",
+    billing_customer_name: billingFirstName,
+    billing_last_name: billingLastName,
     billing_address: addr?.addressLine1 || user.addressLine1 || "Address",
     billing_city: addr?.city || user.city || "City",
     billing_state: addr?.state || user.state || "State",
@@ -173,7 +184,8 @@ export function buildAdhocPayload(order: NonNullable<OrderForShipment>): AdhocOr
     billing_email: user.email || "customer@myra.com",
     billing_phone: digits(addr?.phone || user.phoneNumber),
     shipping_is_billing: false,
-    shipping_customer_name: shippingName,
+    shipping_customer_name: shippingFirstName,
+    shipping_last_name: shippingLastName,
     shipping_address: shippingAddress,
     shipping_city: shippingCity,
     shipping_state: shippingState,
@@ -220,8 +232,13 @@ export async function createShipment(orderId: string) {
     body: JSON.stringify(payload),
   });
 
-  const shiprocketOrderId = String(created.order_id ?? "");
-  const shipmentId = String(created.shipment_id ?? "");
+  if (!created.order_id || !created.shipment_id) {
+    console.error("Shiprocket create/adhoc failed. order_id:", created.order_id, "shipment_id:", created.shipment_id);
+    throw new Error("Failed to create order on Shiprocket.");
+  }
+
+  const shiprocketOrderId = String(created.order_id);
+  const shipmentId = String(created.shipment_id);
 
   return { shiprocketOrderId, shipmentId, awbCode: created.awb_code || "", courierName: created.courier_name || "" };
 }
@@ -235,7 +252,17 @@ interface GeneratePickupResponse {
 }
 
 export async function assignAwbAndSchedulePickup(shipmentId: string) {
-  const res = await api<GeneratePickupResponse>("/v1/external/courier/generate/pickup", {
+  // 1. Assign AWB
+  const awb = await api<{ shipment_id?: number; awb_code?: string; courier_name?: string; [key: string]: unknown }>(
+    "/v1/external/courier/assign/awb",
+    {
+      method: "POST",
+      body: JSON.stringify({ shipment_id: Number(shipmentId) }),
+    }
+  );
+
+  // 2. Generate Pickup
+  const pickup = await api<GeneratePickupResponse>("/v1/external/courier/generate/pickup", {
     method: "POST",
     body: JSON.stringify({
       shipment_id: Number(shipmentId),
@@ -244,18 +271,46 @@ export async function assignAwbAndSchedulePickup(shipmentId: string) {
   });
 
   return {
-    awbCode: res.awb_code || "",
-    courierName: res.courier_name || "",
-    trackingUrl: res.awb_code ? `https://shiprocket.co/tracking/${res.awb_code}` : "",
+    awbCode: pickup.awb_code || awb.awb_code || "",
+    courierName: pickup.courier_name || awb.courier_name || "",
+    trackingUrl: pickup.awb_code 
+      ? `https://shiprocket.co/tracking/${pickup.awb_code}` 
+      : awb.awb_code
+      ? `https://shiprocket.co/tracking/${awb.awb_code}`
+      : "",
   };
+}
+
+interface GenerateLabelResponse {
+  label_created?: number;
+  label_url?: string;
+  [key: string]: unknown;
+}
+
+export async function generateLabelUrl(shipmentId: string) {
+  const res = await api<GenerateLabelResponse>("/v1/external/courier/generate/label", {
+    method: "POST",
+    body: JSON.stringify({
+      shipment_id: [Number(shipmentId)],
+    }),
+  });
+
+  return res.label_url;
 }
 
 interface TrackResponse {
   tracking_data?: {
-    awb_code?: string;
-    courier_name?: string;
-    current_status?: string;
-    current_status_id?: number;
+    track_status?: number;
+    shipment_status?: number;
+    shipment_track?: Array<{
+      id?: number;
+      awb_code?: string;
+      courier_name?: string;
+      current_status?: string;
+      shipment_id?: number | string;
+      tracking_url?: string;
+      [key: string]: unknown;
+    }>;
     [key: string]: unknown;
   };
   [key: string]: unknown;
@@ -435,4 +490,32 @@ export function mapShiprocketStatus(status: string | null | undefined): {
     return { status: "CANCELLED", timestampField: "cancelledAt" };
   }
   return null;
+}
+
+export async function checkServiceability(deliveryPincode: string, cod: boolean = false): Promise<{ available: boolean; city?: string; state?: string; estimatedDeliveryDays?: number }> {
+  try {
+    let pickupPincode = process.env.SHIPROCKET_STORE_PINCODE || "110030";
+    if (pickupPincode === "000000") pickupPincode = "110030"; // Fix dummy env value
+    
+    const weight = process.env.SHIPROCKET_PACKAGE_WEIGHT || 1;
+    const isCod = cod ? 1 : 0;
+    const url = `/v1/external/courier/serviceability/?pickup_postcode=${pickupPincode}&delivery_postcode=${deliveryPincode}&weight=${weight}&cod=${isCod}`;
+    
+    const res = await api<any>(url);
+    
+    if (res?.status === 200 && res.data?.available_courier_companies?.length > 0) {
+      // Pick the first available courier to extract city and state information
+      const courier = res.data.available_courier_companies[0];
+      return { 
+        available: true, 
+        city: courier.city, 
+        state: courier.state,
+        estimatedDeliveryDays: parseInt(courier.estimated_delivery_days) || undefined
+      };
+    }
+    return { available: false };
+  } catch (error) {
+    console.error("Shiprocket serviceability error:", error);
+    return { available: false };
+  }
 }

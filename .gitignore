@@ -41,3 +41,20 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# root-level utility/test scripts (not part of the app)
+restore.js
+append.js
+append2.js
+scratch-test.js
+create-users.ts
+check-order.ts
+fix-stuck-order.ts
+remove-delivery-users.ts
+reset-order.ts
+test-order-status.ts
+test-shiprocket.ts
+test-shiprocket-pincode.ts
+test-shiprocket-pincode2.ts
+progress.md
+skills-lock.json

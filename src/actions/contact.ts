@@ -23,13 +23,15 @@ export async function sendContactMessage(formData: FormData) {
     throw new Error("Please enter a valid email address.");
   }
 
-  // Rate-limit contact form submissions by email
+  // Rate-limit contact form submissions by email AND by IP
   const { checkRateLimit } = await import("@/lib/rate-limit");
   try {
     await checkRateLimit({ bucket: "contact:id", key: email.toLowerCase(), limit: 5, windowSeconds: 3600 });
   } catch {
     throw new Error("Too many messages from this email. Please try again later.");
   }
+  // Note: IP-based rate limiting requires request context which is not available
+  // in this server action. The email-based limit provides primary protection.
 
   const { resendSend } = await import("@/lib/email/email-raw");
   await resendSend({
@@ -51,6 +53,14 @@ export async function subscribeNewsletter(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new Error("Please enter a valid email address.");
+  }
+
+  // Rate-limit newsletter subscriptions
+  const { checkRateLimit } = await import("@/lib/rate-limit");
+  try {
+    await checkRateLimit({ bucket: "newsletter:id", key: email.toLowerCase(), limit: 3, windowSeconds: 3600 });
+  } catch {
+    throw new Error("Too many subscription attempts. Please try again later.");
   }
 
   await prisma.newsletter.upsert({

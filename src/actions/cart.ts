@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { updateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { sendEmail } from "@/lib/email/email";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import { isPincodeDeliverable } from "@/actions/pincode";
@@ -13,8 +13,9 @@ import {
   updateCartItemQuantity, 
   getOrCreateCart, 
   mergeGuestCartItems,
-  parseGuestCartCookie 
+  parseGuestCartCookie
 } from "@/features/cart/service";
+import { signCookieValue, verifyCookieValue } from "@/lib/cookie-signing";
 import { CACHE_TAGS } from "@/lib/cache";
 import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
 import { normalizeIndianPhone } from "@/lib/phone";
@@ -150,37 +151,53 @@ export async function addToCart(
   }
 
   if (session?.user?.id) {
-    const cart = await getOrCreateCart(session.user.id);
-    await upsertCartItem(cart.id, productId, qty, variantId);
-    updateTag(CACHE_TAGS.cart(session.user.id));
-  } else {
-    const cookieStore = await cookies();
-    const cartCookie = cookieStore.get('guest_cart');
-    const cartItems = parseGuestCartCookie(cartCookie?.value);
-    
-    const existingItemIndex = cartItems.findIndex(item => 
-      item.productId === productId && (item.variantId || null) === (variantId || null)
-    );
-    
-    if (existingItemIndex > -1) {
-      cartItems[existingItemIndex].quantity = Math.min(cartItems[existingItemIndex].quantity + qty, 99);
-    } else {
-      if (cartItems.length >= 50) {
-        return { added: false, message: "Your cart is full. Please complete this order or remove an item to add more." };
+    try {
+      const cart = await getOrCreateCart(session.user.id);
+      await upsertCartItem(cart.id, productId, qty, variantId);
+      revalidateTag(CACHE_TAGS.cart(session.user.id));
+      revalidatePath("/", "layout");
+      return { added: true };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes("User not found")) {
+        // Clear the invalid session cookie
+        const cookieStore = await cookies();
+        cookieStore.delete(process.env.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token");
+        // Fall through to guest cart below
+      } else {
+        throw err;
       }
-      cartItems.push({ productId, quantity: qty, variantId });
     }
-    
-    cookieStore.set('guest_cart', JSON.stringify(cartItems), {
-      maxAge: 60 * 60 * 24 * 30,
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-    });
   }
 
-  revalidatePath("/");
+  // Guest Cart Logic (used for non-logged in users OR if the DB session was invalid)
+  const cookieStore = await cookies();
+  const cartCookie = cookieStore.get('guest_cart');
+  const rawData = verifyCookieValue(cartCookie?.value);
+  const cartItems = parseGuestCartCookie(rawData ?? cartCookie?.value);
+  
+  const existingItemIndex = cartItems.findIndex(item => 
+    item.productId === productId && (item.variantId || null) === (variantId || null)
+  );
+  
+  if (existingItemIndex > -1) {
+    cartItems[existingItemIndex].quantity = Math.min(cartItems[existingItemIndex].quantity + qty, 99);
+  } else {
+    if (cartItems.length >= 50) {
+      return { added: false, message: "Your cart is full. Please complete this order or remove an item to add more." };
+    }
+    cartItems.push({ productId, quantity: qty, variantId });
+  }
+  
+  cookieStore.set('guest_cart', signCookieValue(JSON.stringify(cartItems)), {
+    maxAge: 60 * 60 * 24 * 30,
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  revalidatePath("/", "layout");
   return { added: true };
 }
 
@@ -193,14 +210,15 @@ export async function updateCartQuantity(productId: string, quantity: number, va
     const cart = await prisma.cart.findUnique({ where: { userId: session.user.id } });
     if (cart) {
       await updateCartItemQuantity(cart.id, productId, qty, variantId);
-      updateTag(CACHE_TAGS.cart(session.user.id));
+      revalidateTag(CACHE_TAGS.cart(session.user.id));
     }
   } else {
     const cookieStore = await cookies();
     const cartCookie = cookieStore.get('guest_cart');
     if (cartCookie) {
       try {
-        let parsed = parseGuestCartCookie(cartCookie.value);
+        const rawData = verifyCookieValue(cartCookie.value);
+        let parsed = parseGuestCartCookie(rawData ?? cartCookie.value);
         if (qty <= 0) {
           parsed = parsed.filter(i => 
             !(i.productId === productId && (i.variantId || null) === (variantId || null))
@@ -213,7 +231,7 @@ export async function updateCartQuantity(productId: string, quantity: number, va
             parsed[index].quantity = qty;
           }
         }
-        cookieStore.set('guest_cart', JSON.stringify(parsed), {
+        cookieStore.set('guest_cart', signCookieValue(JSON.stringify(parsed)), {
           maxAge: 60 * 60 * 24 * 30,
           httpOnly: true,
           sameSite: "lax",
@@ -225,7 +243,7 @@ export async function updateCartQuantity(productId: string, quantity: number, va
       }
     }
   }
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }
 
 export interface GiftDetails {
@@ -472,7 +490,11 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
     }
 
     const deliveryPincode = giftMode && gift ? gift.postalCode?.trim() : orderAddressId ? (await tx.address.findUnique({ where: { id: orderAddressId } }))?.postalCode : null;
-    if (deliveryPincode && !(await isPincodeDeliverable(deliveryPincode))) {
+    
+    // Only block checkout if the order is not paid yet (e.g. during COD or initiate checkout phase). 
+    // If the payment is already captured (PAID), we MUST save the order in our database so the customer doesn't lose their money, 
+    // even if the Shiprocket API is temporarily down or reporting unserviceable.
+    if (opts.paymentStatus !== "PAID" && deliveryPincode && !(await isPincodeDeliverable(deliveryPincode))) {
       throw new Error(`Delivery is not available to pincode ${deliveryPincode}. Please use a different address or contact support.`);
     }
 
@@ -520,9 +542,38 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
     const appliedCouponCode = dbCoupon ? dbCoupon.code : null;
 
     if (dbCoupon) {
-      // Atomic coupon reservation: only increment if the coupon hasn't hit its
-      // max uses yet. This prevents the TOCTOU race where two concurrent
-      // checkouts both read timesUsed < maxUses and both succeed.
+      // Atomic coupon reservation: check global AND per-user limits atomically
+      // to prevent the TOCTOU race where two concurrent checkouts both pass
+      // the per-user check before either increments the counter.
+      const hasPerUserLimit = typeof dbCoupon.maxUsesPerUser === "number";
+      const isPerUserType = dbCoupon.type === "FIRST_ORDER" || dbCoupon.type === "SINGLE_USE";
+
+      if (hasPerUserLimit || isPerUserType) {
+        // Ensure a record exists so updateMany can target it
+        await tx.couponUsage.upsert({
+          where: { couponId_userId: { couponId: dbCoupon.id, userId } },
+          create: { couponId: dbCoupon.id, userId, count: 0 },
+          update: {}, // Do nothing if it exists
+        });
+
+        const limit = hasPerUserLimit ? dbCoupon.maxUsesPerUser! : 1;
+
+        // Atomic per-user reservation: only increment if under per-user limit.
+        const userReserved = await tx.couponUsage.updateMany({
+          where: {
+            couponId: dbCoupon.id,
+            userId,
+            count: { lt: limit },
+          },
+          data: { count: { increment: 1 } },
+        });
+        
+        if (userReserved.count === 0) {
+          throw new Error("This coupon has reached its usage limit for your account.");
+        }
+      }
+
+      // Atomic global reservation: only increment if under global limit.
       const reserved = await tx.coupon.updateMany({
         where: {
           id: dbCoupon.id,
@@ -533,15 +584,9 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
         },
         data: { timesUsed: { increment: 1 } },
       });
+      
       if (reserved.count === 0) {
-        throw new Error("This coupon code has reached its usage limit.");
-      }
-      if (dbCoupon.maxUsesPerUser || dbCoupon.type === "FIRST_ORDER" || dbCoupon.type === "SINGLE_USE") {
-        await tx.couponUsage.upsert({
-          where: { couponId_userId: { couponId: dbCoupon.id, userId } },
-          create: { couponId: dbCoupon.id, userId, count: 1 },
-          update: { count: { increment: 1 } },
-        });
+        throw new Error("This coupon code has reached its overall usage limit.");
       }
     }
 
@@ -695,19 +740,22 @@ export async function checkoutCart(
     sendLowStockAlert(lowStock.map((p) => ({ name: p.name, stockQuantity: p.stockQuantity }))).catch(console.error);
   }
 
-  revalidatePath("/");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.cart(userId));
+  revalidatePath("/", "layout");
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.cart(userId));
 
   return result;
 }
 
-export async function mergeGuestCart(userId: string, cookieValue: string | undefined) {
+export async function mergeGuestCart(cookieValue: string | undefined) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return;
+
   const guestItems = parseGuestCartCookie(cookieValue);
   if (guestItems.length === 0) return;
-  
-  await mergeGuestCartItems(userId, guestItems);
-  updateTag(CACHE_TAGS.cart(userId));
+
+  await mergeGuestCartItems(session.user.id, guestItems);
+  revalidateTag(CACHE_TAGS.cart(session.user.id));
 }
 
 export async function getCart() {
@@ -744,7 +792,8 @@ export async function getCart() {
     if (!cartCookie) return [];
     
     try {
-      const parsed = parseGuestCartCookie(cartCookie.value);
+      const rawData = verifyCookieValue(cartCookie.value);
+      const parsed = parseGuestCartCookie(rawData ?? cartCookie.value);
       const productIds = parsed.map(p => p.productId);
       const variantIds = parsed.map(p => p.variantId).filter((id): id is string => Boolean(id));
       const [products, variants] = await Promise.all([
@@ -781,10 +830,18 @@ export async function getCart() {
 export async function validateCouponAction(code: string, cartTotal: number) {
   // Rate-limit coupon validation to prevent brute-force of coupon codes
   const session = await getServerSession(authOptions);
+  const { checkRateLimit, getClientIp } = await import("@/lib/rate-limit");
+
   if (session?.user?.id) {
-    const { checkRateLimit } = await import("@/lib/rate-limit");
     try {
       await checkRateLimit({ bucket: "coupon:id", key: session.user.id, limit: 20, windowSeconds: 300 });
+    } catch {
+      throw new Error("Too many coupon attempts. Please try again later.");
+    }
+  } else {
+    // Also rate-limit unauthenticated attempts by IP to prevent brute-force
+    try {
+      await checkRateLimit({ bucket: "coupon:ip", key: getClientIp({ headers: {} }), limit: 20, windowSeconds: 300 });
     } catch {
       throw new Error("Too many coupon attempts. Please try again later.");
     }

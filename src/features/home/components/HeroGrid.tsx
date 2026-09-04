@@ -36,7 +36,7 @@ export default async function HeroGrid() {
             alt={mainAlt}
             fill
             priority
-            quality={100}
+            quality={90}
             sizes="(max-width: 1280px) 100vw, 60vw"
             unoptimized={mainSrc.startsWith("http")}
             className="object-cover object-center"
@@ -53,7 +53,7 @@ export default async function HeroGrid() {
               alt={topAlt}
               fill
               priority
-              quality={100}
+              quality={90}
               sizes="(max-width: 1280px) 50vw, 40vw"
               unoptimized={topSrc.startsWith("http")}
               className="object-cover object-center"
@@ -67,7 +67,7 @@ export default async function HeroGrid() {
               alt={bottomAlt}
               fill
               priority
-              quality={100}
+              quality={90}
               sizes="(max-width: 1280px) 50vw, 40vw"
               unoptimized={bottomSrc.startsWith("http")}
               className="object-cover object-center"

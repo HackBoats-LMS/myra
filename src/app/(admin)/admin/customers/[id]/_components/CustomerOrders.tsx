@@ -1,7 +1,16 @@
 import Link from "next/link";
 
+interface OrderEntry {
+  id: string;
+  createdAt: Date;
+  status: string;
+  paymentMethod: string | null;
+  paymentStatus: string;
+  totalAmount: number;
+}
+
 interface CustomerOrdersProps {
-  orders: any[];
+  orders: OrderEntry[];
 }
 
 export default function CustomerOrders({ orders }: CustomerOrdersProps) {

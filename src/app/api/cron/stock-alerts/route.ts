@@ -1,16 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import crypto from "crypto";
-
-function verifyCronAuth(req: Request): boolean {
-  if (!process.env.CRON_SECRET) return false;
-  const auth = req.headers.get("authorization");
-  if (!auth || !auth.startsWith("Bearer ")) return false;
-  const token = auth.slice(7);
-  const secret = process.env.CRON_SECRET;
-  if (token.length !== secret.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(token), Buffer.from(secret));
-}
+import { verifyCronAuth } from "@/lib/cron-auth";
 
 export async function POST(req: Request) {
   if (!verifyCronAuth(req)) {

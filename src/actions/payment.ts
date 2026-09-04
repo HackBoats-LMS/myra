@@ -1,7 +1,6 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath } from "next/cache";
-import { updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { sendEmail } from "@/lib/email/email";
@@ -12,8 +11,9 @@ import {
   getRazorpayKeyId,
   razorpayConfigured,
   verifyRazorpaySignature,
-  fetchRazorpayPayment,
+  fetchRazorpayOrder,
 } from "@/lib/integrations/razorpay";
+import { checkRateLimit, RateLimitError } from "@/lib/rate-limit";
 import { CACHE_TAGS } from "@/lib/cache";
 
 interface InitiatePaymentInput {
@@ -41,6 +41,16 @@ export async function initiateRazorpayPayment(input: InitiatePaymentInput): Prom
     );
   }
 
+  // Rate-limit payment initiation to prevent API flooding
+  try {
+    await checkRateLimit({ bucket: "pay:init", key: session.user.id, limit: 10, windowSeconds: 900 });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      throw new Error("Too many payment attempts. Please try again later.");
+    }
+    throw error;
+  }
+
   const userId = session.user.id;
 
   // Calculate totals directly from current cart without creating an unpaid DB order
@@ -56,6 +66,7 @@ export async function initiateRazorpayPayment(input: InitiatePaymentInput): Prom
     addressId: input.addressId || "",
     phone: input.phone || "",
     couponCode: input.couponCode || "",
+    lockedAmount: String(Math.round(pricing.finalAmount * 100)),
   };
   if (input.gift) {
     notes.gift = JSON.stringify(input.gift).slice(0, 250);
@@ -154,7 +165,7 @@ export async function confirmRazorpayPayment(input: ConfirmPaymentInput): Promis
     throw new Error("Payment verification failed. Please contact support.");
   }
 
-  let existingOrder = await prisma.order.findUnique({ where: { razorpayOrderId } });
+  const existingOrder = await prisma.order.findUnique({ where: { razorpayOrderId } });
 
   // If order already exists (e.g. from retry flow or webhook already processed):
   if (existingOrder) {
@@ -196,14 +207,42 @@ export async function confirmRazorpayPayment(input: ConfirmPaymentInput): Promis
       }).catch(console.error);
     }
 
-    revalidatePath("/");
-    updateTag(CACHE_TAGS.products);
-    updateTag(CACHE_TAGS.cart(session.user.id));
+    revalidatePath("/", "layout");
+    revalidateTag(CACHE_TAGS.products);
+    revalidateTag(CACHE_TAGS.cart(session.user.id));
     return { orderId: existingOrder.id };
   }
 
   // Normal fresh checkout flow: create the DB order, decrement stock, and clear cart
   // only NOW after the payment has been authenticated and captured.
+
+  // Verify that the cart total hasn't changed since the Razorpay order was created.
+  // The lockedAmount was stored in the Razorpay order notes at initiation time.
+  try {
+    const rzOrder = await fetchRazorpayOrder(razorpayOrderId);
+    const orderData = rzOrder as unknown as { notes?: Record<string, string> };
+    const lockedAmountStr = orderData.notes?.lockedAmount;
+    if (lockedAmountStr) {
+      const lockedAmount = Number(lockedAmountStr);
+      const currentPricing = await calculateCartCheckoutPricing({
+        couponCode: input.couponCode,
+        allowAutoApply: input.allowAutoApply !== false,
+      });
+      const currentAmount = Math.round(currentPricing.finalAmount * 100);
+      if (lockedAmount !== currentAmount) {
+        throw new Error(
+          "Your cart total has changed since you initiated payment. Please go back to your cart and try again."
+        );
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("cart total has changed")) {
+      throw error;
+    }
+    // If we can't verify (e.g. Razorpay API error), proceed — the webhook
+    // amount check provides a secondary safety net.
+  }
+
   const result = await createOrderTransaction({
     addressId: input.addressId || "",
     couponCode: input.couponCode,
@@ -243,9 +282,9 @@ export async function confirmRazorpayPayment(input: ConfirmPaymentInput): Promis
     itemCount: result.items.reduce((sum, i) => sum + i.quantity, 0),
   }).catch(console.error);
 
-  revalidatePath("/");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.cart(session.user.id));
+  revalidatePath("/", "layout");
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.cart(session.user.id));
 
   return { orderId: result.orderId };
 }

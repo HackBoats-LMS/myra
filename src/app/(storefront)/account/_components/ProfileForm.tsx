@@ -49,7 +49,7 @@ function profileReducer(state: ProfileState, action: ProfileAction): ProfileStat
   }
 }
 
-export default function ProfileForm({ user }: { user: User }) {
+export default function ProfileForm({ user }: { user: Omit<User, 'password'> & { hasPassword: boolean } }) {
   const toast = useToast();
   const router = useRouter();
   const [state, dispatch] = useReducer(profileReducer, {
@@ -82,7 +82,7 @@ export default function ProfileForm({ user }: { user: User }) {
     const formData = new FormData(e.currentTarget);
 
     try {
-      if (user.password) {
+      if (user.hasPassword) {
         await changePassword(formData);
         toast.success("Password changed successfully!");
       } else {
@@ -291,7 +291,7 @@ export default function ProfileForm({ user }: { user: User }) {
           <div>
             <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide">Security</h3>
             <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">
-              {user.password ? "Update your account password" : "Set a password to login with phone/email"}
+              {user.hasPassword ? "Update your account password" : "Set a password to login with phone/email"}
             </p>
           </div>
           {showPasswordSection ? (
@@ -303,7 +303,7 @@ export default function ProfileForm({ user }: { user: User }) {
 
         {showPasswordSection && (
           <form onSubmit={handlePasswordSubmit} className="p-6 border-t border-[#B6925B]/20 space-y-4 bg-[#FAFAFA]">
-            {user.password && (
+            {user.hasPassword && (
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Current Password</label>
                 <input
@@ -315,7 +315,7 @@ export default function ProfileForm({ user }: { user: User }) {
               </div>
             )}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">{user.password ? "New Password" : "Password"}</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">{user.hasPassword ? "New Password" : "Password"}</label>
               <input
                 required
                 name="newPassword"
@@ -338,7 +338,7 @@ export default function ProfileForm({ user }: { user: User }) {
                 disabled={isChangingPassword}
                 className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center disabled:opacity-50 rounded-none"
               >
-                {isChangingPassword ? <i className="ri-loader-4-line mr-2 animate-spin text-base" /> : user.password ? "Update Password" : "Set Password"}
+                {isChangingPassword ? <i className="ri-loader-4-line mr-2 animate-spin text-base" /> : user.hasPassword ? "Update Password" : "Set Password"}
               </button>
             </div>
           </form>

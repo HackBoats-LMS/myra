@@ -179,6 +179,8 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
     }
   };
 
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string>(initialData?.videoUrl || "");
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
   const wrappedCreateAction = async (formData: FormData) => {
@@ -191,14 +193,22 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
         } else {
           const uploadData = new FormData();
           uploadData.append("file", img.file);
-          // Since we need uploadImage here, we must import it at the top!
-          // Wait, uploadImage is imported in actions/admin!
-          const { uploadImage } = await import("@/actions/admin");
-          const publicUrl = await uploadImage(uploadData);
+          const { uploadMedia } = await import("@/actions/admin");
+          const publicUrl = await uploadMedia(uploadData);
           finalUrls.push(publicUrl);
         }
       }
       formData.set("images", JSON.stringify(finalUrls));
+
+      let finalVideoUrl = videoUrl;
+      if (videoFile) {
+        const uploadData = new FormData();
+        uploadData.append("file", videoFile);
+        const { uploadMedia } = await import("@/actions/admin");
+        finalVideoUrl = await uploadMedia(uploadData);
+      }
+      formData.set("videoUrl", finalVideoUrl);
+
       await createProduct(formData);
     } finally {
       setIsUploadingFiles(false);
@@ -215,12 +225,22 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
         } else {
           const uploadData = new FormData();
           uploadData.append("file", img.file);
-          const { uploadImage } = await import("@/actions/admin");
-          const publicUrl = await uploadImage(uploadData);
+          const { uploadMedia } = await import("@/actions/admin");
+          const publicUrl = await uploadMedia(uploadData);
           finalUrls.push(publicUrl);
         }
       }
       formData.set("images", JSON.stringify(finalUrls));
+
+      let finalVideoUrl = videoUrl;
+      if (videoFile) {
+        const uploadData = new FormData();
+        uploadData.append("file", videoFile);
+        const { uploadMedia } = await import("@/actions/admin");
+        finalVideoUrl = await uploadMedia(uploadData);
+      }
+      formData.set("videoUrl", finalVideoUrl);
+
       await updateProduct(id, formData);
     } finally {
       setIsUploadingFiles(false);
@@ -457,8 +477,47 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Video URL (optional)</label>
-              <input defaultValue={initialData?.videoUrl || ""} name="videoUrl" type="url" placeholder="https://..." className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" />
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Product Video (optional)</label>
+              
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex-1 w-full">
+                  <p className="text-[10px] text-gray-500 mb-1">Direct URL</p>
+                  <input 
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    type="url" 
+                    placeholder="https://... (or upload file below)" 
+                    className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" 
+                    disabled={!!videoFile}
+                  />
+                </div>
+                
+                <span className="text-[10px] text-gray-400 font-bold uppercase">OR</span>
+                
+                <div className="flex-1 w-full">
+                  <p className="text-[10px] text-gray-500 mb-1">Upload MP4 (Max 50MB)</p>
+                  <input 
+                    type="file" 
+                    accept="video/mp4" 
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setVideoFile(e.target.files[0]);
+                        setVideoUrl(""); // clear URL if file uploaded
+                      } else {
+                        setVideoFile(null);
+                      }
+                    }}
+                    className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-1.5 text-sm text-[#4A3B2C] file:mr-4 file:py-1 file:px-4 file:rounded-none file:border-0 file:text-xs file:font-bold file:bg-[#B6925B]/10 file:text-[#B6925B] hover:file:bg-[#B6925B]/20 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {videoUrl && !videoFile && (
+                 <video src={videoUrl} controls className="mt-3 h-32 border border-[#B6925B]/20 bg-black" />
+              )}
+              {videoFile && (
+                 <p className="text-[10px] text-green-600 mt-1 font-bold">Selected for upload: {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(2)} MB)</p>
+              )}
             </div>
 
             {/* Mark as Best Seller */}

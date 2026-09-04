@@ -1,8 +1,20 @@
 import EditCustomerForm from "@/app/(admin)/admin/customers/_components/EditCustomerForm";
 import DisableUserButton from "@/app/(admin)/admin/customers/_components/DisableUserButton";
 
+interface CustomerEntry {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phoneNumber: string | null;
+  role: string;
+  isDisabled: boolean;
+  createdAt: Date;
+  canManageInventory: boolean;
+  canManageShipping: boolean;
+}
+
 interface CustomerHeaderProps {
-  customer: any;
+  customer: CustomerEntry;
 }
 
 export default function CustomerHeader({ customer }: CustomerHeaderProps) {

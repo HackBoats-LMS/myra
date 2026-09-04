@@ -4,6 +4,7 @@ import Pagination from "@/components/shared/Pagination";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
 import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+import { getCachedSearchProducts } from "@/lib/cache";
 
 export const metadata: Metadata = {
   title: "Search Results | Myra Shopping Mall",
@@ -38,48 +39,14 @@ export default async function SearchPage({
   }
 
   // Construct filters
-  const whereClause: Prisma.ProductWhereInput = {
-    deletedAt: null,
-    OR: [
-      { name: { contains: query, mode: "insensitive" as const } },
-      { description: { contains: query, mode: "insensitive" as const } },
-    ],
-  };
-
-  if (stock === 'instock') {
-    whereClause.stockQuantity = { gt: 0 };
-  }
-
-  if (priceRange === 'under-1000') {
-    whereClause.price = { lt: 1000 };
-  } else if (priceRange === '1000-5000') {
-    whereClause.price = { gte: 1000, lte: 5000 };
-  } else if (priceRange === 'over-5000') {
-    whereClause.price = { gt: 5000 };
-  }
-
-  // Construct order
-  let orderByClause: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
-  if (sort === 'price-asc') {
-    orderByClause = { price: 'asc' };
-  } else if (sort === 'price-desc') {
-    orderByClause = { price: 'desc' };
-  } else if (sort === 'name-asc') {
-    orderByClause = { name: 'asc' };
-  }
-
-  const [products, totalProducts] = await Promise.all([
-    prisma.product.findMany({
-      where: whereClause,
-      orderBy: orderByClause,
-      skip: (currentPage - 1) * ITEMS_PER_PAGE,
-      take: ITEMS_PER_PAGE,
-      include: { collection: true, reviews: { select: { rating: true } } },
-    }),
-    prisma.product.count({
-      where: whereClause,
-    }),
-  ]);
+  const { products, totalProducts } = await getCachedSearchProducts(
+    query,
+    stock,
+    priceRange,
+    sort,
+    currentPage,
+    ITEMS_PER_PAGE
+  );
 
   // Compute review data for each product
   const sales = await getActiveFlashSales();

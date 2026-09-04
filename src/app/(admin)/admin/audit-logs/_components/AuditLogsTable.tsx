@@ -1,7 +1,18 @@
 import { formatAction, formatDate } from "../utils";
 
+interface AuditLogEntry {
+  id: string;
+  action: string;
+  entity: string | null;
+  entityId: string | null;
+  actorId: string | null;
+  meta: Record<string, unknown> | null;
+  ip: string | null;
+  createdAt: Date;
+}
+
 interface AuditLogsTableProps {
-  logs: any[];
+  logs: AuditLogEntry[];
 }
 
 export default function AuditLogsTable({ logs }: AuditLogsTableProps) {

@@ -6,6 +6,13 @@ const REQUIRED_ENV_VARS = [
   "SUPABASE_SERVICE_ROLE_KEY",
 ] as const;
 
+const RECOMMENDED_ENV_VARS = [
+  "RAZORPAY_KEY_ID",
+  "RAZORPAY_KEY_SECRET",
+  "RAZORPAY_WEBHOOK_SECRET",
+  "COOKIE_SIGNING_SECRET",
+] as const;
+
 export function validateEnv() {
   const missing: string[] = [];
 
@@ -20,6 +27,21 @@ export function validateEnv() {
       `\n[FATAL ERROR] Missing required environment variables:\n` +
       missing.map((key) => ` - ${key}`).join("\n") +
       `\n\nPlease check your .env configuration file.`
+    );
+  }
+
+  // Warn about recommended but optional vars
+  const missingRecommended: string[] = [];
+  RECOMMENDED_ENV_VARS.forEach((key) => {
+    if (!process.env[key]) {
+      missingRecommended.push(key);
+    }
+  });
+  if (missingRecommended.length > 0) {
+    console.warn(
+      `[WARNING] Missing recommended environment variables:\n` +
+      missingRecommended.map((key) => ` - ${key}`).join("\n") +
+      `\nSome features may not work correctly.`
     );
   }
 }

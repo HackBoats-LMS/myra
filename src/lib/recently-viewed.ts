@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { verifyCookieValue } from "@/lib/cookie-signing";
 
 export const RECENTLY_VIEWED_COOKIE = "recently_viewed";
 export const RECENTLY_VIEWED_MAX = 8;
@@ -8,7 +9,9 @@ export async function getRecentlyViewedProductIds(): Promise<string[]> {
   const raw = cookieStore.get(RECENTLY_VIEWED_COOKIE)?.value;
   if (!raw) return [];
   try {
-    const parsed: unknown = JSON.parse(raw);
+    const data = verifyCookieValue(raw);
+    if (!data) return [];
+    const parsed: unknown = JSON.parse(data);
     if (!Array.isArray(parsed)) return [];
     return parsed
       .filter((id): id is string => typeof id === "string")
@@ -17,3 +20,5 @@ export async function getRecentlyViewedProductIds(): Promise<string[]> {
     return [];
   }
 }
+
+

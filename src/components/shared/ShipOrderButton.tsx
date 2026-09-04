@@ -5,6 +5,8 @@ import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import { Truck, Loader2 } from "lucide-react";
 
+import PrintLabelButton from "./PrintLabelButton";
+
 export default function ShipOrderButton({
   orderId,
   shipped,
@@ -18,10 +20,13 @@ export default function ShipOrderButton({
 
   if (shipped) {
     return (
-      <span className="inline-flex items-center gap-1.5 bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
-        <Truck className="w-4 h-4 text-[#B6925B]" />
-        Shipped via Shiprocket
-      </span>
+      <div className="flex gap-2">
+        <span className="inline-flex items-center gap-1.5 bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
+          <Truck className="w-4 h-4 text-[#B6925B]" />
+          Shipped via Shiprocket
+        </span>
+        <PrintLabelButton orderId={orderId} />
+      </div>
     );
   }
 

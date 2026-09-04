@@ -1,15 +1,26 @@
 import { prisma } from "@/lib/db/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/auth";
 import { NextResponse } from "next/server";
+import { verifyAdmin } from "@/lib/auth/auth-utils";
+import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
 
 const MAX_EXPORT_ROWS = 10000;
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || session.user.role !== "ADMIN") {
+export async function GET(req: Request) {
+  try {
+    await verifyAdmin();
+  } catch {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  // Rate-limit export to prevent abuse (5 per minute per admin)
+  try {
+    const ip = getClientIp(req);
+    await checkRateLimit({ bucket: "export:admin", key: ip, limit: 5, windowSeconds: 60 });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return new NextResponse("Too many requests. Please try again later.", { status: 429 });
+    }
+    throw error;
   }
 
   try {

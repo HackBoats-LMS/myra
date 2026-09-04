@@ -30,7 +30,8 @@ async function main() {
       role: 'ADMIN',
     },
   });
-  console.log(`[SEED] Admin password: ${adminPassword}`);
+  const isDev = process.env.NODE_ENV === 'development';
+  console.log(`[SEED] Admin created (email: admin@myra.com)${isDev ? ` password: ${adminPassword}` : ''}`);
 
   // Create delivery agent with a random strong password
   const deliveryPassword = generateStrongPassword();
@@ -43,10 +44,11 @@ async function main() {
       phoneNumber: '8888888888',
       password: deliveryHash,
       name: 'Delivery Agent',
-      role: 'DELIVERY',
+      role: 'MULTI_WORKER',
     },
   });
-  console.log(`[SEED] Delivery password: ${deliveryPassword}`);
+  console.log(`[SEED] Delivery created (email: delivery@myra.com)${isDev ? ` password: ${deliveryPassword}` : ''}`);
+
 
   // Create multi-worker with a random strong password
   const workerPassword = generateStrongPassword();
@@ -64,7 +66,8 @@ async function main() {
       canManageShipping: true,
     },
   });
-  console.log(`[SEED] Worker password: ${workerPassword}`);
+  console.log(`[SEED] Worker created (email: worker@myra.com)${isDev ? ` password: ${workerPassword}` : ''}`);
+
 
   // Create Collections
   const womenCollection = await prisma.collection.upsert({

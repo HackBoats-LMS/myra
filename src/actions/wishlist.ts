@@ -3,8 +3,9 @@ import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { cookies } from "next/headers";
-import { updateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache";
+import { signCookieValue, verifyCookieValue } from "@/lib/cookie-signing";
 
 const GUEST_WISHLIST_COOKIE = "guest_wishlist";
 const MAX_GUEST_ITEMS = 100;
@@ -42,20 +43,21 @@ export async function toggleWishlist(productId: string) {
 
     if (existing) {
       await prisma.wishlistItem.delete({ where: { id: existing.id } });
-      updateTag(CACHE_TAGS.wishlist(userId));
+      revalidateTag(CACHE_TAGS.wishlist(userId));
       return false; // Removed
     } else {
       await prisma.wishlistItem.create({
         data: { wishlistId: wishlist.id, productId }
       });
-      updateTag(CACHE_TAGS.wishlist(userId));
+      revalidateTag(CACHE_TAGS.wishlist(userId));
       return true; // Added
     }
   }
 
   // Guest wishlist (cookie-based)
   const cookieStore = await cookies();
-  const productIds = parseGuestWishlistCookie(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
+  const rawWishlistData = verifyCookieValue(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
+  const productIds = parseGuestWishlistCookie(rawWishlistData ?? cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
   const index = productIds.indexOf(productId);
 
   let added: boolean;
@@ -67,7 +69,7 @@ export async function toggleWishlist(productId: string) {
     added = true;
   }
 
-  cookieStore.set(GUEST_WISHLIST_COOKIE, JSON.stringify(productIds), {
+  cookieStore.set(GUEST_WISHLIST_COOKIE, signCookieValue(JSON.stringify(productIds)), {
     maxAge: 60 * 60 * 24 * 30, // 30 days
     httpOnly: true,
     sameSite: "lax",
@@ -109,7 +111,7 @@ export async function mergeGuestWishlist(cookieValue: string | undefined) {
     });
   }
 
-  updateTag(CACHE_TAGS.wishlist(userId));
+  revalidateTag(CACHE_TAGS.wishlist(userId));
 }
 
 export type WishlistDrawerItem = {

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { verifyAdmin } from "@/lib/auth/auth-utils";
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { CACHE_TAGS } from "@/lib/cache";
 import { logAudit } from "@/lib/audit";
 import { detectImageType } from "@/lib/storage/image-upload";
@@ -95,8 +95,8 @@ export async function submitReview(productId: string, rating: number, comment: s
     });
   }
 
-  revalidatePath(`/products/${product.slug}`);
-  updateTag(CACHE_TAGS.reviews(productId));
+  revalidatePath(`/products/${product.slug}`, "layout");
+  revalidateTag(CACHE_TAGS.reviews(productId));
 }
 
 export async function deleteReview(reviewId: string) {
@@ -117,8 +117,8 @@ export async function deleteReview(reviewId: string) {
 
   await logAudit("review.delete", `Deleted review ${reviewId} for product ${review.productId}`);
 
-  revalidatePath(`/admin/reviews`);
-  revalidatePath(`/products/${review.product.slug}`);
+  revalidatePath(`/admin/reviews`, "layout");
+  revalidatePath(`/products/${review.product.slug}`, "layout");
 }
 
 export async function setReviewApproved(reviewId: string, isApproved: boolean) {
@@ -139,9 +139,9 @@ export async function setReviewApproved(reviewId: string, isApproved: boolean) {
 
   await logAudit("review.update", `${isApproved ? "Approved" : "Hidden"} review ${reviewId} for product ${review.productId}`);
 
-  revalidatePath(`/admin/reviews`);
-  revalidatePath(`/products/${review.product.slug}`);
-  updateTag(CACHE_TAGS.reviews(review.productId));
+  revalidatePath(`/admin/reviews`, "layout");
+  revalidatePath(`/products/${review.product.slug}`, "layout");
+  revalidateTag(CACHE_TAGS.reviews(review.productId));
 }
 
 export async function replyToReview(reviewId: string, reply: string) {
@@ -167,7 +167,7 @@ export async function replyToReview(reviewId: string, reply: string) {
 
   await logAudit("review.reply", `Replied to review ${reviewId} for product ${review.productId}`);
 
-  revalidatePath(`/admin/reviews`);
-  revalidatePath(`/products/${review.product.slug}`);
-  updateTag(CACHE_TAGS.reviews(review.productId));
+  revalidatePath(`/admin/reviews`, "layout");
+  revalidatePath(`/products/${review.product.slug}`, "layout");
+  revalidateTag(CACHE_TAGS.reviews(review.productId));
 }

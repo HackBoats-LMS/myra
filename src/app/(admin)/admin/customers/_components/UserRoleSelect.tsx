@@ -5,51 +5,61 @@ import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-const ROLE_LABELS: Record<string, string> = {
+const ROLE_LABELS: Record<"CUSTOMER" | "MULTI_WORKER", string> = {
   CUSTOMER: "Customer",
-  DELIVERY: "Delivery Agent",
-  MULTI_WORKER: "Multi-Worker",
+  MULTI_WORKER: "Staff / Worker",
 };
 
-export default function UserRoleSelect({ userId, currentRole }: { userId: string; currentRole: string }) {
+export default function UserRoleSelect({
+  userId,
+  currentRole,
+}: {
+  userId: string;
+  currentRole: string;
+}) {
   const router = useRouter();
   const toast = useToast();
-  const [role, setRole] = useState(currentRole);
   const [loading, setLoading] = useState(false);
-
-  if (currentRole === "ADMIN") {
-    return (
-      <span className="inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-widest bg-[#4A3B2C] text-white">
-        Admin
-      </span>
-    );
-  }
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const next = e.target.value;
+    if (next === currentRole) return;
+
+    if (!confirm(`Are you sure you want to change this user's role to ${ROLE_LABELS[next as keyof typeof ROLE_LABELS]}?`)) {
+      e.target.value = currentRole;
+      return;
+    }
+
     setLoading(true);
     try {
-      await updateUserRole(userId, next as "CUSTOMER" | "DELIVERY" | "MULTI_WORKER");
-      setRole(next);
-      toast.success("Role updated successfully!");
+      await updateUserRole(userId, next as "CUSTOMER" | "MULTI_WORKER");
+      toast.success("Role updated");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update role.");
-      setRole(currentRole);
+      toast.error(err instanceof Error ? err.message : "Failed to update role");
+      e.target.value = currentRole;
     } finally {
       setLoading(false);
     }
   };
 
+  if (currentRole === "ADMIN") {
+    return (
+      <span className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">
+        Admin
+      </span>
+    );
+  }
+
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block w-40">
       <select
-        value={role}
+        defaultValue={currentRole}
         onChange={handleChange}
         disabled={loading}
-        className="appearance-none bg-transparent border border-[#B6925B]/30 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] rounded-none pl-3 pr-8 py-2 focus:outline-none focus:border-[#B6925B] disabled:opacity-50"
+        className="w-full appearance-none rounded-none border border-[#B6925B]/30 bg-[#FAFAFA] px-3 py-1.5 pr-8 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] outline-none focus:border-[#B6925B]"
       >
-        {(["CUSTOMER", "DELIVERY", "MULTI_WORKER"] as const).map((r) => (
+        {(["CUSTOMER", "MULTI_WORKER"] as const).map((r) => (
           <option key={r} value={r}>
             {ROLE_LABELS[r]}
           </option>

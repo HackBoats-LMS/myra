@@ -8,13 +8,18 @@ export async function verifyRole(allowedRoles: string[]) {
     throw new Error("Unauthorized");
   }
 
-  // Re-read the role fresh from the DB so admin demotions take effect
-  // immediately, rather than relying on the role baked into the JWT at login.
+  // Re-read the role fresh from the DB so admin demotions and disabled
+  // accounts take effect immediately, rather than relying on the JWT.
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, isDisabled: true },
   });
-  const role = dbUser?.role ?? session.user.role;
+
+  if (!dbUser || dbUser.isDisabled) {
+    throw new Error("Unauthorized");
+  }
+
+  const role = dbUser.role;
 
   if (!allowedRoles.includes(role)) {
     throw new Error("Unauthorized");
@@ -28,18 +33,13 @@ export async function verifyAdmin() {
 }
 
 export async function verifyUser() {
-  const user = await verifyRole(["CUSTOMER", "ADMIN", "DELIVERY", "MULTI_WORKER"]);
+  const user = await verifyRole(["CUSTOMER", "ADMIN", "MULTI_WORKER"]);
   return user.id;
-}
-
-export async function verifyDeliveryAgent() {
-  return verifyRole(["DELIVERY", "ADMIN"]);
 }
 
 export async function verifyMultiWorker() {
   return verifyRole(["MULTI_WORKER", "ADMIN"]);
 }
-
 
 
 export async function verifyWorkerCapability(capability: "inventory" | "shipping") {
@@ -49,19 +49,24 @@ export async function verifyWorkerCapability(capability: "inventory" | "shipping
   }
   const { id } = session.user;
 
-  // Re-read role and capabilities fresh from the DB so admin changes apply
-  // immediately instead of relying on the (possibly stale) JWT.
+  // Re-read role, capabilities, and disabled status fresh from the DB so admin
+  // changes apply immediately instead of relying on the (possibly stale) JWT.
   const dbUser = await prisma.user.findUnique({
     where: { id },
-    select: { role: true, canManageInventory: true, canManageShipping: true },
+    select: { role: true, isDisabled: true, canManageInventory: true, canManageShipping: true },
   });
-  const role = dbUser?.role ?? session.user.role;
+
+  if (!dbUser || dbUser.isDisabled) {
+    throw new Error("Unauthorized");
+  }
+
+  const role = dbUser.role;
 
   if (role === "ADMIN") {
     // Return fresh DB user data instead of potentially stale JWT data.
     const adminUser = await prisma.user.findUnique({
       where: { id },
-      select: { id: true, role: true, canManageInventory: true, canManageShipping: true },
+      select: { id: true, role: true, isDisabled: true, canManageInventory: true, canManageShipping: true },
     });
     return adminUser ?? { ...session.user, role };
   }
@@ -71,8 +76,8 @@ export async function verifyWorkerCapability(capability: "inventory" | "shipping
 
   const hasCapability =
     capability === "inventory"
-      ? dbUser?.canManageInventory ?? false
-      : dbUser?.canManageShipping ?? false;
+      ? dbUser.canManageInventory
+      : dbUser.canManageShipping;
 
   if (!hasCapability) {
     throw new Error("You do not have permission to perform this action.");

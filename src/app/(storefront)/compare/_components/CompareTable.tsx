@@ -3,6 +3,25 @@ import Image from "next/image";
 import AddToCartButton from "@/components/shared/AddToCartButton";
 import CompareButton from "@/components/shared/CompareButton";
 
+interface ReviewEntry {
+  rating: number;
+}
+
+interface ProductCompareEntry {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  originalPrice: number | null;
+  productType: string | null;
+  material: string | null;
+  code: string | null;
+  stockQuantity: number;
+  images: string[];
+  reviews: ReviewEntry[];
+  variants: Array<{ id: string; size: string | null; color: string | null }>;
+}
+
 function AttributeRow({
   label,
   values,
@@ -27,8 +46,8 @@ function AttributeRow({
 }
 
 interface CompareTableProps {
-  ordered: any[];
-  priced: any[];
+  ordered: ProductCompareEntry[];
+  priced: ProductCompareEntry[];
 }
 
 export default function CompareTable({ ordered, priced }: CompareTableProps) {

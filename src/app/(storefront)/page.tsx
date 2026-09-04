@@ -15,9 +15,14 @@ import StoreLocationSection from "@/features/home/components/StoreLocationSectio
 import { getFeaturedProducts, getBestSellers } from "@/services/products";
 import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
 
+import { preload } from 'react-dom';
+
 export const revalidate = 3600; // 1 hour ISR
 
 export default async function StorefrontHome() {
+  preload('/animation/opening/design.png', { as: 'image' });
+  preload('/animation/opening/design1.png', { as: 'image' });
+
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
   let bestSellers: Awaited<ReturnType<typeof getBestSellers>> = [];
 

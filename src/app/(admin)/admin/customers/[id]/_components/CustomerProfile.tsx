@@ -1,8 +1,18 @@
 import UserRoleSelect from "@/app/(admin)/admin/customers/_components/UserRoleSelect";
 import WorkerCapabilitiesSelect from "@/app/(admin)/admin/customers/_components/WorkerCapabilitiesSelect";
 
+interface CustomerEntry {
+  id: string;
+  email: string | null;
+  phoneNumber: string | null;
+  role: string;
+  isDisabled: boolean;
+  canManageInventory: boolean;
+  canManageShipping: boolean;
+}
+
 interface CustomerProfileProps {
-  customer: any;
+  customer: CustomerEntry;
 }
 
 export default function CustomerProfile({ customer }: CustomerProfileProps) {

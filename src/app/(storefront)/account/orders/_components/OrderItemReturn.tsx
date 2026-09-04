@@ -13,7 +13,7 @@ interface OrderItemReturnProps {
   existingRequests: ReturnRequest[];
 }
 
-const REQUESTABLE = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
+const REQUESTABLE = ["DELIVERED"];
 
 export default function OrderItemReturn({ orderItemId, productName, orderStatus, existingRequests }: OrderItemReturnProps) {
   const router = useRouter();

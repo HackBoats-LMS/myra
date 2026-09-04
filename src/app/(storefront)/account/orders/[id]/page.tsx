@@ -26,7 +26,20 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
 
   const order = await prisma.order.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      totalAmount: true,
+      paymentMethod: true,
+      paymentStatus: true,
+      awbNumber: true,
+      trackingUrl: true,
+      createdAt: true,
+      couponCode: true,
+      discountAmount: true,
+      shippingAmount: true,
+      razorpayPaymentId: true,
       user: true,
       address: true,
       orderItems: {
@@ -55,6 +68,44 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
     },
     orderBy: { createdAt: "desc" },
   });
+
+  // --- Live Shiprocket Sync ---
+  if (order.awbNumber && order.status !== "DELIVERED" && order.status !== "CANCELLED") {
+    try {
+      const { trackShipment, mapShiprocketStatus } = await import("@/lib/integrations/shiprocket");
+      const trackRes = await trackShipment(order.awbNumber);
+      // Shiprocket can return status in shipment_track array or directly
+      const shiprocketStatus = 
+        trackRes.tracking_data?.shipment_track?.[0]?.current_status || 
+        (trackRes.tracking_data as Record<string, unknown>)?.current_status;
+        
+      if (shiprocketStatus) {
+        const mapped = mapShiprocketStatus(shiprocketStatus);
+        if (mapped) {
+          const statusOrder = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"];
+          const currentRank = statusOrder.indexOf(order.status);
+          const incomingRank = statusOrder.indexOf(mapped.status);
+          
+          if (incomingRank > currentRank) {
+            await prisma.order.update({
+              where: { id: order.id },
+              data: { 
+                status: mapped.status, 
+                [mapped.timestampField]: new Date() 
+              }
+            });
+            // Update local object so UI reflects the new status instantly
+            (order as { status: string }).status = mapped.status;
+            (order as Record<string, unknown>)[mapped.timestampField] = new Date();
+          }
+        }
+      }
+    } catch (err) {
+      // Fail gracefully: if Shiprocket API is down, just use DB status
+      console.error("Live tracking sync failed:", err);
+    }
+  }
+  // --- End Live Sync ---
 
   const canChangeAddress = order.status !== "DELIVERED" && order.status !== "CANCELLED";
 
@@ -96,6 +147,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
 
         <OrderHeader 
           orderId={order.id} 
+          orderItems={order.orderItems}
           createdAt={order.createdAt} 
           status={order.status} 
           canChangeAddress={canChangeAddress} 

@@ -1,5 +1,29 @@
+interface OrderWithUser {
+  user: {
+    name: string | null;
+    email: string | null;
+    phoneNumber: string | null;
+  };
+  giftName: string | null;
+  giftPhone: string | null;
+  giftAddressLine1: string | null;
+  giftCity: string | null;
+  giftState: string | null;
+  giftPostalCode: string | null;
+  giftCountry: string | null;
+  address: {
+    addressLine1: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone: string | null;
+    label: string;
+  } | null;
+}
+
 interface AdminOrderCustomerDetailsProps {
-  order: any;
+  order: OrderWithUser;
 }
 
 export default function AdminOrderCustomerDetails({ order }: AdminOrderCustomerDetailsProps) {

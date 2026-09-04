@@ -7,6 +7,7 @@ import MoveToCartButton from "@/app/(storefront)/wishlist/_components/MoveToCart
 import MoveAllToBagButton from "@/app/(storefront)/wishlist/_components/MoveAllToBagButton";
 import type { Prisma } from "@/generated/prisma";
 import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
+import { verifyCookieValue } from "@/lib/cookie-signing";
 
 type WishlistItem = Prisma.WishlistItemGetPayload<{
   include: { product: { include: { reviews: { select: { rating: true } } } } };
@@ -84,7 +85,8 @@ export default async function WishlistPage() {
         }) || [];
     } else {
       const cookieStore = await cookies();
-      const productIds = parseGuestWishlistCookie(cookieStore.get("guest_wishlist")?.value);
+      const rawWishlistData = verifyCookieValue(cookieStore.get("guest_wishlist")?.value);
+      const productIds = parseGuestWishlistCookie(rawWishlistData ?? cookieStore.get("guest_wishlist")?.value);
       if (productIds.length > 0) {
         const products = await prisma.product.findMany({
           where: { id: { in: productIds }, deletedAt: null },

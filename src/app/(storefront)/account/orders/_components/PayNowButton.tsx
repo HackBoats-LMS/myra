@@ -26,6 +26,8 @@ function loadRazorpayScript(): Promise<void> {
     }
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.integrity = "sha384-DGoewKiReEG7emT8B3VkxTlAV+YFqrt91iFJxUL85+hUhEjhgN2cUWuWUFZj+j/k";
+    script.crossOrigin = "anonymous";
     script.dataset.myraRazorpay = "true";
     script.onload = () => resolve();
     script.onerror = () => resolve();

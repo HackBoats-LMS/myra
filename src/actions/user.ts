@@ -93,7 +93,7 @@ export async function changePassword(formData: FormData) {
   const confirmPassword = String(formData.get("confirmPassword") || "");
 
   // Rate-limit password change attempts to prevent brute-force
-  const { checkRateLimit, getClientIp } = await import("@/lib/rate-limit");
+  const { checkRateLimit } = await import("@/lib/rate-limit");
   try {
     await checkRateLimit({ bucket: "pwchange:id", key: userId, limit: 5, windowSeconds: 900 });
   } catch {
@@ -120,7 +120,7 @@ export async function changePassword(formData: FormData) {
   });
 
   if (!user || !user.password) {
-    throw new Error("User not found or password not set.");
+    throw new Error("Incorrect current password.");
   }
 
   const bcrypt = await import("bcryptjs");
@@ -141,6 +141,13 @@ export async function setPassword(formData: FormData) {
   const userId = await verifyUser();
   const newPassword = String(formData.get("newPassword") || "");
   const confirmPassword = String(formData.get("confirmPassword") || "");
+
+  const { checkRateLimit } = await import("@/lib/rate-limit");
+  try {
+    await checkRateLimit({ bucket: "pwset:id", key: userId, limit: 5, windowSeconds: 900 });
+  } catch {
+    throw new Error("Too many attempts. Please try again later.");
+  }
 
   if (!newPassword || !confirmPassword) {
     throw new Error("All fields are required.");
@@ -230,29 +237,121 @@ export async function reorderOrder(orderId: string) {
   revalidatePath("/cart");
 }
 
-export async function cancelOrder(orderId: string) {
+export async function cancelOrder(orderId: string, reason?: string, itemIds?: string[]) {
   const userId = await verifyUser();
 
-  // Atomic status flip: only cancel if order is PENDING. This prevents two
-  // concurrent cancel requests from both succeeding and double-restoring stock.
+  const { checkRateLimit } = await import("@/lib/rate-limit");
+  try {
+    await checkRateLimit({ bucket: "cancel:id", key: userId, limit: 10, windowSeconds: 300 });
+  } catch {
+    throw new Error("Too many cancellation attempts. Please try again later.");
+  }
+
+  let needsRefund = false;
+  let refundAmount = 0;
+  let razorpayPaymentId: string | null = null;
+  let isPartial = false;
+
   await prisma.$transaction(async (tx) => {
-    const order = await tx.order.updateMany({
-      where: { id: orderId, userId, status: "PENDING", paymentStatus: { not: "PAID" } },
-      data: { status: "CANCELLED", cancelledAt: new Date() },
+    const fullOrder = await tx.order.findUnique({ 
+      where: { id: orderId, userId },
+      include: { orderItems: true }
     });
-    if (order.count === 0) {
-      throw new Error("Only pending unpaid orders can be cancelled.");
+    
+    if (!fullOrder) throw new Error("Order not found or unauthorized.");
+    if (fullOrder.status !== "PENDING") {
+      throw new Error("Only pending orders can be cancelled.");
     }
 
-    const fullOrder = await tx.order.findUnique({ where: { id: orderId } });
-    if (!fullOrder) throw new Error("Order not found");
+    const uncancelledItems = fullOrder.orderItems.filter(i => !i.isCancelled);
+    const itemIdsToCancel = itemIds || uncancelledItems.map(i => i.id);
+    
+    // Verify itemIds belong to this order and are active
+    const validItemsToCancel = uncancelledItems.filter(i => itemIdsToCancel.includes(i.id));
+    
+    if (validItemsToCancel.length === 0) {
+      throw new Error("No valid items to cancel.");
+    }
 
-    const orderItems = await tx.orderItem.findMany({
-      where: { orderId },
-      select: { id: true, productId: true, variantId: true, quantity: true },
+    isPartial = validItemsToCancel.length < uncancelledItems.length;
+
+    // Calculate refund amount
+    refundAmount = validItemsToCancel.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    if (reason) {
+      const sanitizedReason = reason.replace(/<[^>]*>/g, "").trim().substring(0, 500);
+      const existingNotes = fullOrder.internalNotes ? fullOrder.internalNotes + "\n\n" : "";
+      await tx.order.update({
+        where: { id: orderId },
+        data: { internalNotes: existingNotes + `CANCELLATION REASON: ${sanitizedReason}` + (isPartial ? ` (Partial Cancellation)` : "") },
+      });
+    }
+
+    // Mark items as cancelled
+    await tx.orderItem.updateMany({
+      where: { id: { in: validItemsToCancel.map(i => i.id) } },
+      data: { isCancelled: true }
     });
 
-    for (const item of orderItems) {
+    if (isPartial) {
+      if (fullOrder.paymentStatus === "PAID" && refundAmount > 0 && fullOrder.razorpayPaymentId) {
+        needsRefund = true;
+        razorpayPaymentId = fullOrder.razorpayPaymentId;
+        
+        await tx.order.update({
+          where: { id: orderId },
+          data: { 
+            paymentStatus: (fullOrder.refundedAmount + refundAmount >= fullOrder.totalAmount) ? "REFUNDED" : "PARTIALLY_REFUNDED", 
+            refundedAmount: { increment: refundAmount } 
+          },
+        });
+      }
+    } else {
+      // Full cancellation
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: "CANCELLED", cancelledAt: new Date() },
+      });
+
+      if (fullOrder.paymentStatus === "PAID" && fullOrder.totalAmount > 0 && fullOrder.razorpayPaymentId) {
+        needsRefund = true;
+        refundAmount = fullOrder.totalAmount; // Full refund of total including shipping
+        razorpayPaymentId = fullOrder.razorpayPaymentId;
+        
+        await tx.order.update({
+          where: { id: orderId },
+          data: { paymentStatus: "REFUNDED", refundedAmount: refundAmount },
+        });
+      }
+      
+      // Restore coupons for full cancellation only
+      if (fullOrder.couponCode) {
+        await tx.coupon.updateMany({
+          where: { code: fullOrder.couponCode, timesUsed: { gt: 0 } },
+          data: { timesUsed: { decrement: 1 } },
+        });
+
+        const coupon = await tx.coupon.findUnique({ where: { code: fullOrder.couponCode } });
+        if (coupon) {
+          const usage = await tx.couponUsage.findUnique({
+            where: { couponId_userId: { couponId: coupon.id, userId } },
+          });
+          if (usage) {
+            if (usage.count <= 1) {
+              await tx.couponUsage.delete({ where: { id: usage.id } });
+            } else {
+              await tx.couponUsage.update({
+                where: { id: usage.id },
+                data: { count: { decrement: 1 } },
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Restore stock
+    for (const item of validItemsToCancel) {
       if (item.variantId) {
         await tx.productVariant.update({
           where: { id: item.variantId },
@@ -265,31 +364,32 @@ export async function cancelOrder(orderId: string) {
         });
       }
     }
-
-    if (fullOrder.couponCode) {
-      await tx.coupon.updateMany({
-        where: { code: fullOrder.couponCode, timesUsed: { gt: 0 } },
-        data: { timesUsed: { decrement: 1 } },
-      });
-
-      const coupon = await tx.coupon.findUnique({ where: { code: fullOrder.couponCode } });
-      if (coupon) {
-        const usage = await tx.couponUsage.findUnique({
-          where: { couponId_userId: { couponId: coupon.id, userId } },
-        });
-        if (usage) {
-          if (usage.count <= 1) {
-            await tx.couponUsage.delete({ where: { id: usage.id } });
-          } else {
-            await tx.couponUsage.update({
-              where: { id: usage.id },
-              data: { count: { decrement: 1 } },
-            });
-          }
-        }
-      }
-    }
   });
+
+  if (needsRefund && razorpayPaymentId) {
+    try {
+      const { refundRazorpayPayment } = await import("@/lib/integrations/razorpay");
+      await refundRazorpayPayment(razorpayPaymentId, refundAmount * 100);
+    } catch (err) {
+      console.error("Automatic refund failed for order", orderId, err);
+      // Revert the REFUNDED status if full, or decrement if partial
+      if (isPartial) {
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { 
+            paymentStatus: "PAID", // We just set it to PAID for admin to review
+            refundedAmount: { decrement: refundAmount } 
+          }
+        });
+      } else {
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { paymentStatus: "PAID", refundedAmount: 0 }
+        });
+      }
+      throw new Error(`Order ${isPartial ? 'partially ' : ''}cancelled, but automatic refund failed. Please contact support.`);
+    }
+  }
 
   revalidatePath("/account");
   revalidatePath(`/account/orders/${orderId}`);
@@ -307,8 +407,8 @@ export async function updateOrderDeliveryAddress(orderId: string, addressId: str
   if (order.userId !== userId) {
     throw new Error("Unauthorized");
   }
-  if (order.status === "DELIVERED" || order.status === "CANCELLED") {
-    throw new Error("Delivery address can only be changed while the order is in transit.");
+  if (order.status !== "PENDING") {
+    throw new Error("Delivery address can only be changed before the order is packed or shipped.");
   }
 
   const address = await prisma.address.findUnique({ where: { id: addressId } });

@@ -1,5 +1,6 @@
 "use server";
 import { cookies } from "next/headers";
+import { signCookieValue, verifyCookieValue } from "@/lib/cookie-signing";
 import { RECENTLY_VIEWED_COOKIE, RECENTLY_VIEWED_MAX } from "@/lib/recently-viewed";
 
 export async function trackProductView(productId: string) {
@@ -10,9 +11,12 @@ export async function trackProductView(productId: string) {
   const raw = cookieStore.get(RECENTLY_VIEWED_COOKIE)?.value;
   if (raw) {
     try {
-      const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        current = parsed.filter((id): id is string => typeof id === "string");
+      const data = verifyCookieValue(raw);
+      if (data) {
+        const parsed: unknown = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          current = parsed.filter((id): id is string => typeof id === "string");
+        }
       }
     } catch {
       /* ignore malformed cookie */
@@ -21,7 +25,7 @@ export async function trackProductView(productId: string) {
 
   const next = [productId, ...current.filter((id) => id !== productId)].slice(0, RECENTLY_VIEWED_MAX);
 
-  cookieStore.set(RECENTLY_VIEWED_COOKIE, JSON.stringify(next), {
+  cookieStore.set(RECENTLY_VIEWED_COOKIE, signCookieValue(JSON.stringify(next)), {
     maxAge: 60 * 60 * 24 * 30, // 30 days
     httpOnly: true,
     sameSite: "lax",

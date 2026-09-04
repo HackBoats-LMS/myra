@@ -74,17 +74,15 @@ export default function OrderStatus({ orderId, status, paymentMethod, paymentSta
               Courier AWB
             </span>
             <p className="text-sm font-mono font-bold text-[#4A3B2C]">{awbNumber}</p>
-            {trackingUrl && (
-              <a
-                href={trackingUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 transition-colors"
-              >
-                <span>Track on Shiprocket</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
+            <a
+              href={trackingUrl || `https://shiprocket.co/tracking/${awbNumber}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 transition-colors"
+            >
+              <span>Track on Shiprocket</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
         )}
       </div>

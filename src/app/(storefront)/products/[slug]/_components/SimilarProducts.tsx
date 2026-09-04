@@ -1,7 +1,20 @@
 import ProductCard from "@/components/shared/ProductCard";
 
+interface ProductCardProps {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  originalPrice?: number | null;
+  images: string[];
+  reviewCount?: number;
+  averageRating?: number;
+  stockQuantity?: number;
+  flashPercent?: number;
+}
+
 interface SimilarProductsProps {
-  products: any[];
+  products: ProductCardProps[];
 }
 
 export default function SimilarProducts({ products }: SimilarProductsProps) {

@@ -1,32 +1,38 @@
-import { prisma } from "@/lib/db/prisma";
-import { getRecentlyViewedProductIds } from "@/lib/recently-viewed";
-import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+"use client";
+
+import { useEffect, useState } from "react";
 import ProductCard from "@/components/shared/ProductCard";
+import type { Prisma } from "@/generated/prisma";
 
-export default async function RecommendedForYou() {
-  const recentIds = await getRecentlyViewedProductIds();
-  if (recentIds.length === 0) return null;
+// We'll define a minimal type for the client since we don't have the full Prisma include types here
+type RecommendedProduct = Prisma.ProductGetPayload<Record<string, unknown>> & {
+  reviewCount: number;
+  averageRating: number;
+};
 
-  // Single query: products that share a collection with something the user viewed,
-  // excluding the items they already viewed. Avoids the extra lookups entirely.
-  const recommended = await prisma.product.findMany({
-    where: {
-      deletedAt: null,
-      stockQuantity: { gt: 0 },
-      id: { notIn: recentIds },
-      collection: { products: { some: { id: { in: recentIds } } } },
-    },
-    include: { reviews: { select: { rating: true } } },
-    take: 4,
-  });
-  if (recommended.length === 0) return null;
+export default function RecommendedForYou() {
+  const [products, setProducts] = useState<RecommendedProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const sales = await getActiveFlashSales();
-  const withPricing = applyFlashToProductList(recommended, sales).map(({ reviews, ...p }) => {
-    const reviewCount = reviews?.length || 0;
-    const averageRating = reviewCount > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviewCount : 0;
-    return { ...p, reviewCount, averageRating };
-  });
+  useEffect(() => {
+    async function fetchRecommendations() {
+      try {
+        const res = await fetch("/api/recommendations");
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data.products || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch recommendations:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchRecommendations();
+  }, []);
+
+  if (loading || products.length === 0) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 py-12">
@@ -36,8 +42,8 @@ export default async function RecommendedForYou() {
         <div className="h-[1px] w-12 md:w-24 bg-[#B6925B]/50"></div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-        {withPricing.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product as unknown as ProductCardProps} />
         ))}
       </div>
     </section>

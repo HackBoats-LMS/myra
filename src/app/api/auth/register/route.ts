@@ -24,6 +24,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Phone number must be exactly 10 digits" }, { status: 400 });
     }
 
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
+    }
+
     // Validate name length if provided
     if (name && String(name).trim().length > 100) {
       return NextResponse.json({ error: "Name must not exceed 100 characters" }, { status: 400 });
@@ -90,7 +95,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email } }, { status: 201 });
+    return NextResponse.json({ user: { name: user.name, email: user.email } }, { status: 201 });
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

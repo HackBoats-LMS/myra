@@ -1,8 +1,20 @@
 import StarRating from "@/components/shared/StarRating";
 import ReviewSection from "@/app/(storefront)/products/[slug]/_components/ReviewSection";
 
+interface ReviewEntry {
+  id: string;
+  rating: number;
+  comment: string | null;
+  images: string[];
+  isApproved: boolean;
+  createdAt: Date;
+  user: {
+    name: string | null;
+  };
+}
+
 interface ProductReviewsProps {
-  reviews: any[];
+  reviews: ReviewEntry[];
   reviewCount: number;
   averageRating: number;
 }

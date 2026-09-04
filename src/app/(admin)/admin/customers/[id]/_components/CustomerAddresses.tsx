@@ -1,5 +1,17 @@
+interface AddressEntry {
+  id: string;
+  label: string;
+  addressLine1: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone: string | null;
+  isDefault: boolean;
+}
+
 interface CustomerAddressesProps {
-  addresses: any[];
+  addresses: AddressEntry[];
 }
 
 export default function CustomerAddresses({ addresses }: CustomerAddressesProps) {

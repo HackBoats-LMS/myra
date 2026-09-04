@@ -59,12 +59,8 @@ export default function DeliveryStep({
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
   const hasNoAddresses = addresses.length === 0;
 
-  const saveDeliveryPhone = (phone: string) => {
-    try {
-      localStorage.setItem("myra_delivery_phone", phone);
-    } catch {
-      /* ignore */
-    }
+  const saveDeliveryPhone = (_phone: string) => {
+    // Phone is kept in React state only — no localStorage persistence for PII.
   };
 
   const setGiftField = (key: keyof CheckoutGift, value: string) =>

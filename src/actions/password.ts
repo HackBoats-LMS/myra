@@ -68,6 +68,16 @@ export async function resetPassword(token: string, newPassword: string) {
   if (!newPassword || newPassword.length < 8) throw new Error("Password must be at least 8 characters");
   if (newPassword.length > 128) throw new Error("Password must not exceed 128 characters");
 
+  // Rate-limit password reset attempts
+  try {
+    await checkRateLimit({ bucket: "pwreset:token", key: token.slice(0, 16), limit: 5, windowSeconds: 900 });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      throw new Error("Too many reset attempts. Please request a new reset link.");
+    }
+    throw error;
+  }
+
   // Hash the incoming token to match against stored hash
   const tokenHash = sha256(token);
 

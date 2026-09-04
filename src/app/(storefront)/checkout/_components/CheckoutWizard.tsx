@@ -59,12 +59,6 @@ export default function CheckoutWizard({
   );
   const [addressList, setAddressList] = useState<CheckoutAddress[]>(addresses);
   const [selectedPhone, setSelectedPhone] = useState<string>(() => {
-    try {
-      const saved = normalizeIndianPhone(localStorage.getItem("myra_delivery_phone"));
-      if (saved) return saved;
-    } catch {
-      /* ignore */
-    }
     return (
       normalizeIndianPhone(phones[0]) ||
       normalizeIndianPhone(addresses.find((a) => a.isDefault)?.phone) ||

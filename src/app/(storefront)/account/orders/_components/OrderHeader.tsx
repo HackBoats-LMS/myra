@@ -6,15 +6,30 @@ import ChangeOrderAddressButton from "@/app/(storefront)/account/orders/_compone
 import type { SavedAddress } from "@/app/(storefront)/account/orders/_components/ChangeOrderAddressButton";
 import { ArrowLeft } from "lucide-react";
 
+interface OrderItemEntry {
+  id: string;
+  quantity: number;
+  price: number;
+  product: {
+    name: string;
+    images: string[];
+  };
+  variant: {
+    size: string | null;
+    color: string | null;
+  } | null;
+}
+
 interface OrderHeaderProps {
   orderId: string;
+  orderItems: OrderItemEntry[];
   createdAt: Date;
   status: string;
   canChangeAddress: boolean;
   savedAddresses: SavedAddress[];
 }
 
-export default function OrderHeader({ orderId, createdAt, status, canChangeAddress, savedAddresses }: OrderHeaderProps) {
+export default function OrderHeader({ orderId, orderItems, createdAt, status, canChangeAddress, savedAddresses }: OrderHeaderProps) {
   const shortId = orderId.split("-")[0].toUpperCase();
 
   return (
@@ -50,15 +65,12 @@ export default function OrderHeader({ orderId, createdAt, status, canChangeAddre
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 md:pt-0">
-          <PrintInvoiceButton />
+          <PrintInvoiceButton orderId={orderId} />
           {status !== "CANCELLED" && (
             <ReorderButton orderId={orderId} />
           )}
           {status === "PENDING" && (
-            <CancelOrderButton orderId={orderId} />
-          )}
-          {canChangeAddress && (
-            <ChangeOrderAddressButton orderId={orderId} addresses={savedAddresses} />
+            <CancelOrderButton orderId={orderId} orderItems={orderItems} />
           )}
         </div>
       </div>

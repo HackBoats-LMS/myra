@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { revalidateTag } from "next/cache";
 import { verifyWebhookSignature } from "@/lib/integrations/razorpay";
 import { CACHE_TAGS } from "@/lib/cache";
+import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,17 @@ export async function POST(req: NextRequest) {
 
   if (!verifyWebhookSignature(raw, signature)) {
     return NextResponse.json({ ok: false }, { status: 401 });
+  }
+
+  // Rate-limit webhook to prevent abuse (100 per minute)
+  try {
+    const ip = getClientIp(req);
+    await checkRateLimit({ bucket: "webhook:razorpay", key: ip, limit: 100, windowSeconds: 60 });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ ok: false }, { status: 429 });
+    }
+    throw error;
   }
 
   let payload: RazorpayWebhookPayload;

@@ -30,7 +30,19 @@ function LoginFormInner() {
       if (res?.error) {
         setError(res.error);
       } else {
-        router.push(safeCallbackUrl);
+        if (safeCallbackUrl === "/") {
+          const { getSession } = await import("next-auth/react");
+          const session = await getSession();
+          if (session?.user?.role === "ADMIN") {
+            router.push("/admin");
+          } else if (session?.user?.role === "MULTI_WORKER") {
+            router.push("/worker");
+          } else {
+            router.push("/");
+          }
+        } else {
+          router.push(safeCallbackUrl);
+        }
         router.refresh();
       }
     } catch {

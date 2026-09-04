@@ -78,8 +78,8 @@ const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(150),
   slug: z.string().max(150).optional(),
   description: z.string().max(2000, "Description is too long").optional(),
-  price: z.number().min(0, "Price must be positive"),
-  originalPrice: z.number().min(0).nullable().optional(),
+  price: z.number().min(0.01, "Price must be greater than 0").max(9999999, "Price is too high"),
+  originalPrice: z.number().min(0).max(9999999).nullable().optional(),
   stockQuantity: z.number().int().min(0, "Stock cannot be negative"),
   collectionId: z.string().optional(),
   bestSeller: z.boolean().default(false),
@@ -110,21 +110,21 @@ function parseImagesField(formData: FormData): string[] {
   }
 }
 
-function parseAttributesField(formData: FormData): any {
+function parseAttributesField(formData: FormData): Record<string, unknown> {
   const raw = formData.get("attributes");
   if (!raw) return {};
   try {
     const parsed = JSON.parse(String(raw));
     if (Array.isArray(parsed)) {
       const obj: Record<string, string> = {};
-      parsed.forEach((item: any) => {
-        if (item.key && item.key.trim() !== "") {
-          obj[item.key.trim()] = item.value || "";
+      parsed.forEach((item: { key?: unknown; value?: unknown }) => {
+        if (item.key && typeof item.key === "string" && item.key.trim() !== "") {
+          obj[item.key.trim()] = typeof item.value === "string" ? item.value : "";
         }
       });
       return obj;
     }
-    return typeof parsed === "object" && parsed !== null ? parsed : {};
+    return typeof parsed === "object" && parsed !== null ? parsed as Record<string, unknown> : {};
   } catch {
     return {};
   }
@@ -693,6 +693,11 @@ export async function processRefund(orderId: string, formData: FormData) {
 
   // Atomic, concurrency-safe claim of the refund amount. Guards against two
   // simultaneous refunds collectively exceeding the remaining balance.
+  // NOTE: The Razorpay API call below is outside the transaction. In the rare
+  // case of two concurrent admin refunds, both DB claims may succeed before
+  // either gateway call completes. The WHERE guard (`refundedAmount <= total - amount`)
+  // prevents overlapping amounts, and failures are reverted. For higher-scale
+  // operations, consider a distributed lock or refund queue.
   const nextStatus = (order.refundedAmount || 0) + amount >= order.totalAmount ? "REFUNDED" : "PARTIALLY_REFUNDED";
   const refundResult = await prisma.order.updateMany({
     where: {
@@ -773,12 +778,60 @@ export async function uploadImage(formData: FormData) {
   return `${supabaseUrl}/storage/v1/object/public/product-images/${fileName}`;
 }
 
+export async function uploadMedia(formData: FormData) {
+  await verifyWorkerCapability("inventory");
+
+  const file = formData.get("file") as File;
+  if (!file) throw new Error("No file provided.");
+
+  // Server-side file size validation (50 MB for media)
+  const MAX_MEDIA_SIZE_BYTES = 50 * 1024 * 1024;
+  if (file.size > MAX_MEDIA_SIZE_BYTES) {
+    throw new Error("File is too large. Maximum size is 50 MB.");
+  }
+
+  // Sniff the actual content
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  // Import dynamically to avoid circular dependencies if any
+  const { detectMediaType } = await import("@/lib/storage/image-upload");
+  const detected = detectMediaType(bytes);
+  
+  if (!detected) {
+    throw new Error("Invalid file type. Only JPEG, PNG, WebP, GIF, and MP4 files are allowed.");
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!serviceRoleKey) {
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY in .env");
+  }
+
+  const fileName = `${crypto.randomUUID()}.${detected.ext}`;
+
+  const res = await fetch(`${supabaseUrl}/storage/v1/object/product-images/${fileName}`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${serviceRoleKey}`,
+      "Content-Type": detected.mime,
+    },
+    body: file,
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Failed to upload: ${err}`);
+  }
+
+  return `${supabaseUrl}/storage/v1/object/public/product-images/${fileName}`;
+}
+
 export async function toggleUserDisabled(userId: string, isDisabled: boolean) {
   await verifyAdmin();
 
   await prisma.user.update({
     where: { id: userId },
-    data: { isDisabled }
+    data: { isDisabled, tokenVersion: { increment: 1 } }
   });
 
   await logAudit("user.toggleDisabled", "User", userId, { isDisabled });
@@ -843,7 +896,7 @@ export async function updateCustomerProfile(
   revalidatePath(`/admin/customers/${userId}`);
 }
 
-export async function updateUserRole(userId: string, role: "CUSTOMER" | "DELIVERY" | "MULTI_WORKER") {
+export async function updateUserRole(userId: string, role: "CUSTOMER" | "MULTI_WORKER") {
   await verifyAdmin();
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -856,7 +909,7 @@ export async function updateUserRole(userId: string, role: "CUSTOMER" | "DELIVER
 
   await prisma.user.update({
     where: { id: userId },
-    data: { role },
+    data: { role, tokenVersion: { increment: 1 } },
   });
 
   await logAudit("user.roleUpdate", "User", userId, { role });
@@ -978,8 +1031,15 @@ export async function shipOrder(orderId: string) {
       finalAwb = pickup.awbCode;
       finalCourier = pickup.courierName || finalCourier;
       trackingUrl = pickup.trackingUrl;
-    } catch {
-      // AWB assignment can be async; creation succeeded, status will update via webhook.
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      console.error("AWB assignment failed:", err);
+      // Clean up the draft order in the database so it can be retried
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { shiprocketOrderId: null, shipmentId: null }
+      });
+      throw new Error(`Failed to assign tracking number: ${message}`);
     }
   }
 
@@ -1015,8 +1075,10 @@ export async function shipOrder(orderId: string) {
 export async function updateOrderInternalNotes(orderId: string, internalNotes: string) {
   await verifyAdmin();
 
-  // Sanitize: strip HTML tags and limit length to prevent stored XSS
-  const sanitized = (internalNotes || "").replace(/<[^>]*>/g, "").trim().substring(0, 2000);
+  // Sanitize: strip all HTML tags (including malformed ones) and limit length to prevent stored XSS.
+  // The regex handles tags with attributes, self-closing tags, and catches opening tags even when
+  // the closing > is missing by matching up to the next tag or end of string.
+  const sanitized = (internalNotes || "").replace(/<[^>]*>/g, "").replace(/&[a-z]+;/gi, "").trim().substring(0, 2000);
 
   await prisma.order.update({
     where: { id: orderId },
@@ -1075,4 +1137,53 @@ export async function togglePincodeActive(id: string, isActive: boolean) {
   await logAudit("pincode.toggle", "Pincode", id, { isActive });
 
   revalidatePath("/admin/pincodes");
+}
+
+export async function printShippingLabel(orderId: string) {
+  await verifyWorkerCapability("shipping");
+  
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { shipmentId: true }
+  });
+
+  if (!order) throw new Error("Order not found");
+  if (!order.shipmentId) throw new Error("Order has not been shipped via Shiprocket yet");
+
+  const { generateLabelUrl } = await import("@/lib/integrations/shiprocket");
+  const url = await generateLabelUrl(order.shipmentId);
+  
+  if (!url) throw new Error("Failed to generate label from Shiprocket");
+  return url;
+}
+
+export async function markOrderAsPacked(orderId: string) {
+  await verifyWorkerCapability("shipping");
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId }
+  });
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+  
+  if (order.status !== "PENDING") {
+    throw new Error("Only pending orders can be marked as packed.");
+  }
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: "READY_TO_SHIP",
+      readyToShipAt: new Date(),
+    }
+  });
+
+  await logAudit("order.packed", "Order", orderId, { previousStatus: "PENDING" });
+  
+  revalidatePath("/worker/orders");
+  revalidatePath(`/worker/orders/${orderId}`);
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
 }

@@ -6,14 +6,14 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      role: "ADMIN" | "CUSTOMER" | "DELIVERY" | "MULTI_WORKER";
+      role: "ADMIN" | "CUSTOMER" | "MULTI_WORKER";
       canManageInventory: boolean;
       canManageShipping: boolean;
     } & DefaultSession["user"];
   }
 
   interface User {
-    role: "ADMIN" | "CUSTOMER" | "DELIVERY" | "MULTI_WORKER";
+    role: "ADMIN" | "CUSTOMER" | "MULTI_WORKER";
     canManageInventory: boolean;
     canManageShipping: boolean;
   }
@@ -22,8 +22,10 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
-    role: "ADMIN" | "CUSTOMER" | "DELIVERY" | "MULTI_WORKER";
+    role: "ADMIN" | "CUSTOMER" | "MULTI_WORKER";
     canManageInventory: boolean;
     canManageShipping: boolean;
+    tokenVersion: number;
+    _tokenVersionCheckedAt?: number;
   }
 }

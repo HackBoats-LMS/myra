@@ -3,7 +3,9 @@ import ProductCarousel from "./ProductCarousel";
 import SectionHeading from "./SectionHeading";
 import type { Prisma } from "@/generated/prisma";
 
-type ProductWithRelations = any;
+type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: { collection: true; reviews: true };
+}>;
 
 interface BestSellersSectionProps {
   products: ProductWithRelations[];

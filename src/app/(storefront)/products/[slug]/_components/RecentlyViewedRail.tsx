@@ -1,32 +1,41 @@
-import { prisma } from "@/lib/db/prisma";
-import { getRecentlyViewedProductIds } from "@/lib/recently-viewed";
-import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+"use client";
+
+import { useEffect, useState } from "react";
 import ProductCard from "@/components/shared/ProductCard";
+import type { Prisma } from "@/generated/prisma";
 
-export default async function RecentlyViewedRail({ currentProductId }: { currentProductId: string }) {
-  const ids = await getRecentlyViewedProductIds();
-  const withoutCurrent = ids.filter((id) => id !== currentProductId);
-  if (withoutCurrent.length === 0) return null;
+type RecentlyViewedProduct = Prisma.ProductGetPayload<{}> & {
+  reviewCount: number;
+  averageRating: number;
+};
 
-  const products = await prisma.product.findMany({
-    where: { id: { in: withoutCurrent.slice(0, 4) }, deletedAt: null },
-    include: { reviews: { select: { rating: true } } },
-  });
-  if (products.length === 0) return null;
+export default function RecentlyViewedRail({ currentProductId }: { currentProductId: string }) {
+  const [products, setProducts] = useState<RecentlyViewedProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Preserve the cookie order (most recently viewed first).
-  const ordered = withoutCurrent
-    .map((id) => products.find((p) => p.id === id))
-    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  useEffect(() => {
+    async function fetchRecentlyViewed() {
+      try {
+        const res = await fetch("/api/recently-viewed");
+        if (res.ok) {
+          const data = await res.json();
+          // Filter out the current product and take top 4
+          const filtered = (data.products || [])
+            .filter((p: { id: string }) => p.id !== currentProductId)
+            .slice(0, 4);
+          setProducts(filtered);
+        }
+      } catch (error) {
+        console.error("Failed to fetch recently viewed products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchRecentlyViewed();
+  }, [currentProductId]);
 
-  const sales = await getActiveFlashSales();
-  const withReviews = applyFlashToProductList(ordered, sales).map(({ reviews, ...product }) => {
-    const reviewCount = reviews?.length || 0;
-    const averageRating = reviewCount > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
-      : 0;
-    return { ...product, reviewCount, averageRating };
-  });
+  if (loading || products.length === 0) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 py-16">
@@ -36,8 +45,8 @@ export default async function RecentlyViewedRail({ currentProductId }: { current
         <div className="h-[1px] w-12 md:w-24 bg-[#B6925B]/50"></div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-        {withReviews.map((product) => (
-          <ProductCard key={product.id} product={product} />
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product as any} />
         ))}
       </div>
     </section>

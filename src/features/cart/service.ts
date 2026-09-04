@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { applyFlashDiscount, getActiveFlashSales } from "@/lib/flash-sale";
+import { verifyCookieValue } from "@/lib/cookie-signing";
 
 const MAX_CART_QUANTITY = 99;
 
@@ -66,7 +67,8 @@ export async function getCartItems(): Promise<CartLineItem[]> {
   const cartCookie = cookieStore.get("guest_cart");
   if (!cartCookie) return [];
 
-  const parsed = parseGuestCartCookie(cartCookie.value);
+  const rawData = verifyCookieValue(cartCookie.value);
+  const parsed = parseGuestCartCookie(rawData ?? cartCookie.value);
   const productIds = parsed.map((p) => p.productId);
   const variantIds = parsed.map((p) => p.variantId).filter((id): id is string => Boolean(id));
 
@@ -151,6 +153,10 @@ export async function updateCartItemQuantity(
 export async function getOrCreateCart(userId: string) {
   let cart = await prisma.cart.findUnique({ where: { userId } });
   if (!cart) {
+    const userExists = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+    if (!userExists) {
+      throw new Error("User not found. Your session may be invalid or expired. Please sign out and log back in.");
+    }
     cart = await prisma.cart.create({ data: { userId } });
   }
   return cart;

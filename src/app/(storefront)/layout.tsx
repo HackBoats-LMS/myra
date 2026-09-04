@@ -15,11 +15,13 @@ import Footer from "@/components/layout/Footer";
 import PwaRegister from "@/app/(storefront)/_components/PwaRegister";
 import Drawers from "@/app/(storefront)/_components/Drawers";
 import SmoothScroll from "@/components/layout/SmoothScroll";
+import { verifyCookieValue } from "@/lib/cookie-signing";
 
 function parseGuestCartCount(raw: string | undefined): number {
   if (!raw) return 0;
   try {
-    const parsed: unknown = JSON.parse(raw);
+    const data = verifyCookieValue(raw) ?? raw;
+    const parsed: unknown = JSON.parse(data);
     if (!Array.isArray(parsed)) return 0;
     return parsed.reduce((sum: number, item: { quantity?: number }) => sum + (item.quantity || 0), 0);
   } catch {
@@ -30,7 +32,8 @@ function parseGuestCartCount(raw: string | undefined): number {
 function parseGuestWishlistCount(raw: string | undefined): number {
   if (!raw) return 0;
   try {
-    const parsed: unknown = JSON.parse(raw);
+    const data = verifyCookieValue(raw) ?? raw;
+    const parsed: unknown = JSON.parse(data);
     if (!Array.isArray(parsed)) return 0;
     return parsed.length;
   } catch {
@@ -41,41 +44,23 @@ function parseGuestWishlistCount(raw: string | undefined): number {
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
   validateEnv();
 
-  let cartCount = 0;
-  let wishlistCount = 0;
-  let isLoggedIn = false;
-  let compareIds: string[] = [];
   let navLinks: NavLink[] = NAV_LINKS;
+  let compareIds: string[] = [];
 
   try {
-    const session = await getServerSession(authOptions);
-    isLoggedIn = !!session?.user?.id;
-    const userId = session?.user?.id ?? null;
-
-    // Load navigation tree statically cached with on-demand ISR
-    const [cachedNav, userCart, userWishlist] = await Promise.all([
-      getCachedNavigationTree(),
-      userId ? getCachedCartCount(userId) : Promise.resolve(null),
-      userId ? getCachedWishlistCount(userId) : Promise.resolve(null),
-    ]);
-
+    const cachedNav = await getCachedNavigationTree();
     if (cachedNav && cachedNav.length > 0) {
       navLinks = cachedNav;
     }
-
-    if (userId) {
-      cartCount = userCart ?? 0;
-      wishlistCount = userWishlist ?? 0;
-    } else {
-      const cookieStore = await cookies();
-      cartCount = parseGuestCartCount(cookieStore.get("guest_cart")?.value);
-      wishlistCount = parseGuestWishlistCount(cookieStore.get("guest_wishlist")?.value);
-    }
-
     compareIds = await getCompareIds();
   } catch (error) {
     console.warn("Database unreachable in storefront layout header:", error instanceof Error ? error.message : "unknown error");
   }
+
+  // Initial dummy state for static rendering. HeaderController will hydrate on client mount.
+  const cartCount = 0;
+  const wishlistCount = 0;
+  const isLoggedIn = false;
 
   return (
     <CartProvider initialCartCount={cartCount}>

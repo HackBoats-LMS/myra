@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache";
 import crypto from "crypto";
 import { mapShiprocketStatus } from "@/lib/integrations/shiprocket";
 import { CACHE_TAGS } from "@/lib/cache";
+import { checkRateLimit, getClientIp, RateLimitError } from "@/lib/rate-limit";
 
 interface TrackingWebhookPayload {
   awb?: string;
@@ -29,6 +30,17 @@ export async function POST(req: NextRequest) {
   const b = Buffer.from(secret);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
     return NextResponse.json({ ok: false }, { status: 401 });
+  }
+
+  // Rate-limit webhook to prevent abuse (100 per minute)
+  try {
+    const ip = getClientIp(req);
+    await checkRateLimit({ bucket: "webhook:tracking", key: ip, limit: 100, windowSeconds: 60 });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json({ ok: false }, { status: 429 });
+    }
+    throw error;
   }
 
   let payload: TrackingWebhookPayload;
@@ -59,8 +71,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, ignored: "order_not_found" }, { status: 200 });
     }
 
+    // Replay protection: ignore already-terminal statuses
     if (order.status === "DELIVERED" || order.status === "CANCELLED") {
       return NextResponse.json({ ok: true }, { status: 200 });
+    }
+
+    // Idempotency: if this exact AWB + status was already applied, skip
+    if (mapped && order.awbNumber === awb && order.status === mapped.status) {
+      return NextResponse.json({ ok: true, ignored: "duplicate" }, { status: 200 });
     }
 
     const data: Record<string, unknown> = {};

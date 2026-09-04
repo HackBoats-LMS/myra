@@ -1,6 +1,7 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 import { verifyAdmin } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { CACHE_TAGS } from "@/lib/cache";
@@ -98,10 +99,9 @@ export async function createBrandStory(data: {
 
   await logAudit("brandStory.create", "BrandStory", story.id, { title: story.title });
 
-  // Invalidate Next.js cache
   updateTag(CACHE_TAGS.brandStories);
-  revalidatePath("/");
-  revalidatePath("/admin/brand-stories");
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/brand-stories", "layout");
 
   return story;
 }
@@ -138,10 +138,9 @@ export async function updateBrandStory(
 
   await logAudit("brandStory.update", "BrandStory", story.id, { title: story.title });
 
-  // Invalidate Next.js cache
   updateTag(CACHE_TAGS.brandStories);
-  revalidatePath("/");
-  revalidatePath("/admin/brand-stories");
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/brand-stories", "layout");
 
   return story;
 }
@@ -155,10 +154,9 @@ export async function deleteBrandStory(id: string) {
     await logAudit("brandStory.delete", "BrandStory", existing.id, { title: existing.title });
   }
 
-  // Invalidate Next.js cache
-  updateTag(CACHE_TAGS.brandStories);
-  revalidatePath("/");
-  revalidatePath("/admin/brand-stories");
+  revalidateTag(CACHE_TAGS.brandStories);
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/brand-stories", "layout");
 
   return { success: true };
 }
@@ -173,9 +171,9 @@ export async function toggleBrandStoryActive(id: string, isActive: boolean) {
 
   await logAudit("brandStory.toggleActive", "BrandStory", story.id, { isActive });
 
-  updateTag(CACHE_TAGS.brandStories);
-  revalidatePath("/");
-  revalidatePath("/admin/brand-stories");
+  revalidateTag(CACHE_TAGS.brandStories);
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/brand-stories", "layout");
 
   return story;
 }
@@ -194,9 +192,9 @@ export async function reorderBrandStories(orderedIds: string[]) {
 
   await logAudit("brandStory.reorder", "BrandStory", "batch", { count: orderedIds.length });
 
-  updateTag(CACHE_TAGS.brandStories);
-  revalidatePath("/");
-  revalidatePath("/admin/brand-stories");
+  revalidateTag(CACHE_TAGS.brandStories);
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/brand-stories", "layout");
 
   return { success: true };
 }

@@ -7,14 +7,37 @@ import { Eye } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+type WorkerRow = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phoneNumber: string | null;
+  role: "MULTI_WORKER";
+  isDisabled: boolean;
+  canManageInventory: boolean;
+  canManageShipping: boolean;
+  createdAt: Date;
+};
+
 export default async function AdminWorkersPage() {
-  let workers: Awaited<ReturnType<typeof prisma.user.findMany>> = [];
+  let workers: WorkerRow[] = [];
 
   try {
     workers = await prisma.user.findMany({
       where: { role: "MULTI_WORKER" },
+      select: {
+        id: true,
+        email: true,
+        phoneNumber: true,
+        name: true,
+        role: true,
+        isDisabled: true,
+        canManageInventory: true,
+        canManageShipping: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "desc" },
-    });
+    }) as WorkerRow[];
   } catch (error) {
     console.warn("Database unreachable in AdminWorkersPage:", error instanceof Error ? error.message : "unknown error");
   }

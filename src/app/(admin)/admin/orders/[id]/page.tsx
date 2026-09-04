@@ -81,6 +81,8 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
           orderItems={order.orderItems} 
           totalAmount={order.totalAmount} 
           refundedAmount={order.refundedAmount || 0} 
+          orderStatus={order.status}
+          paymentStatus={order.paymentStatus}
         />
       </div>
     </div>

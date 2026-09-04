@@ -14,6 +14,16 @@ type AccountOrderWithItems = Prisma.OrderGetPayload<{
   };
 }>;
 
+type SafeUser = Omit<Prisma.UserGetPayload<{
+  include: {
+    addresses: { orderBy: { createdAt: 'asc' } };
+    orders: {
+      orderBy: { createdAt: 'desc' };
+      include: { orderItems: { include: { product: true } } };
+    };
+  };
+}>, 'password'> & { hasPassword: boolean };
+
 export default async function AccountPage() {
   const session = await getServerSession(authOptions);
   
@@ -22,33 +32,54 @@ export default async function AccountPage() {
   }
 
   const userId = session.user.id;
-  let user: Prisma.UserGetPayload<{
-    include: {
-      addresses: { orderBy: { createdAt: 'asc' } };
-      orders: {
-        orderBy: { createdAt: 'desc' };
-        include: { orderItems: { include: { product: true } } };
-      };
-    };
-  }> | null = null;
+  let user: SafeUser | null = null;
 
   try {
-    user = await prisma.user.findUnique({
+    const rawUser = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
+      select: {
+        id: true,
+        email: true,
+        phoneNumber: true,
+        phoneNumber2: true,
+        name: true,
+        role: true,
+        isDisabled: true,
+        emailVerified: true,
+        addressLine1: true,
+        city: true,
+        state: true,
+        postalCode: true,
+        country: true,
+        createdAt: true,
+        updatedAt: true,
+        password: true,
         addresses: {
           orderBy: { createdAt: 'asc' }
         },
         orders: {
           orderBy: { createdAt: 'desc' },
-          include: {
+          select: {
+            id: true,
+            status: true,
+            totalAmount: true,
+            paymentMethod: true,
+            paymentStatus: true,
+            createdAt: true,
+            couponCode: true,
+            discountAmount: true,
+            shippingAmount: true,
             orderItems: {
-              include: { product: true }
+              include: { product: { select: { id: true, name: true, images: true, slug: true } } }
             }
           }
         }
       }
     });
+    if (rawUser) {
+      const { password: _, ...safeFields } = rawUser;
+      user = { ...safeFields, hasPassword: _ !== null } as SafeUser;
+    }
   } catch (error) {
     console.warn("Database unreachable in AccountPage:", error instanceof Error ? error.message : "unknown error");
     return (

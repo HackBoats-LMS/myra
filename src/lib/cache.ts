@@ -346,3 +346,73 @@ export const CACHE_REVALIDATE = {
   banners: () => CACHE_TAGS.banners,
   brandStories: () => CACHE_TAGS.brandStories,
 };
+
+// Dynamic Route Database Caching for filtering and pagination
+export const getCachedFilteredProducts = createCachedQuery(
+  ["products", "filtered"],
+  async (collectionIds: string[] | null, stock: string, priceRange: string, sort: string, page: number, itemsPerPage: number) => {
+    const whereClause: Prisma.ProductWhereInput = { deletedAt: null };
+    if (collectionIds && collectionIds.length > 0) {
+      whereClause.collectionId = { in: collectionIds };
+    }
+    
+    if (stock === 'instock') whereClause.stockQuantity = { gt: 0 };
+    if (priceRange === 'under-1000') whereClause.price = { lt: 1000 };
+    else if (priceRange === '1000-5000') whereClause.price = { gte: 1000, lte: 5000 };
+    else if (priceRange === 'over-5000') whereClause.price = { gt: 5000 };
+
+    let orderByClause: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+    if (sort === 'price-asc') orderByClause = { price: 'asc' };
+    else if (sort === 'price-desc') orderByClause = { price: 'desc' };
+    else if (sort === 'name-asc') orderByClause = { name: 'asc' };
+
+    const [products, totalProducts] = await Promise.all([
+      prisma.product.findMany({
+        where: whereClause,
+        orderBy: orderByClause,
+        skip: (page - 1) * itemsPerPage,
+        take: itemsPerPage,
+        include: { reviews: { select: { rating: true } } }
+      }),
+      prisma.product.count({ where: whereClause })
+    ]);
+    return { products, totalProducts };
+  },
+  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.short }
+);
+
+export const getCachedSearchProducts = createCachedQuery(
+  ["products", "search"],
+  async (query: string, stock: string, priceRange: string, sort: string, page: number, itemsPerPage: number) => {
+    const whereClause: Prisma.ProductWhereInput = { 
+      deletedAt: null,
+      OR: [
+        { name: { contains: query, mode: "insensitive" as const } },
+        { description: { contains: query, mode: "insensitive" as const } },
+      ],
+    };
+    
+    if (stock === 'instock') whereClause.stockQuantity = { gt: 0 };
+    if (priceRange === 'under-1000') whereClause.price = { lt: 1000 };
+    else if (priceRange === '1000-5000') whereClause.price = { gte: 1000, lte: 5000 };
+    else if (priceRange === 'over-5000') whereClause.price = { gt: 5000 };
+
+    let orderByClause: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+    if (sort === 'price-asc') orderByClause = { price: 'asc' };
+    else if (sort === 'price-desc') orderByClause = { price: 'desc' };
+    else if (sort === 'name-asc') orderByClause = { name: 'asc' };
+
+    const [products, totalProducts] = await Promise.all([
+      prisma.product.findMany({
+        where: whereClause,
+        orderBy: orderByClause,
+        skip: (page - 1) * itemsPerPage,
+        take: itemsPerPage,
+        include: { collection: true, reviews: { select: { rating: true } } }
+      }),
+      prisma.product.count({ where: whereClause })
+    ]);
+    return { products, totalProducts };
+  },
+  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.short }
+);

@@ -9,11 +9,16 @@ type OrderItemWithProduct = Prisma.OrderItemGetPayload<{
   include: { product: true; returnRequests: true };
 }>;
 
+interface ReviewEntry {
+  rating: number;
+  comment: string | null;
+}
+
 interface OrderItemsListProps {
   orderItems: OrderItemWithProduct[];
   status: string;
   canReview: boolean;
-  reviewByProduct: Map<string, any>;
+  reviewByProduct: Map<string, ReviewEntry>;
   totalAmount: number;
 }
 

@@ -11,12 +11,17 @@ const rawConnectionString = process.env.DATABASE_URL;
 // Strip any sslmode=require from the URL so pg-connection-string doesn't override our SSL options
 const connectionString = rawConnectionString?.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '');
 
+// In development, allow self-signed certs; in production, always verify TLS.
+const sslConfig = process.env.NODE_ENV === 'production'
+  ? { rejectUnauthorized: true }
+  : { rejectUnauthorized: false };
+
 const pool =
   globalForPrisma.pool ||
   new Pool({
     connectionString,
-    ssl: { rejectUnauthorized: false },
-    max: 20,
+    ssl: sslConfig,
+    max: 5,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 20000,
     allowExitOnIdle: true,

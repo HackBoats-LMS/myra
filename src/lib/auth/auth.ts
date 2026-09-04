@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import { mergeGuestCart } from "@/actions/cart";
 import { mergeGuestWishlist } from "@/actions/wishlist";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { verifyCookieValue } from "@/lib/cookie-signing";
 import { CACHE_TAGS } from "@/lib/cache";
 import { revalidateTag } from "next/cache";
 
@@ -91,7 +92,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role,
+          role: user.role as "ADMIN" | "CUSTOMER" | "MULTI_WORKER",
           canManageInventory: user.canManageInventory,
           canManageShipping: user.canManageShipping,
         };
@@ -137,8 +138,9 @@ export const authOptions: NextAuthOptions = {
       try {
         const cookieStore = await cookies();
         const guestCart = cookieStore.get("guest_cart");
-        if (guestCart?.value && user.id) {
-          await mergeGuestCart(user.id, guestCart.value);
+        const rawCartData = guestCart?.value ? verifyCookieValue(guestCart.value) : undefined;
+        if (rawCartData) {
+          await mergeGuestCart(rawCartData);
           // Clear the guest cookie after merge
           cookieStore.delete("guest_cart");
         }
@@ -150,8 +152,9 @@ export const authOptions: NextAuthOptions = {
       try {
         const cookieStore = await cookies();
         const guestWishlist = cookieStore.get("guest_wishlist");
-        if (guestWishlist?.value) {
-          await mergeGuestWishlist(guestWishlist.value);
+        const rawWishlistData = guestWishlist?.value ? verifyCookieValue(guestWishlist.value) : undefined;
+        if (rawWishlistData) {
+          await mergeGuestWishlist(rawWishlistData);
           cookieStore.delete("guest_wishlist");
         }
       } catch {
@@ -176,7 +179,36 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.canManageInventory = user.canManageInventory;
         token.canManageShipping = user.canManageShipping;
+        // Fetch tokenVersion so middleware can reject stale sessions
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { tokenVersion: true },
+        });
+        token.tokenVersion = dbUser?.tokenVersion ?? 0;
+        token._tokenVersionCheckedAt = Date.now();
       }
+
+      // Re-verify tokenVersion periodically (every 60 seconds) so disabled or
+      // demoted users lose access quickly instead of waiting for JWT expiry.
+      // This adds one lightweight DB query per minute per protected request.
+      if (token.id && typeof token._tokenVersionCheckedAt === "number") {
+        const elapsed = Date.now() - token._tokenVersionCheckedAt;
+        if (elapsed > 60_000) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { tokenVersion: true, isDisabled: true },
+          });
+          if (!dbUser || dbUser.isDisabled) {
+            // Throw to invalidate the session immediately
+            throw new Error("Session invalidated");
+          }
+          if (dbUser.tokenVersion !== token.tokenVersion) {
+            throw new Error("Session invalidated: token version mismatch");
+          }
+          token._tokenVersionCheckedAt = Date.now();
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -194,6 +226,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 8 * 60 * 60, // 8 hours
   },
   cookies: {
     sessionToken: {

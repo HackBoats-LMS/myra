@@ -1,6 +1,6 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { verifyWorkerCapability } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { FLASH_SALE_TAG } from "@/lib/flash-sale";
@@ -49,9 +49,9 @@ export async function createFlashSale(input: {
   });
 
   await logAudit("flashsale.create", `Created flash sale "${title}"`);
-  revalidatePath("/admin/flash-sales");
-  updateTag(FLASH_SALE_TAG);
-  revalidatePath("/");
+  revalidatePath("/admin/flash-sales", "layout");
+  revalidateTag(FLASH_SALE_TAG);
+  revalidatePath("/", "layout");
 }
 
 export async function updateFlashSale(id: string, input: {
@@ -89,16 +89,16 @@ export async function updateFlashSale(id: string, input: {
   });
 
   await logAudit("flashsale.update", `Updated flash sale "${title}"`);
-  revalidatePath("/admin/flash-sales");
-  updateTag(FLASH_SALE_TAG);
-  revalidatePath("/");
+  revalidatePath("/admin/flash-sales", "layout");
+  revalidateTag(FLASH_SALE_TAG);
+  revalidatePath("/", "layout");
 }
 
 export async function deleteFlashSale(id: string) {
   await verifyWorkerCapability("inventory");
   await prisma.flashSale.delete({ where: { id } });
   await logAudit("flashsale.delete", `Deleted flash sale`);
-  revalidatePath("/admin/flash-sales");
-  updateTag(FLASH_SALE_TAG);
-  revalidatePath("/");
+  revalidatePath("/admin/flash-sales", "layout");
+  revalidateTag(FLASH_SALE_TAG);
+  revalidatePath("/", "layout");
 }

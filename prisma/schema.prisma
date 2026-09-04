@@ -22,6 +22,7 @@ model User {
   emailVerified      DateTime?
   canManageInventory Boolean   @default(false)
   canManageShipping  Boolean   @default(false)
+  tokenVersion       Int       @default(0)
 
   // Address Fields
   addressLine1 String?
@@ -135,7 +136,9 @@ model Product {
   @@index([collectionId])
   @@index([bestSeller])
   @@index([salesCount])
+  @@index([bestSeller(sort: Desc), salesCount(sort: Desc)])
   @@index([stockQuantity])
+  @@index([deletedAt, stockQuantity, price])
 }
 
 model ProductVariant {
@@ -212,6 +215,7 @@ model OrderItem {
   variant        ProductVariant? @relation(fields: [variantId], references: [id])
   quantity       Int
   price          Float // Price at time of purchase
+  isCancelled    Boolean         @default(false)
   returnRequests ReturnRequest[]
 }
 
@@ -312,7 +316,6 @@ model CartItem {
 enum Role {
   CUSTOMER
   ADMIN
-  DELIVERY
   MULTI_WORKER
 }
 

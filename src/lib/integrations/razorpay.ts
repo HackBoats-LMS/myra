@@ -69,6 +69,11 @@ export async function fetchRazorpayPayment(paymentId: string) {
   return client.payments.fetch(paymentId);
 }
 
+export async function fetchRazorpayOrder(orderId: string) {
+  const client = await getClient();
+  return client.orders.fetch(orderId);
+}
+
 export async function refundRazorpayPayment(paymentId: string, amountPaise: number) {
   const client = await getClient();
   return client.payments.refund(paymentId, { amount: Math.round(amountPaise) });

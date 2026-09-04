@@ -17,7 +17,7 @@ async function fetchActiveFlashSales(): Promise<FlashSaleWithCollection[]> {
 
 export const getActiveFlashSales = unstable_cache(fetchActiveFlashSales, ["flash-sales"], {
   tags: [FLASH_SALE_TAG],
-  revalidate: 30,
+  revalidate: 10,
 });
 
 /**

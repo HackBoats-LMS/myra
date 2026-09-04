@@ -23,8 +23,9 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
       formData.append("file", file);
       const url = await uploadImage(formData);
       onChange(url);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to upload image");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to upload image";
+      toast.error(message);
     } finally {
       setIsUploading(false);
     }

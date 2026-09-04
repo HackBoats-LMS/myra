@@ -1,6 +1,7 @@
 "use server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
+import { signCookieValue, verifyCookieValue } from "@/lib/cookie-signing";
 import { COMPARE_COOKIE, COMPARE_MAX } from "@/lib/compare";
 import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
 
@@ -9,7 +10,9 @@ export async function getCompareState(): Promise<string[]> {
   const raw = cookieStore.get(COMPARE_COOKIE)?.value;
   if (!raw) return [];
   try {
-    const parsed: unknown = JSON.parse(raw);
+    const data = verifyCookieValue(raw);
+    if (!data) return [];
+    const parsed: unknown = JSON.parse(data);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((id): id is string => typeof id === "string").slice(0, COMPARE_MAX);
   } catch {
@@ -19,7 +22,7 @@ export async function getCompareState(): Promise<string[]> {
 
 async function writeCompare(ids: string[]) {
   const cookieStore = await cookies();
-  cookieStore.set(COMPARE_COOKIE, JSON.stringify(ids), {
+  cookieStore.set(COMPARE_COOKIE, signCookieValue(JSON.stringify(ids)), {
     maxAge: 60 * 60 * 24 * 30,
     httpOnly: true,
     sameSite: "lax",

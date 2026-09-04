@@ -61,11 +61,13 @@ export async function sendVerificationEmail(email: string, token: string) {
   const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/verify?token=${token}`;
   
   if (!resend) {
-    console.log("=========================================");
-    console.log("📧 MOCK EMAIL SENT");
-    console.log(`To: ${email}`);
-    console.log(`Subject: Verify your email address - Myra Shopping Mall`);
-    console.log("=========================================");
+    if (process.env.NODE_ENV === "development") {
+      console.log("=========================================");
+      console.log("📧 MOCK EMAIL SENT");
+      console.log(`To: ${email}`);
+      console.log(`Subject: Verify your email address - Myra Shopping Mall`);
+      console.log("=========================================");
+    }
     return;
   }
 
@@ -118,12 +120,14 @@ export async function sendLowStockAlert(items: { name: string; stockQuantity: nu
   if (!adminEmail) return;
 
   const rows = items
-    .map((item) => `• ${item.name} — ${item.stockQuantity} left`)
+    .map((item) => `• ${escapeHtml(item.name)} — ${item.stockQuantity} left`)
     .join("\n");
 
   if (!resend) {
-    console.log("📧 [LOW STOCK] Notifying admin:");
-    console.log(rows);
+    if (process.env.NODE_ENV === "development") {
+      console.log("📧 [LOW STOCK] Notifying admin:");
+      console.log(rows);
+    }
     return;
   }
 
@@ -150,8 +154,10 @@ export async function sendAbandonedCartEmail(email: string, items: { name: strin
     .join("<br/>");
 
   if (!resend) {
-    console.log("📧 [ABANDONED CART] Reminding:");
-    console.log(rows);
+    if (process.env.NODE_ENV === "development") {
+      console.log("📧 [ABANDONED CART] Reminding:");
+      console.log(rows);
+    }
     return;
   }
 
@@ -235,8 +241,10 @@ export async function sendAdminNewOrderEmail(order: AdminOrderSummary) {
   ].join("\n");
 
   if (!resend) {
-    console.log("📧 [NEW ORDER] Notifying admin:");
-    console.log(rows);
+    if (process.env.NODE_ENV === "development") {
+      console.log("📧 [NEW ORDER] Notifying admin:");
+      console.log(rows);
+    }
     return;
   }
 
@@ -275,8 +283,10 @@ export async function sendAdminNewReturnEmail(input: {
   ].join("\n");
 
   if (!resend) {
-    console.log("📧 [NEW RETURN] Notifying admin:");
-    console.log(rows);
+    if (process.env.NODE_ENV === "development") {
+      console.log("📧 [NEW RETURN] Notifying admin:");
+      console.log(rows);
+    }
     return;
   }
 

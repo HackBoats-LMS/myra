@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import MarkAsPackedButton from "@/components/shared/MarkAsPackedButton";
 import ShipOrderButton from "@/components/shared/ShipOrderButton";
 import { requireWorkerModule } from "@/lib/worker";
 import { ExternalLink } from "lucide-react";
@@ -35,7 +36,10 @@ export default async function WorkerOrderDetailsPage({ params }: { params: Promi
           <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
         </div>
         <div className="flex items-center gap-3">
-          <ShipOrderButton orderId={order.id} shipped={Boolean(order.shipmentId)} />
+          {order.status === "PENDING" && <MarkAsPackedButton orderId={order.id} />}
+          {(order.status === "READY_TO_SHIP" || order.shipmentId) && (
+            <ShipOrderButton orderId={order.id} shipped={Boolean(order.shipmentId)} />
+          )}
         </div>
       </div>
 

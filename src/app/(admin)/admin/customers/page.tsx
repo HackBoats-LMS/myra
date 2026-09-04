@@ -14,7 +14,16 @@ const ITEMS_PER_PAGE = 25;
 
 type CustomerRow = Prisma.UserGetPayload<{
   where: { role: 'CUSTOMER' };
-  include: { orders: { select: { totalAmount: true } } };
+  select: {
+    id: true;
+    email: true;
+    phoneNumber: true;
+    name: true;
+    role: true;
+    isDisabled: true;
+    createdAt: true;
+    orders: { select: { totalAmount: true } };
+  };
 }>;
 
 export const dynamic = "force-dynamic";
@@ -36,7 +45,14 @@ const getCachedCustomers = unstable_cache(
     const [customers, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          email: true,
+          phoneNumber: true,
+          name: true,
+          role: true,
+          isDisabled: true,
+          createdAt: true,
           orders: {
             select: {
               totalAmount: true,

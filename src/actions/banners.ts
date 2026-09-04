@@ -63,10 +63,9 @@ export async function upsertBanner(data: {
 
   await logAudit("banner.upsert", "Banner", banner.id, { slot: validated.slot });
 
-  // Invalidate Next.js cache so storefront SSR updates instantly without stale caches
   updateTag(CACHE_TAGS.banners);
-  revalidatePath("/");
-  revalidatePath("/admin/banners");
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/banners", "layout");
 
   return banner;
 }
@@ -80,10 +79,9 @@ export async function deleteBanner(slot: string) {
     await logAudit("banner.delete", "Banner", existing.id, { slot });
   }
 
-  // Invalidate Next.js cache so storefront resets to default immediately
   updateTag(CACHE_TAGS.banners);
-  revalidatePath("/");
-  revalidatePath("/admin/banners");
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/banners", "layout");
 
   return { success: true };
 }

@@ -3,6 +3,7 @@ import { Inria_Serif } from "next/font/google";
 import "./globals.css";
 import "remixicon/fonts/remixicon.css";
 import { ToastProvider } from "@/components/ui/Toast";
+import { headers } from "next/headers";
 
 const inria = Inria_Serif({
   variable: "--font-inria",
@@ -34,15 +35,22 @@ export const metadata: Metadata = {
 
 import { WebVitals } from "@/components/shared/WebVitals";
 import { NavigationProgressBar } from "@/components/shared/NavigationProgressBar";
+import Script from "next/script";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const headersList = await headers();
+  const nonce = headersList.get("x-csp-nonce") || "";
+
   return (
     <html
       lang="en"
       className={`${inria.variable} h-full antialiased scroll-smooth`}
     >
       <head>
-        <script
+        <Script
+          id="animation-check"
+          strategy="beforeInteractive"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               if (sessionStorage.getItem('myra_animation_played')) {

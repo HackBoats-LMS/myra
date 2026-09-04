@@ -41,7 +41,16 @@ export default function SignupForm() {
         throw new Error("Failed to sign in after registration");
       }
 
-      router.push("/");
+      const { getSession } = await import("next-auth/react");
+      const session = await getSession();
+      if (session?.user?.role === "ADMIN") {
+        router.push("/admin");
+      } else if (session?.user?.role === "MULTI_WORKER") {
+        router.push("/worker");
+      } else {
+        router.push("/");
+      }
+      
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
