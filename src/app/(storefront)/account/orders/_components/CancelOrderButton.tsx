@@ -17,6 +17,12 @@ const CANCELLATION_REASONS = [
 interface OrderItemEntry {
   id: string;
   isCancelled: boolean;
+  quantity?: number;
+  price?: number;
+  product?: {
+    name: string;
+    images?: string[];
+  };
 }
 
 export default function CancelOrderButton({ orderId, orderItems }: { orderId: string, orderItems?: OrderItemEntry[] }) {
@@ -54,7 +60,7 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
     setLoading(true);
     try {
       await cancelOrder(orderId, finalReason, selectedItems);
-      toast.success(selectedItems.length === activeItems.length ? "Order cancelled! Refunds take 5-7 business days to reflect." : "Selected items cancelled! Refunds take 5-7 business days to reflect.", { duration: 6000 });
+      toast.success(selectedItems.length === activeItems.length ? "Order cancelled! Refunds take 5-7 business days to reflect." : "Selected items cancelled! Refunds take 5-7 business days to reflect.");
       setOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to cancel order.");
@@ -81,8 +87,8 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-none border border-[#B6925B]/20 shadow-xl w-full max-w-md p-6 m-4 relative max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-serif text-[#4A3B2C] mb-2 tracking-wide">
+          <div className="bg-white rounded-none border border-[#7A0B2E]/20 shadow-xl w-full max-w-md p-6 m-4 relative max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-serif text-[#2D1F2F] mb-2 tracking-wide">
               Cancel Order
             </h3>
             <p className="text-xs text-neutral-500 mb-6">
@@ -92,8 +98,8 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
             <form onSubmit={handleSubmit} className="space-y-6">
               {activeItems.length > 1 && (
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-3">Select items to cancel</label>
-                  <div className="space-y-3 border border-[#B6925B]/20 p-3 bg-[#FAFAFA]">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-3">Select items to cancel</label>
+                  <div className="space-y-3 border border-[#7A0B2E]/20 p-3 bg-[#FAFAFA]">
                     {activeItems.map(item => (
                       <label key={item.id} className="flex items-center justify-between cursor-pointer group">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -101,19 +107,19 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
                             type="checkbox"
                             checked={selectedItems.includes(item.id)}
                             onChange={() => handleToggleItem(item.id)}
-                            className="w-4 h-4 text-[#B6925B] border-gray-300 rounded focus:ring-[#B6925B]"
+                            className="w-4 h-4 text-[#7A0B2E] border-gray-300 rounded focus:ring-[#7A0B2E]"
                           />
-                          <div className="relative w-10 h-10 flex-shrink-0 bg-white border border-[#B6925B]/20 overflow-hidden">
+                          <div className="relative w-10 h-10 flex-shrink-0 bg-white border border-[#7A0B2E]/20 overflow-hidden">
                             {item.product?.images?.[0] && (
                               <Image src={item.product.images[0]} alt="" fill className="object-cover" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-[#4A3B2C] truncate">{item.product?.name}</p>
+                            <p className="text-sm font-bold text-[#2D1F2F] truncate">{item.product?.name}</p>
                             <p className="text-[10px] text-gray-500 uppercase tracking-widest">Qty: {item.quantity}</p>
                           </div>
                         </div>
-                        <span className="text-sm font-bold text-[#B6925B] ml-3">₹{(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="text-sm font-bold text-[#7A0B2E] ml-3">₹{((item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}</span>
                       </label>
                     ))}
                   </div>
@@ -121,7 +127,7 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
               )}
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-3">Reason for cancellation</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-3">Reason for cancellation</label>
                 <div className="space-y-3">
                   {CANCELLATION_REASONS.map((r) => (
                     <label key={r} className="flex items-center gap-3 cursor-pointer group">
@@ -131,7 +137,7 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
                         value={r}
                         checked={reason === r}
                         onChange={(e) => setReason(e.target.value)}
-                        className="w-4 h-4 text-[#B6925B] border-gray-300 focus:ring-[#B6925B]"
+                        className="w-4 h-4 text-[#7A0B2E] border-gray-300 focus:ring-[#7A0B2E]"
                       />
                       <span className="text-sm text-neutral-700 group-hover:text-neutral-900">{r}</span>
                     </label>
@@ -146,18 +152,18 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
                       rows={3}
                       required
                       placeholder="Please specify..."
-                      className="w-full rounded-none border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+                      className="w-full rounded-none border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
                     />
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-[#B6925B]/10">
+              <div className="flex justify-end gap-3 pt-6 border-t border-[#7A0B2E]/10">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   disabled={loading}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#4A3B2C] transition-colors"
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#2D1F2F] transition-colors"
                 >
                   Keep Order
                 </button>

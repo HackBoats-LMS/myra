@@ -63,31 +63,31 @@ function LoginFormInner() {
         {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-none border border-red-100">{error}</div>}
         
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Phone or Email</label>
+          <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">Phone or Email</label>
           <input
             type="text"
             required
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+            className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="Phone number or email"
           />
         </div>
         
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Password</label>
+          <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+            className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="••••••••"
           />
         </div>
 
         <div className="flex justify-end">
-          <Link href="/forgot-password" className="text-xs font-bold text-[#B6925B] hover:text-[#9c7d4e] uppercase tracking-widest transition-colors">
+          <Link href="/forgot-password" className="text-xs font-bold text-[#7A0B2E] hover:text-[#5C0820] uppercase tracking-widest transition-colors">
             Forgot Password?
           </Link>
         </div>
@@ -95,7 +95,7 @@ function LoginFormInner() {
         <button
           type="submit"
           disabled={isLoading || isGoogleLoading}
-          className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 rounded-none"
+          className="w-full bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 rounded-none"
         >
           {isLoading ? <i className="ri-loader-4-line animate-spin text-base" /> : "Sign In"}
         </button>
@@ -103,7 +103,7 @@ function LoginFormInner() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#B6925B]/20" />
+          <div className="w-full border-t border-[#7A0B2E]/20" />
         </div>
         <div className="relative flex justify-center text-sm">
           <span className="px-2 bg-[#FAFAFA] text-xs font-medium text-gray-500 uppercase tracking-widest">Or continue with</span>
@@ -113,10 +113,10 @@ function LoginFormInner() {
       <button
         onClick={handleGoogleSignIn}
         disabled={isLoading || isGoogleLoading}
-        className="w-full bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FDFBF7] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm rounded-none"
+        className="w-full bg-white border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-[#FAF0F2] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm rounded-none"
       >
         {isGoogleLoading ? (
-          <i className="ri-loader-4-line animate-spin text-base text-[#B6925B]" />
+          <i className="ri-loader-4-line animate-spin text-base text-[#7A0B2E]" />
         ) : null}
         CONTINUE WITH GOOGLE
       </button>
@@ -126,7 +126,7 @@ function LoginFormInner() {
 
 export default function LoginForm() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-10"><i className="ri-loader-4-line animate-spin text-3xl text-[#B6925B]" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-10"><i className="ri-loader-4-line animate-spin text-3xl text-[#7A0B2E]" /></div>}>
       <LoginFormInner />
     </Suspense>
   );

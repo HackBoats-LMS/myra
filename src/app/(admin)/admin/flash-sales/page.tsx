@@ -11,9 +11,9 @@ export default async function AdminFlashSalesPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="border-b border-[#B6925B]/20 pb-4">
-        <h1 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Flash Sales</h1>
-        <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Create timed discounts with storefront countdowns</p>
+      <div className="border-b border-[#7A0B2E]/20 pb-4">
+        <h1 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Flash Sales</h1>
+        <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">Create timed discounts with storefront countdowns</p>
       </div>
       <FlashSaleManager sales={sales} collections={collections} />
     </div>

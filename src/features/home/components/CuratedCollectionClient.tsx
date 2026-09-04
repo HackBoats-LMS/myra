@@ -46,11 +46,11 @@ export default function CuratedCollectionClient({ stories }: { stories: StoryIte
   }, []);
 
   return (
-    <section className="w-full bg-[#b88d4c] text-white py-12 md:py-24 lg:py-32 px-4 sm:px-8 md:px-14 lg:px-12 xl:px-24 font-serif">
+    <section className="w-full bg-[#5C0820] text-white py-12 md:py-24 lg:py-32 px-4 sm:px-8 md:px-14 lg:px-12 xl:px-24 font-serif">
       <div className="max-w-[1280px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 md:gap-14 lg:gap-12 xl:gap-24 items-start">
         
         {/* Sticky Image Frame (Sticky on both Mobile Top & Desktop Left) */}
-        <div className="xl:col-span-6 sticky top-16 sm:top-20 xl:top-[calc(50vh-230px)] z-20 bg-[#b88d4c] py-3 xl:py-0 flex items-center justify-center">
+        <div className="xl:col-span-6 sticky top-16 sm:top-20 xl:top-[calc(50vh-230px)] z-20 bg-[#5C0820] py-3 xl:py-0 flex items-center justify-center">
           <div className="relative w-full max-w-[450px] sm:max-w-[550px] lg:max-w-[650px] aspect-[4/3] overflow-hidden flex items-center justify-center">
             {stories.map((story, idx) => {
               const isCurrent = activeIndex === idx;

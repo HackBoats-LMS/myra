@@ -24,7 +24,7 @@ export default function ReorderButton({ orderId }: { orderId: string }) {
     <button
       onClick={handleReorder}
       disabled={loading}
-      className="inline-flex items-center justify-center gap-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 sm:px-5 py-2.5 rounded-none text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-200 shadow-sm disabled:opacity-50 flex-1 sm:flex-initial"
+      className="inline-flex items-center justify-center gap-2 bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 sm:px-5 py-2.5 rounded-none text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-200 shadow-sm disabled:opacity-50 flex-1 sm:flex-initial"
     >
       {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
       <span>Buy Again</span>

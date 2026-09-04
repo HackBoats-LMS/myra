@@ -45,7 +45,7 @@ function ResetPasswordForm() {
     return (
       <div className="text-center rounded-none">
         <p className="text-red-500 mb-6">Invalid or missing reset token.</p>
-        <Link href="/forgot-password" className="text-[#B6925B] hover:underline font-bold uppercase tracking-widest text-xs rounded-none">
+        <Link href="/forgot-password" className="text-[#7A0B2E] hover:underline font-bold uppercase tracking-widest text-xs rounded-none">
           Request a new reset link
         </Link>
       </div>
@@ -55,31 +55,31 @@ function ResetPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">New Password</label>
+        <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">New Password</label>
         <input
           type="password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+          className="w-full bg-transparent border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
           placeholder="••••••••"
         />
       </div>
       <div>
-        <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Confirm New Password</label>
+        <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">Confirm New Password</label>
         <input
           type="password"
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full bg-transparent border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+          className="w-full bg-transparent border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
           placeholder="••••••••"
         />
       </div>
       <button
         type="submit"
         disabled={isLoading || !password || !confirmPassword}
-        className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 flex justify-center items-center rounded-none"
+        className="w-full bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-3 text-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 flex justify-center items-center rounded-none"
       >
         {isLoading ? <i className="ri-loader-4-line animate-spin text-sm" /> : "Reset Password"}
       </button>
@@ -90,10 +90,10 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4 rounded-none">
-      <div className="max-w-md w-full bg-white p-8 border border-[#B6925B]/20 shadow-sm rounded-none">
-        <h2 className="text-3xl font-serif text-[#4A3B2C] mb-8 text-center tracking-wide">Create New Password</h2>
+      <div className="max-w-md w-full bg-white p-8 border border-[#7A0B2E]/20 shadow-sm rounded-none">
+        <h2 className="text-3xl font-serif text-[#2D1F2F] mb-8 text-center tracking-wide">Create New Password</h2>
         
-        <Suspense fallback={<div className="flex justify-center"><i className="ri-loader-4-line animate-spin text-lg text-[#B6925B]" /></div>}>
+        <Suspense fallback={<div className="flex justify-center"><i className="ri-loader-4-line animate-spin text-lg text-[#7A0B2E]" /></div>}>
           <ResetPasswordForm />
         </Suspense>
       </div>

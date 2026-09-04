@@ -191,28 +191,28 @@ export default function CollectionListTable({
   };
 
   return (
-    <div className="bg-white border border-[#B6925B]/20 relative rounded-none overflow-hidden">
+    <div className="bg-white border border-[#7A0B2E]/20 relative rounded-none overflow-hidden">
       {isPending && (
-        <div className="absolute top-2 right-4 z-10 flex items-center gap-1.5 text-xs text-[#B6925B] bg-white/90 px-2 py-1 shadow-sm border border-[#B6925B]/30 font-bold uppercase tracking-wider">
+        <div className="absolute top-2 right-4 z-10 flex items-center gap-1.5 text-xs text-[#7A0B2E] bg-white/90 px-2 py-1 shadow-sm border border-[#7A0B2E]/30 font-bold uppercase tracking-wider">
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
           Updating Navigation...
         </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm text-[#4A3B2C]">
-          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
+        <table className="w-full min-w-[760px] text-left text-sm text-[#2D1F2F]">
+          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
-              <th className="px-4 py-4 w-28 border-r border-[#B6925B]/10 text-center">Order</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Category / Subcategory</th>
-              <th className="px-4 py-4 border-r border-[#B6925B]/10">Type</th>
-              <th className="px-4 py-4 border-r border-[#B6925B]/10">Slug</th>
-              <th className="px-4 py-4 border-r border-[#B6925B]/10 text-center">In Navbar</th>
-              <th className="px-4 py-4 border-r border-[#B6925B]/10 text-center">Products</th>
+              <th className="px-4 py-4 w-28 border-r border-[#7A0B2E]/10 text-center">Order</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Category / Subcategory</th>
+              <th className="px-4 py-4 border-r border-[#7A0B2E]/10">Type</th>
+              <th className="px-4 py-4 border-r border-[#7A0B2E]/10">Slug</th>
+              <th className="px-4 py-4 border-r border-[#7A0B2E]/10 text-center">In Navbar</th>
+              <th className="px-4 py-4 border-r border-[#7A0B2E]/10 text-center">Products</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#B6925B]/10">
+          <tbody className="divide-y divide-[#7A0B2E]/10">
             {categories.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
@@ -225,15 +225,15 @@ export default function CollectionListTable({
                 return (
                   <React.Fragment key={mainCat.id}>
                     {/* Top Level Category Row */}
-                    <tr className="bg-[#FDFBF7]/80 hover:bg-[#FDFBF7] transition-colors font-medium border-t-2 border-[#B6925B]/20">
+                    <tr className="bg-[#FAFAFA] hover:bg-[#FAF0F2] transition-colors font-medium border-t-2 border-[#7A0B2E]/20">
                       {/* Order Controls */}
-                      <td className="px-3 py-3 border-r border-[#B6925B]/10 text-center">
+                      <td className="px-3 py-3 border-r border-[#7A0B2E]/10 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             type="button"
                             disabled={mainIdx === 0 || isPending}
                             onClick={() => handleMoveMain(mainIdx, "up")}
-                            className="p-1 hover:bg-[#B6925B] hover:text-white disabled:opacity-20 text-[#4A3B2C] border border-[#B6925B]/20 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                            className="p-1 hover:bg-[#7A0B2E] hover:text-white disabled:opacity-20 text-[#2D1F2F] border border-[#7A0B2E]/20 transition-colors cursor-pointer disabled:cursor-not-allowed"
                             title="Move Up"
                           >
                             <ArrowUp className="w-3 h-3" />
@@ -250,7 +250,7 @@ export default function CollectionListTable({
                                 if (e.key === "Enter") handleSaveOrderInput(mainCat.id);
                                 if (e.key === "Escape") setEditingOrderId(null);
                               }}
-                              className="w-10 text-center text-xs font-bold py-0.5 border border-[#B6925B] bg-white outline-none"
+                              className="w-10 text-center text-xs font-bold py-0.5 border border-[#7A0B2E] bg-white outline-none"
                             />
                           ) : (
                             <button
@@ -259,7 +259,7 @@ export default function CollectionListTable({
                                 setEditingOrderId(mainCat.id);
                                 setTempOrderValue(String(mainCat.order ?? 0));
                               }}
-                              className="px-1.5 py-0.5 text-xs font-bold font-mono text-[#B6925B] hover:bg-[#B6925B]/10 cursor-pointer"
+                              className="px-1.5 py-0.5 text-xs font-bold font-mono text-[#7A0B2E] hover:bg-[#7A0B2E]/10 cursor-pointer"
                               title="Click to edit order number"
                             >
                               #{mainCat.order ?? mainIdx + 1}
@@ -270,7 +270,7 @@ export default function CollectionListTable({
                             type="button"
                             disabled={mainIdx === categories.length - 1 || isPending}
                             onClick={() => handleMoveMain(mainIdx, "down")}
-                            className="p-1 hover:bg-[#B6925B] hover:text-white disabled:opacity-20 text-[#4A3B2C] border border-[#B6925B]/20 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                            className="p-1 hover:bg-[#7A0B2E] hover:text-white disabled:opacity-20 text-[#2D1F2F] border border-[#7A0B2E]/20 transition-colors cursor-pointer disabled:cursor-not-allowed"
                             title="Move Down"
                           >
                             <ArrowDown className="w-3 h-3" />
@@ -278,47 +278,47 @@ export default function CollectionListTable({
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">
+                      <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">
                         <div className="flex items-center gap-2">
                           <span className="text-base font-serif">{mainCat.name}</span>
                           {mainCat.children.length > 0 && (
-                            <span className="text-[10px] font-sans px-1.5 py-0.5 bg-[#B6925B]/10 text-[#B6925B] font-bold">
+                            <span className="text-[10px] font-sans px-1.5 py-0.5 bg-[#7A0B2E]/10 text-[#7A0B2E] font-bold">
                               {mainCat.children.length} subcategories
                             </span>
                           )}
                         </div>
                       </td>
 
-                      <td className="px-4 py-4 border-r border-[#B6925B]/10 text-xs">
-                        <span className="inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-[#B6925B] text-white">
+                      <td className="px-4 py-4 border-r border-[#7A0B2E]/10 text-xs">
+                        <span className="inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-[#7A0B2E] text-white">
                           Main Category
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 text-xs font-bold uppercase tracking-widest text-[#B6925B] border-r border-[#B6925B]/10">
+                      <td className="px-4 py-4 text-xs font-bold uppercase tracking-widest text-[#7A0B2E] border-r border-[#7A0B2E]/10">
                         /{mainCat.slug}
                       </td>
 
                       {/* Navbar Visibility Toggle */}
-                      <td className="px-4 py-4 border-r border-[#B6925B]/10 text-center whitespace-nowrap">
+                      <td className="px-4 py-4 border-r border-[#7A0B2E]/10 text-center whitespace-nowrap">
                         <button
                           type="button"
                           disabled={isPending}
                           onClick={() => handleToggleNav(mainCat.id, isMainNavVisible)}
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
                             isMainNavVisible
-                              ? "bg-[#B6925B]/15 text-[#B6925B] border-[#B6925B]/40 hover:bg-[#B6925B]/25"
+                              ? "bg-[#7A0B2E]/15 text-[#7A0B2E] border-[#7A0B2E]/40 hover:bg-[#7A0B2E]/25"
                               : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
                           }`}
                           title={isMainNavVisible ? "Visible in Navbar - Click to Hide" : "Hidden from Navbar - Click to Show"}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${isMainNavVisible ? "bg-[#B6925B]" : "bg-gray-400"}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${isMainNavVisible ? "bg-[#7A0B2E]" : "bg-gray-400"}`} />
                           {isMainNavVisible ? "Visible" : "Hidden"}
                         </button>
                       </td>
 
-                      <td className="px-4 py-4 border-r border-[#B6925B]/10 text-center">
-                        <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#B6925B]">
+                      <td className="px-4 py-4 border-r border-[#7A0B2E]/10 text-center">
+                        <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-white border border-[#7A0B2E]/30 text-[#7A0B2E]">
                           {mainCat._count.products} products
                         </span>
                       </td>
@@ -327,7 +327,7 @@ export default function CollectionListTable({
                         <div className="inline-flex items-center justify-end gap-2">
                           <Link 
                             href={`${basePath}/collections/new?parentId=${mainCat.id}`} 
-                            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#B6925B] hover:text-[#4A3B2C] border border-[#B6925B]/30 bg-white px-2 py-1 transition-colors"
+                            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#7A0B2E] hover:text-[#2D1F2F] border border-[#7A0B2E]/30 bg-white px-2 py-1 transition-colors"
                             title="Add Subcategory under this category"
                           >
                             <Plus className="w-3 h-3" />
@@ -335,7 +335,7 @@ export default function CollectionListTable({
                           </Link>
                           <Link 
                             href={`${basePath}/collections/${mainCat.id}`} 
-                            className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1" 
+                            className="inline-flex text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1" 
                             title="Edit Category"
                           >
                             <Pencil className="w-4 h-4" />
@@ -358,7 +358,7 @@ export default function CollectionListTable({
                       return (
                         <tr key={sub.id} className="hover:bg-[#FAFAFA] transition-colors bg-white">
                           {/* Subcategory Order Controls */}
-                          <td className="px-3 py-2.5 border-r border-[#B6925B]/10 text-center">
+                          <td className="px-3 py-2.5 border-r border-[#7A0B2E]/10 text-center">
                             <div className="flex items-center justify-center gap-1">
                               <button
                                 type="button"
@@ -381,7 +381,7 @@ export default function CollectionListTable({
                                     if (e.key === "Enter") handleSaveOrderInput(sub.id);
                                     if (e.key === "Escape") setEditingOrderId(null);
                                   }}
-                                  className="w-9 text-center text-[11px] font-mono py-0.5 border border-[#B6925B] bg-white outline-none"
+                                  className="w-9 text-center text-[11px] font-mono py-0.5 border border-[#7A0B2E] bg-white outline-none"
                                 />
                               ) : (
                                 <button
@@ -409,42 +409,42 @@ export default function CollectionListTable({
                             </div>
                           </td>
 
-                          <td className="px-6 py-3.5 text-xs text-[#4A3B2C] border-r border-[#B6925B]/10 pl-12">
+                          <td className="px-6 py-3.5 text-xs text-[#2D1F2F] border-r border-[#7A0B2E]/10 pl-12">
                             <div className="flex items-center gap-2">
-                              <CornerDownRight className="w-3.5 h-3.5 text-[#B6925B]" />
+                              <CornerDownRight className="w-3.5 h-3.5 text-[#7A0B2E]" />
                               <span className="font-medium text-[13px]">{sub.name}</span>
                             </div>
                           </td>
 
-                          <td className="px-4 py-3.5 border-r border-[#B6925B]/10 text-xs">
+                          <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-xs">
                             <span className="inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-gray-100 text-gray-600 border border-gray-200">
                               Subcategory
                             </span>
                           </td>
 
-                          <td className="px-4 py-3.5 text-xs text-gray-500 border-r border-[#B6925B]/10">
+                          <td className="px-4 py-3.5 text-xs text-gray-500 border-r border-[#7A0B2E]/10">
                             /{sub.slug}
                           </td>
 
                           {/* Subcategory Navbar Visibility Toggle */}
-                          <td className="px-4 py-3.5 border-r border-[#B6925B]/10 text-center whitespace-nowrap">
+                          <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-center whitespace-nowrap">
                             <button
                               type="button"
                               disabled={isPending}
                               onClick={() => handleToggleNav(sub.id, isSubNavVisible)}
                               className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
                                 isSubNavVisible
-                                  ? "bg-[#B6925B]/10 text-[#B6925B] border-[#B6925B]/30 hover:bg-[#B6925B]/20"
+                                  ? "bg-[#7A0B2E]/10 text-[#7A0B2E] border-[#7A0B2E]/30 hover:bg-[#7A0B2E]/20"
                                   : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
                               }`}
                               title={isSubNavVisible ? "Visible in Dropdown - Click to Hide" : "Hidden from Dropdown - Click to Show"}
                             >
-                              <span className={`w-1.5 h-1.5 rounded-full ${isSubNavVisible ? "bg-[#B6925B]" : "bg-gray-400"}`} />
+                              <span className={`w-1.5 h-1.5 rounded-full ${isSubNavVisible ? "bg-[#7A0B2E]" : "bg-gray-400"}`} />
                               {isSubNavVisible ? "Visible" : "Hidden"}
                             </button>
                           </td>
 
-                          <td className="px-4 py-3.5 border-r border-[#B6925B]/10 text-center">
+                          <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-center">
                             <span className="inline-flex items-center px-2 py-0.5 text-[10px] bg-[#FAFAFA] border border-gray-200 text-gray-600">
                               {sub._count.products} products
                             </span>
@@ -454,7 +454,7 @@ export default function CollectionListTable({
                             <div className="inline-flex items-center justify-end gap-1">
                               <Link 
                                 href={`${basePath}/collections/${sub.id}`} 
-                                className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1" 
+                                className="inline-flex text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1" 
                                 title="Edit Subcategory"
                               >
                                 <Pencil className="w-3.5 h-3.5" />

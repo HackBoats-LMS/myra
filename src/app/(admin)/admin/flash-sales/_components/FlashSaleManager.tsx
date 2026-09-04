@@ -101,16 +101,16 @@ export default function FlashSaleManager({
     }
   };
 
-  const field = "w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] text-[#4A3B2C]";
-  const label = "block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest mb-1";
+  const field = "w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F]";
+  const label = "block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest mb-1";
 
   const now = new Date();
   const activeNow = sales.filter((s) => s.isActive && new Date(s.startAt) <= now && new Date(s.endAt) >= now);
 
   return (
     <div className="space-y-8">
-      <div className="bg-white border border-[#B6925B]/20 p-6 shadow-sm">
-        <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3 mb-4">
+      <div className="bg-white border border-[#7A0B2E]/20 p-6 shadow-sm">
+        <h3 className="font-serif text-lg text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3 mb-4">
           {editing ? `Edit: ${editing.title}` : "Create Flash Sale"}
         </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -149,18 +149,18 @@ export default function FlashSaleManager({
             </div>
             <div className="flex items-end pb-2">
               <label className="inline-flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="accent-[#B6925B]" />
-                <span className="text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Active</span>
+                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="accent-[#7A0B2E]" />
+                <span className="text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Active</span>
               </label>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             {editing && (
-              <button type="button" onClick={reset} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#4A3B2C]">
+              <button type="button" onClick={reset} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#2D1F2F]">
                 Cancel
               </button>
             )}
-            <button type="submit" disabled={busy} className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 rounded-none">
+            <button type="submit" disabled={busy} className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 rounded-none">
               {busy ? "Saving..." : editing ? "Update" : "Create"}
             </button>
           </div>
@@ -173,18 +173,18 @@ export default function FlashSaleManager({
         </div>
       )}
 
-      <div className="bg-white border border-[#B6925B]/20 shadow-sm">
-        <div className="p-4 border-b border-[#B6925B]/20">
-          <h3 className="font-serif text-lg text-[#4A3B2C]">All Flash Sales</h3>
+      <div className="bg-white border border-[#7A0B2E]/20 shadow-sm">
+        <div className="p-4 border-b border-[#7A0B2E]/20">
+          <h3 className="font-serif text-lg text-[#2D1F2F]">All Flash Sales</h3>
         </div>
         {sales.length === 0 ? (
           <p className="p-6 text-gray-400 text-sm">No flash sales yet.</p>
         ) : (
-          <div className="divide-y divide-[#B6925B]/10">
+          <div className="divide-y divide-[#7A0B2E]/10">
             {sales.map((s) => (
               <div key={s.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="font-bold text-[#4A3B2C]">{s.title}</p>
+                  <p className="font-bold text-[#2D1F2F]">{s.title}</p>
                   <p className="text-xs text-gray-500">
                     {s.discountType === "PERCENTAGE" ? `${s.value}% off` : `₹${s.value} off`}
                     {s.collection ? ` · ${s.collection.name}` : " · All products"}
@@ -198,7 +198,7 @@ export default function FlashSaleManager({
                   <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 border rounded-none ${s.isActive ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-50 text-gray-500 border-gray-200"}`}>
                     {s.isActive ? "Active" : "Inactive"}
                   </span>
-                  <button onClick={() => beginEdit(s)} className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C]">
+                  <button onClick={() => beginEdit(s)} className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F]">
                     Edit
                   </button>
                   <button onClick={() => handleDelete(s.id, s.title)} className="text-[10px] font-bold uppercase tracking-widest text-red-600 hover:text-red-800">

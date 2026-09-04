@@ -21,8 +21,8 @@ export default function ShipOrderButton({
   if (shipped) {
     return (
       <div className="flex gap-2">
-        <span className="inline-flex items-center gap-1.5 bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
-          <Truck className="w-4 h-4 text-[#B6925B]" />
+        <span className="inline-flex items-center gap-1.5 bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
+          <Truck className="w-4 h-4 text-[#7A0B2E]" />
           Shipped via Shiprocket
         </span>
         <PrintLabelButton orderId={orderId} />
@@ -50,7 +50,7 @@ export default function ShipOrderButton({
     <button
       onClick={handleShip}
       disabled={loading}
-      className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-5 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+      className="bg-[#2D1F2F] hover:bg-[#220510] text-white px-5 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
     >
       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />}
       <span>Ship via Shiprocket</span>

@@ -1,6 +1,7 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
+import { revalidateTag } from "@/lib/cache";
 import { verifyWorkerCapability } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { FLASH_SALE_TAG } from "@/lib/flash-sale";

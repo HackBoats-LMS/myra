@@ -58,7 +58,7 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
 
   if (value) {
     return (
-      <div className="relative w-full h-full min-h-[112px] rounded-none overflow-hidden group border border-[#B6925B]/20">
+      <div className="relative w-full h-full min-h-[112px] rounded-none overflow-hidden group border border-[#7A0B2E]/20">
         <Image fill src={value} alt="Upload" className="object-cover" />
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <button
@@ -77,7 +77,7 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
     <div className="w-full h-full rounded-none">
       <label 
         className={`flex flex-col items-center justify-center w-full h-full min-h-[112px] border-2 border-dashed rounded-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer transition-colors'} ${
-          isDragging ? "border-[#B6925B] bg-[#B6925B]/5" : "border-[#B6925B]/30 bg-[#FAFAFA] hover:bg-white"
+          isDragging ? "border-[#7A0B2E] bg-[#7A0B2E]/5" : "border-[#7A0B2E]/30 bg-[#FAFAFA] hover:bg-white"
         }`}
         onDragOver={disabled ? undefined : handleDragOver}
         onDragLeave={disabled ? undefined : handleDragLeave}
@@ -85,13 +85,13 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
       >
         <div className="flex flex-col items-center justify-center p-2 text-center">
           {isUploading ? (
-            <Loader2 className="w-5 h-5 mb-1.5 text-[#B6925B] animate-spin" />
+            <Loader2 className="w-5 h-5 mb-1.5 text-[#7A0B2E] animate-spin" />
           ) : (
-            <UploadCloud className={`w-5 h-5 mb-1.5 ${isDragging ? "text-[#B6925B]" : "text-gray-400"}`} />
+            <UploadCloud className={`w-5 h-5 mb-1.5 ${isDragging ? "text-[#7A0B2E]" : "text-gray-400"}`} />
           )}
           <p className="mb-0.5 text-[10px] leading-tight text-gray-500">
             {isUploading ? "Uploading..." : (
-              <><span className="font-semibold text-[#B6925B]">Click or drag</span><br /> to upload</>
+              <><span className="font-semibold text-[#7A0B2E]">Click or drag</span><br /> to upload</>
             )}
           </p>
         </div>

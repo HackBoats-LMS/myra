@@ -32,12 +32,12 @@ function AttributeRow({
   highlight?: boolean;
 }) {
   return (
-    <tr className={`border-b border-[#B6925B]/10 ${highlight ? "bg-[#FAFAFA]" : "bg-white"}`}>
-      <td className="py-4 px-5 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] w-40 align-middle whitespace-nowrap border-r border-[#B6925B]/10">
+    <tr className={`border-b border-[#7A0B2E]/10 ${highlight ? "bg-[#FAFAFA]" : "bg-white"}`}>
+      <td className="py-4 px-5 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] w-40 align-middle whitespace-nowrap border-r border-[#7A0B2E]/10">
         {label}
       </td>
       {values.map((value, i) => (
-        <td key={i} className="py-4 px-6 text-sm text-[#4A3B2C] text-center align-middle font-medium">
+        <td key={i} className="py-4 px-6 text-sm text-[#2D1F2F] text-center align-middle font-medium">
           {value}
         </td>
       ))}
@@ -88,11 +88,11 @@ export default function CompareTable({ ordered, priced }: CompareTableProps) {
   ];
 
   return (
-    <div className="overflow-x-auto bg-white border border-[#B6925B]/20 shadow-sm">
+    <div className="overflow-x-auto bg-white border border-[#7A0B2E]/20 shadow-sm">
       <table className="w-full border-collapse" style={{ minWidth: `${Math.max(540, 200 * ordered.length + 160)}px` }}>
         <thead>
-          <tr className="border-b-2 border-[#B6925B]/20">
-            <th className="w-40 p-5 border-r border-[#B6925B]/10 bg-[#FAFAFA] align-bottom">
+          <tr className="border-b-2 border-[#7A0B2E]/20">
+            <th className="w-40 p-5 border-r border-[#7A0B2E]/10 bg-[#FAFAFA] align-bottom">
               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 Attributes
               </span>
@@ -110,12 +110,12 @@ export default function CompareTable({ ordered, priced }: CompareTableProps) {
                   : null;
 
               return (
-                <th key={p.id} className="p-5 align-top text-left border-r last:border-r-0 border-[#B6925B]/10">
+                <th key={p.id} className="p-5 align-top text-left border-r last:border-r-0 border-[#7A0B2E]/10">
                   <div className="flex flex-col gap-4">
                     <Link href={`/products/${p.slug}`} className="group block">
-                      <div className="relative aspect-[3/4] w-full max-w-[180px] mx-auto overflow-hidden bg-[#FAFAFA] border border-[#B6925B]/20">
+                      <div className="relative aspect-[3/4] w-full max-w-[180px] mx-auto overflow-hidden bg-[#FAFAFA] border border-[#7A0B2E]/20">
                         {savings && (
-                          <div className="absolute top-2 left-2 z-10 bg-[#B6925B] text-white text-[9px] font-black px-2 py-1 uppercase tracking-wider">
+                          <div className="absolute top-2 left-2 z-10 bg-[#7A0B2E] text-white text-[9px] font-black px-2 py-1 uppercase tracking-wider">
                             -{savings}%
                           </div>
                         )}
@@ -136,13 +136,13 @@ export default function CompareTable({ ordered, priced }: CompareTableProps) {
                     </Link>
 
                     <div>
-                      <Link href={`/products/${p.slug}`} className="hover:text-[#B6925B] transition-colors">
-                        <h3 className="text-sm font-bold text-[#4A3B2C] line-clamp-2 leading-snug">
+                      <Link href={`/products/${p.slug}`} className="hover:text-[#7A0B2E] transition-colors">
+                        <h3 className="text-sm font-bold text-[#2D1F2F] line-clamp-2 leading-snug">
                           {p.name}
                         </h3>
                       </Link>
                       <div className="flex items-baseline gap-2 mt-1.5">
-                        <span className="text-base font-black text-[#4A3B2C]">
+                        <span className="text-base font-black text-[#2D1F2F]">
                           ₹{p.price.toLocaleString("en-IN")}
                         </span>
                         {p.originalPrice && p.originalPrice > p.price && (
@@ -156,7 +156,7 @@ export default function CompareTable({ ordered, priced }: CompareTableProps) {
                           {[1, 2, 3, 4, 5].map((star) => (
                             <i
                               key={star}
-                              className={`ri-star-${star <= Math.round(avgRating) ? "fill" : "line"} text-xs text-[#B6925B]`}
+                              className={`ri-star-${star <= Math.round(avgRating) ? "fill" : "line"} text-xs text-[#7A0B2E]`}
                             />
                           ))}
                           <span className="text-[10px] text-gray-500 font-bold ml-0.5">

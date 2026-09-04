@@ -37,36 +37,36 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-[#B6925B]/20 shadow-sm p-6">
-        <h3 className="text-sm font-bold text-[#4A3B2C] uppercase tracking-widest mb-4">Add Deliverable Pincode</h3>
+      <div className="bg-white border border-[#7A0B2E]/20 shadow-sm p-6">
+        <h3 className="text-sm font-bold text-[#2D1F2F] uppercase tracking-widest mb-4">Add Deliverable Pincode</h3>
         <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1">Pincode</label>
+            <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1">Pincode</label>
             <input
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               required
               inputMode="numeric"
               pattern="[0-9]{6}"
-              className="w-full rounded-none border border-[#B6925B]/30 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+              className="w-full rounded-none border border-[#7A0B2E]/30 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
               placeholder="e.g. 110001"
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1">City (optional)</label>
+            <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1">City (optional)</label>
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full rounded-none border border-[#B6925B]/30 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+              className="w-full rounded-none border border-[#7A0B2E]/30 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
               placeholder="e.g. Delhi"
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1">State (optional)</label>
+            <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1">State (optional)</label>
             <input
               value={state}
               onChange={(e) => setState(e.target.value)}
-              className="w-full rounded-none border border-[#B6925B]/30 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+              className="w-full rounded-none border border-[#7A0B2E]/30 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
               placeholder="e.g. Delhi"
             />
           </div>
@@ -74,7 +74,7 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-70 rounded-none"
+              className="w-full bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors disabled:opacity-70 rounded-none"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               Add
@@ -83,18 +83,18 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
         </form>
       </div>
 
-      <div className="bg-white border border-[#B6925B]/20 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm text-[#4A3B2C]">
-          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
+      <div className="bg-white border border-[#7A0B2E]/20 shadow-sm overflow-hidden">
+        <table className="w-full text-left text-sm text-[#2D1F2F]">
+          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Pincode</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">City</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">State</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Status</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Pincode</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">City</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">State</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#B6925B]/10">
+          <tbody className="divide-y divide-[#7A0B2E]/10">
             {pincodes.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
@@ -104,10 +104,10 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
             ) : (
               pincodes.map((p) => (
                 <tr key={p.id} className="hover:bg-[#FAFAFA] transition-colors">
-                  <td className="px-6 py-4 font-mono text-xs font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">{p.code}</td>
-                  <td className="px-6 py-4 text-xs border-r border-[#B6925B]/10">{p.city || "—"}</td>
-                  <td className="px-6 py-4 text-xs border-r border-[#B6925B]/10">{p.state || "—"}</td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
+                  <td className="px-6 py-4 font-mono text-xs font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">{p.code}</td>
+                  <td className="px-6 py-4 text-xs border-r border-[#7A0B2E]/10">{p.city || "—"}</td>
+                  <td className="px-6 py-4 text-xs border-r border-[#7A0B2E]/10">{p.state || "—"}</td>
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                     <button
                       onClick={async () => {
                         try {

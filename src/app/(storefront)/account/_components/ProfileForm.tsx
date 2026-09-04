@@ -101,16 +101,16 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
   return (
     <div className="space-y-6">
       {/* Account Details Box */}
-      <div className="bg-white border border-[#B6925B]/20 shadow-sm relative rounded-none">
-        <div className="p-6 border-b border-[#B6925B]/20 bg-[#FAFAFA]">
+      <div className="bg-white border border-[#7A0B2E]/20 shadow-sm relative rounded-none">
+        <div className="p-6 border-b border-[#7A0B2E]/20 bg-[#FAFAFA]">
           {/* Title row */}
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide flex-shrink-0">Account Details</h3>
+            <h3 className="text-xl font-serif text-[#2D1F2F] tracking-wide flex-shrink-0">Account Details</h3>
             <div className="flex items-center gap-3 flex-shrink-0">
               {!isEditing && (
                 <button 
                   onClick={() => dispatch({ type: "START_EDIT" })}
-                  className="text-[10px] font-bold text-[#B6925B] hover:text-[#9c7d4e] flex items-center gap-1 transition-colors uppercase tracking-widest border border-[#B6925B]/30 px-3 py-1.5 hover:bg-[#B6925B]/5"
+                  className="text-[10px] font-bold text-[#7A0B2E] hover:text-[#5C0820] flex items-center gap-1 transition-colors uppercase tracking-widest border border-[#7A0B2E]/30 px-3 py-1.5 hover:bg-[#7A0B2E]/5"
                 >
                   <i className="ri-edit-box-line text-sm" />
                   <span className="hidden sm:inline">Edit</span>
@@ -131,18 +131,18 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
           /* EDIT MODE FORM */
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="space-y-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">Personal Info</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E]">Personal Info</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Full Name</label>
-                  <input name="name" defaultValue={user.name || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Full Name</label>
+                  <input name="name" defaultValue={user.name || ''} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Email Address</label>
-                  <input name="email" type="email" defaultValue={user.email || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Email Address</label>
+                  <input name="email" type="email" defaultValue={user.email || ''} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
                     {user.phoneNumber ? "Phone Number (Cannot be changed)" : "Phone Number"}
                   </label>
                   <input 
@@ -152,13 +152,13 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
                     placeholder="e.g. +91 98765 43210"
                     className={`w-full rounded-none border px-3 py-2 text-sm font-medium transition-all ${
                       user.phoneNumber 
-                        ? "border-[#B6925B]/10 bg-[#FAFAFA] text-gray-500 cursor-not-allowed" 
-                        : "border-[#B6925B]/20 bg-white text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]"
+                        ? "border-[#7A0B2E]/10 bg-[#FAFAFA] text-gray-500 cursor-not-allowed" 
+                        : "border-[#7A0B2E]/20 bg-white text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                     }`} 
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
                     Second Phone Number (Optional)
                   </label>
                   <input 
@@ -167,50 +167,50 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
                     maxLength={10}
                     defaultValue={user.phoneNumber2 || ''} 
                     placeholder="e.g. 9876543211"
-                    className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" 
+                    className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" 
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-[#B6925B]/20">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">Shipping Address</h4>
+            <div className="space-y-4 pt-4 border-t border-[#7A0B2E]/20">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E]">Shipping Address</h4>
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Address Line 1</label>
-                <input name="addressLine1" defaultValue={user.addressLine1 || ''} placeholder="Street address, P.O. box, etc." className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Address Line 1</label>
+                <input name="addressLine1" defaultValue={user.addressLine1 || ''} placeholder="Street address, P.O. box, etc." className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">City</label>
-                  <input name="city" defaultValue={user.city || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">City</label>
+                  <input name="city" defaultValue={user.city || ''} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">State / Province</label>
-                  <input name="state" defaultValue={user.state || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">State / Province</label>
+                  <input name="state" defaultValue={user.state || ''} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Postal Code</label>
-                  <input name="postalCode" defaultValue={user.postalCode || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Postal Code</label>
+                  <input name="postalCode" defaultValue={user.postalCode || ''} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Country</label>
-                  <input name="country" defaultValue={user.country || ''} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all" />
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Country</label>
+                  <input name="country" defaultValue={user.country || ''} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all" />
                 </div>
               </div>
             </div>
 
-            <div className="pt-4 flex justify-end gap-3 border-t border-[#B6925B]/20">
+            <div className="pt-4 flex justify-end gap-3 border-t border-[#7A0B2E]/20">
               <button 
                 type="button"
                 onClick={() => dispatch({ type: "CANCEL_EDIT" })}
-                className="px-5 py-2.5 text-[10px] font-bold text-gray-500 hover:text-[#4A3B2C] uppercase tracking-widest transition-colors"
+                className="px-5 py-2.5 text-[10px] font-bold text-gray-500 hover:text-[#2D1F2F] uppercase tracking-widest transition-colors"
               >
                 Cancel
               </button>
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center disabled:opacity-50 rounded-none"
+                className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center disabled:opacity-50 rounded-none"
               >
                 {isSubmitting ? <i className="ri-loader-4-line mr-2 animate-spin text-base" /> : "Save Changes"}
               </button>
@@ -220,37 +220,37 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
           /* READ/VIEW MODE SUMMARY */
           <div className="p-6 space-y-6">
             <div className="space-y-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] border-b border-[#B6925B]/20 pb-2">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] border-b border-[#7A0B2E]/20 pb-2">
                 Personal Info
               </h4>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <i className="ri-user-line text-lg text-[#B6925B] flex-shrink-0" />
+                  <i className="ri-user-line text-lg text-[#7A0B2E] flex-shrink-0" />
                   <div>
                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">Full Name</span>
-                    <span className="text-sm font-medium text-[#4A3B2C]">{user.name || "Not set"}</span>
+                    <span className="text-sm font-medium text-[#2D1F2F]">{user.name || "Not set"}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <i className="ri-mail-line text-lg text-[#B6925B] flex-shrink-0" />
+                  <i className="ri-mail-line text-lg text-[#7A0B2E] flex-shrink-0" />
                   <div>
                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">Email Address</span>
-                    <span className="text-sm font-medium text-[#4A3B2C]">{user.email || "Not set"}</span>
+                    <span className="text-sm font-medium text-[#2D1F2F]">{user.email || "Not set"}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <i className="ri-phone-line text-lg text-[#B6925B] flex-shrink-0" />
+                  <i className="ri-phone-line text-lg text-[#7A0B2E] flex-shrink-0" />
                   <div>
                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">Phone Number</span>
-                    <span className="text-sm font-medium text-[#4A3B2C]">{user.phoneNumber || "Not set"}</span>
+                    <span className="text-sm font-medium text-[#2D1F2F]">{user.phoneNumber || "Not set"}</span>
                   </div>
                 </div>
                 {user.phoneNumber2 && (
                   <div className="flex items-center gap-3">
-                    <i className="ri-phone-fill text-lg text-[#B6925B] flex-shrink-0" />
+                    <i className="ri-phone-fill text-lg text-[#7A0B2E] flex-shrink-0" />
                     <div>
                       <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">Second Phone</span>
-                      <span className="text-sm font-medium text-[#4A3B2C]">{user.phoneNumber2}</span>
+                      <span className="text-sm font-medium text-[#2D1F2F]">{user.phoneNumber2}</span>
                     </div>
                   </div>
                 )}
@@ -258,14 +258,14 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
             </div>
 
             <div className="space-y-4 pt-2">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] border-b border-[#B6925B]/20 pb-2">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] border-b border-[#7A0B2E]/20 pb-2">
                 Shipping Address
               </h4>
               {user.addressLine1 ? (
                 <div className="flex items-start gap-3">
-                  <i className="ri-map-pin-line text-lg text-[#B6925B] flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-[#4A3B2C] space-y-1">
-                    <p className="font-bold text-[#4A3B2C]">{user.name || "Customer Address"}</p>
+                  <i className="ri-map-pin-line text-lg text-[#7A0B2E] flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-[#2D1F2F] space-y-1">
+                    <p className="font-bold text-[#2D1F2F]">{user.name || "Customer Address"}</p>
                     <p>{user.addressLine1}</p>
                     <p>{user.city}, {user.state} {user.postalCode}</p>
                     <p className="uppercase text-[10px] font-bold text-gray-500 tracking-widest mt-1">{user.country}</p>
@@ -283,60 +283,60 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
       </div>
 
       {/* Password Block — "Set Password" for Google users, "Change Password" for others */}
-      <div className="bg-white border border-[#B6925B]/20 shadow-sm rounded-none">
+      <div className="bg-white border border-[#7A0B2E]/20 shadow-sm rounded-none">
         <button
           onClick={() => dispatch({ type: "TOGGLE_PASSWORD" })}
           className="w-full p-6 flex justify-between items-center text-left focus:outline-none"
         >
           <div>
-            <h3 className="text-xl font-serif text-[#4A3B2C] tracking-wide">Security</h3>
-            <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">
+            <h3 className="text-xl font-serif text-[#2D1F2F] tracking-wide">Security</h3>
+            <p className="text-[10px] text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">
               {user.hasPassword ? "Update your account password" : "Set a password to login with phone/email"}
             </p>
           </div>
           {showPasswordSection ? (
-            <i className="ri-arrow-up-s-line text-xl text-[#B6925B]" />
+            <i className="ri-arrow-up-s-line text-xl text-[#7A0B2E]" />
           ) : (
-            <i className="ri-arrow-down-s-line text-xl text-[#B6925B]" />
+            <i className="ri-arrow-down-s-line text-xl text-[#7A0B2E]" />
           )}
         </button>
 
         {showPasswordSection && (
-          <form onSubmit={handlePasswordSubmit} className="p-6 border-t border-[#B6925B]/20 space-y-4 bg-[#FAFAFA]">
+          <form onSubmit={handlePasswordSubmit} className="p-6 border-t border-[#7A0B2E]/20 space-y-4 bg-[#FAFAFA]">
             {user.hasPassword && (
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Current Password</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Current Password</label>
                 <input
                   required
                   name="currentPassword"
                   type="password"
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
+                  className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all"
                 />
               </div>
             )}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">{user.hasPassword ? "New Password" : "Password"}</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">{user.hasPassword ? "New Password" : "Password"}</label>
               <input
                 required
                 name="newPassword"
                 type="password"
-                className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
+                className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Confirm Password</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Confirm Password</label>
               <input
                 required
                 name="confirmPassword"
                 type="password"
-                className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] placeholder-gray-400 focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] transition-all"
+                className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] transition-all"
               />
             </div>
-            <div className="pt-4 flex justify-end border-t border-[#B6925B]/20 mt-6">
+            <div className="pt-4 flex justify-end border-t border-[#7A0B2E]/20 mt-6">
               <button
                 type="submit"
                 disabled={isChangingPassword}
-                className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center disabled:opacity-50 rounded-none"
+                className="bg-[#2D1F2F] hover:bg-[#220510] text-white px-8 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-colors flex items-center disabled:opacity-50 rounded-none"
               >
                 {isChangingPassword ? <i className="ri-loader-4-line mr-2 animate-spin text-base" /> : user.hasPassword ? "Update Password" : "Set Password"}
               </button>

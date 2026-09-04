@@ -1,10 +1,9 @@
 "use server"
 import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
-import { updateTag } from "next/cache";
 import { verifyAdmin, verifyWorkerCapability } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
-import { CACHE_TAGS } from "@/lib/cache";
+import { CACHE_TAGS, revalidateTag } from "@/lib/cache";
 import { refundRazorpayPayment, razorpayConfigured } from "@/lib/integrations/razorpay";
 import { detectImageType } from "@/lib/storage/image-upload";
 import bcrypt from "bcryptjs";
@@ -202,8 +201,8 @@ export async function createProduct(formData: FormData) {
   await logAudit("product.create", "Product", created.id, { slug: data.slug });
 
   revalidatePath("/admin/products");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
 }
 
 export async function updateProduct(id: string, formData: FormData) {
@@ -211,7 +210,7 @@ export async function updateProduct(id: string, formData: FormData) {
 
   const prev = await prisma.product.findUnique({
     where: { id },
-    select: { stockQuantity: true, slug: true },
+    select: { stockQuantity: true, slug: true, images: true, videoUrl: true },
   });
 
   let parsedVariants: ParsedVariantRecord[] = [];
@@ -315,11 +314,30 @@ export async function updateProduct(id: string, formData: FormData) {
     await notifyStockSubscribers(id);
   }
 
-revalidatePath("/admin/products");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
-  if (prev?.slug) updateTag(CACHE_TAGS.product(prev.slug));
-  if (data.slug !== prev?.slug) updateTag(CACHE_TAGS.product(data.slug));
+  // Automatically delete any removed images or replaced video file from Supabase storage
+  const removedMedia: string[] = [];
+  if (prev?.videoUrl && prev.videoUrl !== data.videoUrl) {
+    removedMedia.push(prev.videoUrl);
+  }
+  if (prev?.images) {
+    const newImagesSet = new Set(data.images || []);
+    for (const oldImg of prev.images) {
+      if (!newImagesSet.has(oldImg)) {
+        removedMedia.push(oldImg);
+      }
+    }
+  }
+  if (removedMedia.length > 0) {
+    deleteMediaFromStorage(removedMedia).catch((err) => {
+      console.error("[Storage] Failed to cleanup replaced product media:", err);
+    });
+  }
+
+  revalidatePath("/admin/products");
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
+  if (prev?.slug) revalidateTag(CACHE_TAGS.product(prev.slug));
+  if (data.slug !== prev?.slug) revalidateTag(CACHE_TAGS.product(data.slug));
 }
 
 export async function deleteProduct(id: string) {
@@ -334,9 +352,9 @@ export async function deleteProduct(id: string) {
   await logAudit("product.delete", "Product", id);
 
   revalidatePath("/admin/products");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
-  if (prev?.slug) updateTag(CACHE_TAGS.product(prev.slug));
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
+  if (prev?.slug) revalidateTag(CACHE_TAGS.product(prev.slug));
 }
 
 export async function restoreProduct(id: string) {
@@ -351,9 +369,9 @@ export async function restoreProduct(id: string) {
   await logAudit("product.restore", "Product", id);
 
   revalidatePath("/admin/products");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
-  if (prev?.slug) updateTag(CACHE_TAGS.product(prev.slug));
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
+  if (prev?.slug) revalidateTag(CACHE_TAGS.product(prev.slug));
 }
 
 const MAX_BULK_IDS = 100;
@@ -373,8 +391,8 @@ export async function bulkDeleteProducts(ids: string[]) {
   await logAudit("product.bulkDelete", "Product", undefined, { ids });
 
   revalidatePath("/admin/products");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
 }
 
 export async function bulkRestoreProducts(ids: string[]) {
@@ -392,8 +410,8 @@ export async function bulkRestoreProducts(ids: string[]) {
   await logAudit("product.bulkRestore", "Product", undefined, { ids });
 
   revalidatePath("/admin/products");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
 }
 
 export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
@@ -415,8 +433,8 @@ export async function bulkUpdateStock(ids: string[], stockQuantity: number) {
   await logAudit("product.bulkUpdateStock", "Product", undefined, { ids, stockQuantity });
 
   revalidatePath("/admin/products");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
 }
 
 const collectionSchema = z.object({
@@ -434,9 +452,9 @@ function purgeCollectionCache() {
   revalidatePath("/admin/collections");
   revalidatePath("/worker/collections");
   revalidatePath("/", "layout");
-  try { updateTag(CACHE_TAGS.collections); } catch {}
-  try { updateTag(CACHE_TAGS.navigation); } catch {}
-  try { updateTag(CACHE_TAGS.workerCollections); } catch {}
+  try { revalidateTag(CACHE_TAGS.collections); } catch {}
+  try { revalidateTag(CACHE_TAGS.navigation); } catch {}
+  try { revalidateTag(CACHE_TAGS.workerCollections); } catch {}
 }
 
 function parseBannersArray(raw: FormDataEntryValue | null): string[] {
@@ -642,8 +660,8 @@ export async function toggleBestSeller(productId: string, bestSeller: boolean) {
     revalidatePath(`/worker/collections/${product.collectionId}`);
   }
   revalidatePath("/admin/collections");
-  updateTag(CACHE_TAGS.products);
-  updateTag(CACHE_TAGS.workerProducts);
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.workerProducts);
 }
 
 const refundSchema = z.object({
@@ -815,7 +833,7 @@ export async function uploadMedia(formData: FormData) {
       "Authorization": `Bearer ${serviceRoleKey}`,
       "Content-Type": detected.mime,
     },
-    body: file,
+    body: Buffer.from(bytes),
   });
 
   if (!res.ok) {
@@ -824,6 +842,42 @@ export async function uploadMedia(formData: FormData) {
   }
 
   return `${supabaseUrl}/storage/v1/object/public/product-images/${fileName}`;
+}
+
+export async function deleteMediaFromStorage(urls: (string | null | undefined)[]) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return;
+
+  const fileNames: string[] = [];
+  for (const u of urls) {
+    if (!u || typeof u !== "string") continue;
+    if (u.includes("/storage/v1/object/public/product-images/")) {
+      const parts = u.split("/storage/v1/object/public/product-images/");
+      if (parts[1]) {
+        fileNames.push(decodeURIComponent(parts[1]));
+      }
+    }
+  }
+
+  if (fileNames.length === 0) return;
+
+  try {
+    const res = await fetch(`${supabaseUrl}/storage/v1/object/product-images`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prefixes: fileNames }),
+    });
+
+    if (!res.ok) {
+      console.warn("[Supabase Storage] Bulk delete returned non-200 status:", await res.text());
+    }
+  } catch (err) {
+    console.error("[Supabase Storage] Failed to delete old media files:", err);
+  }
 }
 
 export async function toggleUserDisabled(userId: string, isDisabled: boolean) {
@@ -1068,8 +1122,8 @@ export async function shipOrder(orderId: string) {
   revalidatePath(`/admin/orders/${orderId}`);
   revalidatePath(`/account/orders/${orderId}`);
   revalidatePath(`/account/orders`);
-  updateTag(CACHE_TAGS.workerOrders);
-  updateTag(CACHE_TAGS.deliveryOrders);
+  revalidateTag(CACHE_TAGS.workerOrders);
+  revalidateTag(CACHE_TAGS.deliveryOrders);
 }
 
 export async function updateOrderInternalNotes(orderId: string, internalNotes: string) {

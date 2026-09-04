@@ -76,12 +76,12 @@ export default async function AdminReviewsPage({
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-[#B6925B]/20 pb-4">
-        <h1 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Customer Reviews</h1>
-        <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage and moderate product reviews.</p>
+      <div className="border-b border-[#7A0B2E]/20 pb-4">
+        <h1 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Customer Reviews</h1>
+        <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">Manage and moderate product reviews.</p>
       </div>
 
-      <div className="bg-white border border-[#B6925B]/20 relative">
+      <div className="bg-white border border-[#7A0B2E]/20 relative">
         <AdminReviewList initialReviews={reviews} />
       </div>
 

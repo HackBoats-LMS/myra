@@ -69,7 +69,7 @@ export default async function CheckoutPage() {
     <div className="w-full bg-[#FAFAFA] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center text-center mb-12 space-y-4">
-          <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">Checkout</h1>
+          <h1 className="text-3xl md:text-4xl font-serif text-[#2D1F2F] tracking-wide">Checkout</h1>
           <p className="text-sm text-gray-500 tracking-widest">Complete your purchase securely</p>
         </div>
 
@@ -99,7 +99,7 @@ export default async function CheckoutPage() {
         {addresses.length === 0 && (
           <p className="mt-8 text-center text-xs text-gray-500">
             Tip: you can add a delivery address right in the Delivery step below.
-            <Link href="/account" className="ml-1 underline font-bold text-[#B6925B]">
+            <Link href="/account" className="ml-1 underline font-bold text-[#7A0B2E]">
               Manage in account
             </Link>
           </p>

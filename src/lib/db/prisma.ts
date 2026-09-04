@@ -21,11 +21,19 @@ const pool =
   new Pool({
     connectionString,
     ssl: sslConfig,
-    max: 5,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 20000,
+    max: 10,
+    idleTimeoutMillis: 15000,
+    connectionTimeoutMillis: 10000,
     allowExitOnIdle: true,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
   });
+
+// Catch idle socket disconnects to prevent unhandled pool errors when Supabase drops idle connections
+pool.on('error', (err) => {
+  console.warn('[PostgreSQL Pool] Connection reset by peer:', err.message);
+});
+
 if (process.env.NODE_ENV !== "production") globalForPrisma.pool = pool;
 
 const adapter = new PrismaPg(pool);

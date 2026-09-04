@@ -66,7 +66,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
         transition-all duration-300
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
         ${isSuccess
-          ? "bg-white border-[#B6925B]/30 text-[#4A3B2C]"
+          ? "bg-white border-[#7A0B2E]/30 text-[#2D1F2F]"
           : "bg-white border-red-200 text-gray-800"
         }
       `}
@@ -81,7 +81,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
       <p className="flex-1 text-xs font-bold uppercase tracking-wider leading-snug">{toast.message}</p>
       <button
         onClick={handleDismiss}
-        className="flex-shrink-0 mt-0.5 text-gray-400 hover:text-[#4A3B2C] transition-colors flex items-center justify-center"
+        className="flex-shrink-0 mt-0.5 text-gray-400 hover:text-[#2D1F2F] transition-colors flex items-center justify-center"
         aria-label="Dismiss"
       >
         <X className="w-4 h-4" />

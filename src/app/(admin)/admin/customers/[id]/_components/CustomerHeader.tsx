@@ -20,10 +20,10 @@ interface CustomerHeaderProps {
 export default function CustomerHeader({ customer }: CustomerHeaderProps) {
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#B6925B]/20 pb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#7A0B2E]/20 pb-6">
         <div>
-          <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">{customer.name || "Unnamed Customer"}</h1>
-          <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">Registered on {new Date(customer.createdAt).toLocaleDateString("en-IN", {
+          <h1 className="text-3xl font-serif text-[#2D1F2F] tracking-wide">{customer.name || "Unnamed Customer"}</h1>
+          <p className="text-[10px] text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">Registered on {new Date(customer.createdAt).toLocaleDateString("en-IN", {
             year: "numeric",
             month: "long",
             day: "numeric"

@@ -67,7 +67,7 @@ export function useRazorpay() {
         email: options.prefill.email ?? undefined,
         contact: options.prefill.contact ?? undefined,
       },
-      theme: { color: "#B6925B" },
+      theme: { color: "#7A0B2E" },
       handler: async (response: {
         razorpay_order_id: string;
         razorpay_payment_id: string;

@@ -38,7 +38,7 @@ export default function MoveAllToBagButton({ productIds }: { productIds: string[
     <button
       onClick={handleMoveAll}
       disabled={loading}
-      className="border border-[#B6925B]/30 text-[#B6925B] hover:bg-[#B6925B] hover:text-white px-6 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+      className="border border-[#7A0B2E]/30 text-[#7A0B2E] hover:bg-[#7A0B2E] hover:text-white px-6 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
     >
       {loading ? (
         <i className="ri-loader-4-line animate-spin text-sm" />

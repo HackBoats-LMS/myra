@@ -85,6 +85,8 @@ export default async function CollectionPage({
     ? [collection.id, ...collection.children.map(c => c.id)]
     : [collection.id];
 
+  const specialFilter = slug === "best-sellers" ? "best-sellers" : slug === "new-arrivals" ? "new-arrivals" : undefined;
+
   const [{ products, totalProducts }, flashSales] = await Promise.all([
     getCachedFilteredProducts(
       targetCollectionIds,
@@ -92,7 +94,8 @@ export default async function CollectionPage({
       priceRange,
       sort,
       currentPage,
-      ITEMS_PER_PAGE
+      ITEMS_PER_PAGE,
+      specialFilter
     ),
     getActiveFlashSales()
   ]);
@@ -140,20 +143,20 @@ export default async function CollectionPage({
   return (
     <div className="w-full bg-white min-h-screen">
       {/* 1. Breadcrumb Navigation */}
-      <div className="border-b border-[#B6925B]/15 bg-[#FAF8F5]">
+      <div className="border-b border-[#7A0B2E]/15 bg-[#FAFAFA]">
         <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-3">
           <nav className="flex items-center gap-2 text-xs font-serif lowercase text-gray-500">
-            <Link href="/" className="hover:text-[#B6925B] transition-colors">home</Link>
+            <Link href="/" className="hover:text-[#7A0B2E] transition-colors">home</Link>
             <ChevronRight className="w-3 h-3 text-gray-400" />
             {collection.parent && (
               <>
-                <Link href={`/collections/${collection.parent.slug}`} className="hover:text-[#B6925B] transition-colors">
+                <Link href={`/collections/${collection.parent.slug}`} className="hover:text-[#7A0B2E] transition-colors">
                   {collection.parent.name.toLowerCase()}
                 </Link>
                 <ChevronRight className="w-3 h-3 text-gray-400" />
               </>
             )}
-            <span className="text-[#4A3B2C] font-semibold">{collection.name.toLowerCase()}</span>
+            <span className="text-[#2D1F2F] font-semibold">{collection.name.toLowerCase()}</span>
           </nav>
         </div>
       </div>
@@ -174,7 +177,7 @@ export default async function CollectionPage({
             {/* Elegant Luxury Gradient Overlay with Lower-Third Title Placement */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end justify-center pb-8 sm:pb-12 md:pb-16">
               <div className="text-center px-4 max-w-3xl">
-                <span className="text-[10px] sm:text-xs text-[#E8D3BA] uppercase tracking-[0.25em] font-bold block mb-2 drop-shadow">
+                <span className="text-[10px] sm:text-xs text-[#F0D5D5] uppercase tracking-[0.25em] font-bold block mb-2 drop-shadow">
                   {isMainCategory ? "Exclusive Collection" : `Category / ${collection.parent?.name || "Collection"}`}
                 </span>
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif text-white tracking-tight drop-shadow-md capitalize">
@@ -196,7 +199,7 @@ export default async function CollectionPage({
                 {allBanners.slice(1).map((bannerUrl, idx) => (
                   <div 
                     key={idx} 
-                    className="relative h-40 sm:h-48 md:h-56 rounded-none overflow-hidden border border-[#B6925B]/30 shadow-md group"
+                    className="relative h-40 sm:h-48 md:h-56 rounded-none overflow-hidden border border-[#7A0B2E]/30 shadow-md group"
                   >
                     <Image
                       src={bannerUrl}
@@ -211,9 +214,9 @@ export default async function CollectionPage({
           )}
         </div>
       ) : (
-        <div className="border-b border-[#B6925B]/15 bg-[#FAF8F5] py-10 md:py-16">
+        <div className="border-b border-[#7A0B2E]/15 bg-[#FAFAFA] py-10 md:py-16">
           <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 text-center">
-            <span className="text-[10px] text-[#B6925B] uppercase tracking-[0.2em] font-bold block mb-1">
+            <span className="text-[10px] text-[#7A0B2E] uppercase tracking-[0.2em] font-bold block mb-1">
               {isMainCategory ? "Collection" : `Category / ${collection.parent?.name || ""}`}
             </span>
             <h1 className="text-3xl md:text-5xl font-serif text-[#333333] tracking-tight capitalize">
@@ -224,21 +227,21 @@ export default async function CollectionPage({
                 {collection.description}
               </p>
             )}
-            <div className="w-16 h-0.5 bg-[#B6925B]/40 mx-auto mt-4" />
+            <div className="w-16 h-0.5 bg-[#7A0B2E]/40 mx-auto mt-4" />
           </div>
         </div>
       )}
 
       {/* 3. Visual Subcategory Cards (When viewing a Main Category that has Subcategories) */}
       {isMainCategory && collection.children.length > 0 && (
-        <section className="border-b border-[#B6925B]/15 bg-white py-10 md:py-14">
+        <section className="border-b border-[#7A0B2E]/15 bg-white py-10 md:py-14">
           <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-serif text-[#4A3B2C] tracking-wide">
+                <h2 className="text-2xl sm:text-3xl font-serif text-[#2D1F2F] tracking-wide">
                   Explore {collection.name} Categories
                 </h2>
-                <p className="text-xs text-[#B6925B] uppercase tracking-widest font-bold mt-1">
+                <p className="text-xs text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">
                   Choose a category below to browse specific designs
                 </p>
               </div>
@@ -250,10 +253,10 @@ export default async function CollectionPage({
                 <Link
                   key={child.id}
                   href={`/collections/${child.slug}`}
-                  className="group relative flex flex-col bg-[#FAF8F5] border border-[#B6925B]/20 hover:border-[#B6925B] transition-all duration-300 shadow-sm hover:shadow-md overflow-hidden"
+                  className="group relative flex flex-col bg-[#FAFAFA] border border-[#7A0B2E]/20 hover:border-[#7A0B2E] transition-all duration-300 shadow-sm hover:shadow-md overflow-hidden"
                 >
                   {/* Thumbnail / Image container */}
-                  <div className="relative aspect-[3/4] w-full bg-[#F3EFE9] overflow-hidden">
+                  <div className="relative aspect-[3/4] w-full bg-[#FAF0F2] overflow-hidden">
                     {child.image ? (
                       <Image
                         src={child.image}
@@ -262,25 +265,25 @@ export default async function CollectionPage({
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#FAF8F5] to-[#EFEBE4]">
-                        <Sparkles className="w-8 h-8 text-[#B6925B]/40 mb-2 group-hover:scale-110 transition-transform" />
-                        <span className="font-serif text-sm font-bold text-[#4A3B2C]">
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#FAFAFA] to-[#FAF0F2]">
+                        <Sparkles className="w-8 h-8 text-[#7A0B2E]/40 mb-2 group-hover:scale-110 transition-transform" />
+                        <span className="font-serif text-sm font-bold text-[#2D1F2F]">
                           {child.name}
                         </span>
                       </div>
                     )}
                     {/* Badge */}
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 border border-[#B6925B]/30 text-[10px] font-bold text-[#B6925B] uppercase tracking-wider">
+                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 border border-[#7A0B2E]/30 text-[10px] font-bold text-[#7A0B2E] uppercase tracking-wider">
                       {child._count.products} Styles
                     </div>
                   </div>
 
                   {/* Card Title & Link footer */}
-                  <div className="p-3.5 flex items-center justify-between bg-white border-t border-[#B6925B]/10">
-                    <span className="font-serif text-sm sm:text-base font-bold text-[#4A3B2C] group-hover:text-[#B6925B] transition-colors line-clamp-1">
+                  <div className="p-3.5 flex items-center justify-between bg-white border-t border-[#7A0B2E]/10">
+                    <span className="font-serif text-sm sm:text-base font-bold text-[#2D1F2F] group-hover:text-[#7A0B2E] transition-colors line-clamp-1">
                       {child.name}
                     </span>
-                    <ArrowRight className="w-4 h-4 text-[#B6925B] transform group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-4 h-4 text-[#7A0B2E] transform group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
               ))}
@@ -291,9 +294,9 @@ export default async function CollectionPage({
 
       {/* 4. Subcategory Quick Pill Buttons Bar */}
       {subcategoryList.length > 0 && (
-        <div className="sticky top-0 z-30 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#B6925B]/20 py-3.5 px-4 shadow-xs">
+        <div className="sticky top-0 z-30 bg-[#FAFAFA]/95 backdrop-blur-md border-b border-[#7A0B2E]/20 py-3.5 px-4 shadow-xs">
           <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#4A3B2C] whitespace-nowrap">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[#2D1F2F] whitespace-nowrap">
               {isMainCategory ? "Filter By Subcategory:" : `More in ${mainCategoryName}:`}
             </span>
             
@@ -304,8 +307,8 @@ export default async function CollectionPage({
                   href={`/collections/${mainCategorySlug}`}
                   className={`px-4 py-1.5 text-xs font-serif whitespace-nowrap transition-all border ${
                     slug === mainCategorySlug
-                      ? "bg-[#B6925B] text-white border-[#B6925B] shadow-sm font-semibold"
-                      : "bg-white text-[#4A3B2C] border-[#B6925B]/30 hover:border-[#B6925B] hover:text-[#B6925B]"
+                      ? "bg-[#7A0B2E] text-white border-[#7A0B2E] shadow-sm font-semibold"
+                      : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:border-[#7A0B2E] hover:text-[#7A0B2E]"
                   }`}
                 >
                   All {mainCategoryName}
@@ -321,8 +324,8 @@ export default async function CollectionPage({
                     href={`/collections/${sub.slug}`}
                     className={`px-4 py-1.5 text-xs font-serif whitespace-nowrap transition-all border ${
                       isActive
-                        ? "bg-[#B6925B] text-white border-[#B6925B] shadow-sm font-semibold"
-                        : "bg-white text-[#4A3B2C] border-[#B6925B]/30 hover:border-[#B6925B] hover:text-[#B6925B]"
+                        ? "bg-[#7A0B2E] text-white border-[#7A0B2E] shadow-sm font-semibold"
+                        : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:border-[#7A0B2E] hover:text-[#7A0B2E]"
                     }`}
                   >
                     {sub.name}
@@ -341,17 +344,17 @@ export default async function CollectionPage({
 
       {/* 5. Products Section */}
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-12">
-        <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#B6925B]/10">
+        <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#7A0B2E]/10">
           <div>
             <span className="text-xs uppercase tracking-widest font-serif text-gray-500">
-              Showing <strong className="text-[#4A3B2C]">{totalProducts}</strong> products
-              {!isMainCategory && <span className="text-[#B6925B] ml-1">in {collection.name}</span>}
+              Showing <strong className="text-[#2D1F2F]">{totalProducts}</strong> products
+              {!isMainCategory && <span className="text-[#7A0B2E] ml-1">in {collection.name}</span>}
             </span>
           </div>
         </div>
 
         {productsWithReviews.length === 0 ? (
-          <div className="text-center text-[#B6925B] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#B6925B]/20 bg-[#FAF8F5]">
+          <div className="text-center text-[#7A0B2E] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#7A0B2E]/20 bg-[#FAFAFA]">
             No products found in this category yet.
           </div>
         ) : (

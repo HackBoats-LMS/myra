@@ -25,7 +25,7 @@ export default async function AnnouncementBar() {
   );
 
   return (
-    <div className="w-full bg-[#B6925B] text-white py-1 px-4 text-center text-[9px] md:text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap overflow-hidden transition-all">
+    <div className="w-full bg-[#7A0B2E] text-white py-1 px-4 text-center text-[9px] md:text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap overflow-hidden transition-all">
       {settings.promoLink && isSafeUrl(settings.promoLink) ? (
         <Link href={settings.promoLink} className="hover:underline inline-block">{inner}</Link>
       ) : (

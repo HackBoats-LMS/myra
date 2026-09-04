@@ -47,11 +47,11 @@ export default function AdminFilters({
           value={term}
           onChange={(e) => setTerm(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] text-sm"
+          className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F] text-sm"
         />
         <button
           type="submit"
-          className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors"
+          className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors"
         >
           Search
         </button>
@@ -63,7 +63,7 @@ export default function AdminFilters({
             setStatusValue(e.target.value);
             apply(undefined, e.target.value);
           }}
-          className="px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] text-sm"
+          className="px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F] text-sm"
         >
           <option value="">{selectLabel}</option>
           {statusOptions.map((o) => (
@@ -78,7 +78,7 @@ export default function AdminFilters({
             setStatusValue("");
             router.push(pathname);
           }}
-          className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] px-2"
+          className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] px-2"
         >
           Clear
         </button>

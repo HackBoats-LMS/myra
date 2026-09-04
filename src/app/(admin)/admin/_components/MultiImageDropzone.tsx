@@ -3,8 +3,7 @@ import { useState, useCallback } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { UploadCloud } from "lucide-react";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_SIZE_MB = 5;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 interface ImageUploadProps {
   onFilesSelected: (files: File[]) => void;
@@ -19,12 +18,16 @@ export default function ImageUpload({ onFilesSelected, maxFiles }: ImageUploadPr
     const files = Array.from(fileList);
     
     const validFiles = files.filter(file => {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        toast.error(`${file.name} is not a supported image type.`);
+      const isVideo = file.type.startsWith("video/") || file.name.endsWith(".mp4") || file.name.endsWith(".mov") || file.name.endsWith(".webm");
+      const isImage = ALLOWED_IMAGE_TYPES.includes(file.type) || file.type.startsWith("image/");
+
+      if (!isImage && !isVideo) {
+        toast.error(`${file.name} is not a supported media type.`);
         return false;
       }
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        toast.error(`${file.name} must be smaller than ${MAX_SIZE_MB} MB.`);
+      const maxMb = isVideo ? 50 : 10;
+      if (file.size > maxMb * 1024 * 1024) {
+        toast.error(`${file.name} must be smaller than ${maxMb} MB.`);
         return false;
       }
       return true;
@@ -65,23 +68,23 @@ export default function ImageUpload({ onFilesSelected, maxFiles }: ImageUploadPr
     <div className="w-full h-full rounded-none">
       <label 
         className={`flex flex-col items-center justify-center w-full h-full min-h-[112px] border-2 border-dashed rounded-none cursor-pointer transition-colors ${
-          isDragging ? "border-[#B6925B] bg-[#B6925B]/5" : "border-[#B6925B]/30 bg-[#FAFAFA] hover:bg-white"
+          isDragging ? "border-[#7A0B2E] bg-[#7A0B2E]/5" : "border-[#7A0B2E]/30 bg-[#FAFAFA] hover:bg-white"
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         <div className="flex flex-col items-center justify-center p-2 text-center">
-          <UploadCloud className={`w-5 h-5 mb-1.5 ${isDragging ? "text-[#B6925B]" : "text-gray-400"}`} />
+          <UploadCloud className={`w-5 h-5 mb-1.5 ${isDragging ? "text-[#7A0B2E]" : "text-gray-400"}`} />
           <p className="mb-0.5 text-[10px] leading-tight text-gray-500">
-            <span className="font-semibold text-[#B6925B]">Click or drag</span>
-            <br /> to add images
+            <span className="font-semibold text-[#7A0B2E]">Click or drag</span>
+            <br /> to add media
           </p>
         </div>
         <input
           type="file"
           className="hidden"
-          accept="image/jpeg,image/png,image/webp,image/gif"
+          accept="image/*,video/*"
           multiple
           onChange={handleFileChange}
         />

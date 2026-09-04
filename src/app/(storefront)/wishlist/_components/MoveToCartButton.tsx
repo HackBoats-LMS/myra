@@ -32,7 +32,7 @@ export default function MoveToCartButton({ productId }: { productId: string }) {
     <button
       onClick={handleMove}
       disabled={loading}
-      className="w-full mt-2 border border-[#B6925B]/20 hover:border-[#4A3B2C] text-[#4A3B2C] py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+      className="w-full mt-2 border border-[#7A0B2E]/20 hover:border-[#2D1F2F] text-[#2D1F2F] py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
     >
       {loading ? (
         <i className="ri-loader-4-line animate-spin text-base" />

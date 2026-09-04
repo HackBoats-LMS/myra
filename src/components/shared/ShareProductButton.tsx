@@ -29,7 +29,7 @@ export default function ShareProductButton({ name }: { name: string }) {
   return (
     <button
       onClick={handleShare}
-      className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors"
+      className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors"
     >
       <i className={copied ? "ri-check-line text-sm" : "ri-share-forward-line text-sm"} />
       {copied ? "Link copied" : "Share"}

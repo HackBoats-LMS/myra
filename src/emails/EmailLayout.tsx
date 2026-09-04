@@ -24,11 +24,11 @@ export default function EmailLayout({
       <Head />
       <Preview>{previewText}</Preview>
       <Body style={{ fontFamily: 'sans-serif', backgroundColor: '#f6f9fc', padding: '20px 0' }}>
-        <Container style={{ backgroundColor: '#ffffff', border: '1px solid #B6925B', borderTop: '4px solid #4A3B2C', padding: '45px' }}>
-          <Text style={{ fontSize: '24px', fontWeight: 'bold', color: '#4A3B2C', marginBottom: '24px', textAlign: 'center', fontFamily: 'serif', letterSpacing: '0.05em' }}>
+        <Container style={{ backgroundColor: '#ffffff', border: '1px solid #7A0B2E', borderTop: '4px solid #2D1F2F', padding: '45px' }}>
+          <Text style={{ fontSize: '24px', fontWeight: 'bold', color: '#2D1F2F', marginBottom: '24px', textAlign: 'center', fontFamily: 'serif', letterSpacing: '0.05em' }}>
             Myra Shopping Mall
           </Text>
-          <Text style={{ fontSize: '18px', fontWeight: 'bold', color: '#B6925B', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <Text style={{ fontSize: '18px', fontWeight: 'bold', color: '#7A0B2E', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {title}
           </Text>
           
@@ -41,7 +41,7 @@ export default function EmailLayout({
               <EmailLink
                 href={cta.href}
                 style={{
-                  backgroundColor: '#4A3B2C',
+                  backgroundColor: '#2D1F2F',
                   color: '#fff',
                   padding: '14px 28px',
                   textDecoration: 'none',
@@ -50,7 +50,7 @@ export default function EmailLayout({
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                   display: 'inline-block',
-                  border: '1px solid #B6925B'
+                  border: '1px solid #7A0B2E'
                 }}
               >
                 {cta.text}

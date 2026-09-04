@@ -55,13 +55,13 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2 md:col-span-2">
-          <label htmlFor="type" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Offer Type *</label>
+          <label htmlFor="type" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Offer Type *</label>
           <select
             id="type"
             name="type"
             value={couponType}
             onChange={(e) => setCouponType(e.target.value)}
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           >
             <option value="STANDARD">Standard — Entered as a promo code</option>
             <option value="FIRST_ORDER">First Order — for every new customer</option>
@@ -72,36 +72,36 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
           <p className="text-xs text-gray-500">{typeHelp[couponType]}</p>
         </div>
         <div className="space-y-2">
-          <label htmlFor="code" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Coupon Code *</label>
+          <label htmlFor="code" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Coupon Code *</label>
           <input
             type="text"
             id="code"
             name="code"
             required
             defaultValue={coupon.code}
-            className="w-full uppercase font-mono px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full uppercase font-mono px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           />
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <label htmlFor="description" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Offer Title / Description (Optional)</label>
+          <label htmlFor="description" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Offer Title / Description (Optional)</label>
           <input
             type="text"
             id="description"
             name="description"
             maxLength={120}
             defaultValue={coupon.description || ""}
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="discountType" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Discount Type *</label>
+          <label htmlFor="discountType" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Discount Type *</label>
           <select
             id="discountType"
             name="discountType"
             defaultValue={coupon.discountType}
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           >
             <option value="PERCENTAGE">Percentage (%)</option>
             <option value="FIXED">Fixed Amount (₹)</option>
@@ -109,7 +109,7 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="discountValue" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Discount Value *</label>
+          <label htmlFor="discountValue" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Discount Value *</label>
           <input
             type="number"
             id="discountValue"
@@ -118,12 +118,12 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
             min="0.01"
             step="0.01"
             defaultValue={coupon.discountValue}
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="minOrderAmount" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Min. Order Amount (₹)</label>
+          <label htmlFor="minOrderAmount" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Min. Order Amount (₹)</label>
           <input
             type="number"
             id="minOrderAmount"
@@ -131,12 +131,12 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
             min="0"
             step="0.01"
             defaultValue={coupon.minOrderAmount}
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="maxUses" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Max Total Uses (Optional)</label>
+          <label htmlFor="maxUses" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Max Total Uses (Optional)</label>
           <input
             type="number"
             id="maxUses"
@@ -145,13 +145,13 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
             step="1"
             defaultValue={coupon.maxUses ?? ""}
             placeholder="Leave blank for unlimited"
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           />
           <p className="text-xs text-gray-500">Overall redemption limit across all customers.</p>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="maxUsesPerUser" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Uses Per Customer (Optional)</label>
+          <label htmlFor="maxUsesPerUser" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Uses Per Customer (Optional)</label>
           <input
             type="number"
             id="maxUsesPerUser"
@@ -160,19 +160,19 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
             step="1"
             defaultValue={coupon.maxUsesPerUser ?? ""}
             placeholder={couponType === "SINGLE_USE" ? "1" : "Leave blank for unlimited"}
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           />
           <p className="text-xs text-gray-500">How many times one customer can use this coupon.</p>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="expiresAt" className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Expiry Date (Optional)</label>
+          <label htmlFor="expiresAt" className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Expiry Date (Optional)</label>
           <input
             type="date"
             id="expiresAt"
             name="expiresAt"
             defaultValue={fmtDate(coupon.expiresAt)}
-            className="w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C]"
+            className="w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F]"
           />
         </div>
       </div>
@@ -181,7 +181,7 @@ export default function EditCouponForm({ coupon }: EditCouponFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 rounded-none"
+          className="bg-[#2D1F2F] hover:bg-[#220510] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 rounded-none"
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           <span>Save Changes</span>

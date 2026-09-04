@@ -69,8 +69,8 @@ export default function OrderSummarySidebar({
   };
 
   return (
-    <div className="bg-white border border-[#B6925B]/20 p-8 sticky top-32 space-y-6">
-      <h3 className="text-lg font-serif font-bold text-[#4A3B2C] border-b border-[#B6925B]/20 pb-4">Order Summary</h3>
+    <div className="bg-white border border-[#7A0B2E]/20 p-8 sticky top-32 space-y-6">
+      <h3 className="text-lg font-serif font-bold text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-4">Order Summary</h3>
 
       <div className="space-y-4 text-sm text-gray-600">
         <div className="flex justify-between">
@@ -107,13 +107,13 @@ export default function OrderSummarySidebar({
         )}
       </div>
 
-      <div className="bg-[#FAFAFA] p-3.5 border border-[#B6925B]/10 text-xs text-[#4A3B2C] font-medium text-center">
+      <div className="bg-[#FAFAFA] p-3.5 border border-[#7A0B2E]/10 text-xs text-[#2D1F2F] font-medium text-center">
         Estimated Delivery: <span className="font-bold">{getDeliveryDateRange()}</span>
       </div>
 
       {/* Promo Code */}
-      <div className="pt-4 border-t border-[#B6925B]/20">
-        <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-3">Promo Code</label>
+      <div className="pt-4 border-t border-[#7A0B2E]/20">
+        <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-3">Promo Code</label>
         {appliedCoupon ? (
           <div className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-800">
             <span className="flex items-center gap-1 font-bold">
@@ -131,12 +131,12 @@ export default function OrderSummarySidebar({
               placeholder="WELCOME10"
               value={couponInput}
               onChange={(e) => setCouponInput(e.target.value)}
-              className="flex-1 bg-transparent border border-[#B6925B]/20 px-3 py-2 text-xs focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] uppercase rounded-none"
+              className="flex-1 bg-transparent border border-[#7A0B2E]/20 px-3 py-2 text-xs focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F] uppercase rounded-none"
             />
             <button
               onClick={handleApplyCoupon}
               disabled={isValidatingCoupon || !couponInput.trim()}
-              className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center justify-center rounded-none"
+              className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center justify-center rounded-none"
             >
               {isValidatingCoupon ? <i className="ri-loader-4-line animate-spin text-base" /> : "Apply"}
             </button>
@@ -144,9 +144,9 @@ export default function OrderSummarySidebar({
         )}
       </div>
 
-      <div className="border-t border-[#B6925B]/20 pt-6 flex justify-between items-end">
-        <span className="text-sm font-bold uppercase tracking-widest text-[#4A3B2C]">Total</span>
-        <span className="text-2xl text-[#4A3B2C] font-bold">Rs. {pricing.finalTotal.toLocaleString("en-IN")}</span>
+      <div className="border-t border-[#7A0B2E]/20 pt-6 flex justify-between items-end">
+        <span className="text-sm font-bold uppercase tracking-widest text-[#2D1F2F]">Total</span>
+        <span className="text-2xl text-[#2D1F2F] font-bold">Rs. {pricing.finalTotal.toLocaleString("en-IN")}</span>
       </div>
     </div>
   );

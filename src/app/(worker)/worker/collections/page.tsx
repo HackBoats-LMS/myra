@@ -31,14 +31,14 @@ export default async function WorkerCollectionsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 rounded-none">
-      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-4">
+      <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 pb-4">
         <div>
-          <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Categories & Subcategories</h2>
-          <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">
+          <h2 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Categories & Subcategories</h2>
+          <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">
             Organize products and rearrange navbar display order with Up / Down buttons
           </p>
         </div>
-        <Link href="/worker/collections/new" className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none">
+        <Link href="/worker/collections/new" className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none">
           <Plus className="w-4 h-4" />
           Add Category
         </Link>

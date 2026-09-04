@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#BA8B4E] text-white font-serif mt-auto">
+    <footer className="w-full bg-[#5C0820] text-white font-serif mt-auto">
       {/* Main Content Area */}
       <div className="max-w-[1400px] mx-auto px-5 sm:px-8 md:px-8 lg:px-16 pt-10 md:pt-12 lg:pt-14 pb-8 md:pb-10 lg:pb-12">
         {/* Responsive Grid for Mobile, iPad, and Desktop */}
@@ -144,7 +144,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Copyright Strip with separator line */}
-      <div className="w-full border-t border-white/60 bg-[#A8793E] py-3.5 px-4 text-center">
+      <div className="w-full border-t border-white/60 bg-[#470618] py-3.5 px-4 text-center">
         <p className="text-[11px] sm:text-xs md:text-[13px] text-white tracking-wider font-serif select-none">
           &copy; 2026 MYRA SHOPPING MALL. All Rights Reserved
         </p>

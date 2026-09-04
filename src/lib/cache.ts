@@ -1,4 +1,4 @@
-import { unstable_cache } from "next/cache";
+import { unstable_cache, revalidateTag as nextRevalidateTag } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma";
 import { createSignedObjectUrls, REVIEW_IMAGES_BUCKET } from "@/lib/storage/image-storage";
@@ -110,7 +110,13 @@ export const getCachedBestSellers = createCachedQuery(
   ["products", "best-sellers"],
   async (take: number = 4) => {
     return prisma.product.findMany({
-      where: { deletedAt: null },
+      where: { 
+        deletedAt: null,
+        OR: [
+          { bestSeller: true },
+          { salesCount: { gt: 0 } }
+        ]
+      },
       take,
       orderBy: [{ bestSeller: "desc" }, { salesCount: "desc" }],
       include: { 
@@ -128,41 +134,58 @@ export const getCachedRelatedProducts = createCachedQuery(
     const baseWhere: Prisma.ProductWhereInput = { deletedAt: null, id: { not: productId } };
     const include = { collection: true };
 
-    // 1. Same collection first.
-    if (collectionId) {
-      const sameCollection = await prisma.product.findMany({
-        where: { ...baseWhere, collectionId },
-        take,
-        orderBy: { createdAt: "desc" },
-        include,
-      });
+    try {
+      // 1. Fetch same collection items & current product type in parallel
+      const [sameCollection, current] = await Promise.all([
+        collectionId
+          ? prisma.product.findMany({
+              where: { ...baseWhere, collectionId },
+              take,
+              orderBy: { createdAt: "desc" },
+              include,
+            })
+          : Promise.resolve([]),
+        prisma.product.findUnique({
+          where: { id: productId },
+          select: { productType: true },
+        }),
+      ]);
+
       if (sameCollection.length >= take) return sameCollection;
-    }
 
-    // 2. Same product type fallback.
-    const current = await prisma.product.findUnique({
-      where: { id: productId },
-      select: { productType: true },
-    });
-    if (current?.productType) {
-      const sameType = await prisma.product.findMany({
-        where: { ...baseWhere, productType: current.productType, ...(collectionId ? { collectionId: { not: collectionId } } : {}) },
-        take,
+      let results = [...sameCollection];
+
+      // 2. Fetch same product type fallback if needed
+      if (current?.productType) {
+        const excludeIds = [productId, ...results.map(p => p.id)];
+        const needed = take - results.length;
+        const sameType = await prisma.product.findMany({
+          where: { ...baseWhere, id: { notIn: excludeIds }, productType: current.productType },
+          take: needed,
+          orderBy: { createdAt: "desc" },
+          include,
+        });
+        results = [...results, ...sameType];
+        if (results.length >= take) return results;
+      }
+
+      // 3. Fill remaining with any other products
+      const excludeIds = [productId, ...results.map(p => p.id)];
+      const needed = take - results.length;
+      const fallback = await prisma.product.findMany({
+        where: { ...baseWhere, id: { notIn: excludeIds } },
+        take: needed,
         orderBy: { createdAt: "desc" },
         include,
       });
-      if (sameType.length >= take) return sameType;
-    }
 
-    // 3. Any other products as a last resort.
-    return prisma.product.findMany({
-      where: baseWhere,
-      take,
-      orderBy: { createdAt: "desc" },
-      include,
-    });
+      return [...results, ...fallback];
+    } catch (err) {
+      console.error("[Cache] Related products query failed:", err);
+      return [];
+    }
   },
-  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.medium }
+  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.long }
 );
 
 // Collections
@@ -335,6 +358,14 @@ export const getCachedBrandStories = createCachedQuery(
 );
 
 // Revalidation helpers - use revalidateTag from next/cache at call site
+export function revalidateTag(tag: string, profile: string | { expire?: number } = { expire: 0 }) {
+  try {
+    return (nextRevalidateTag as any)(tag, profile);
+  } catch (error) {
+    console.error(`[cache] Failed to revalidate tag: ${tag}`, error);
+  }
+}
+
 export const CACHE_REVALIDATE = {
   products: () => CACHE_TAGS.products,
   collections: () => CACHE_TAGS.collections,
@@ -350,10 +381,28 @@ export const CACHE_REVALIDATE = {
 // Dynamic Route Database Caching for filtering and pagination
 export const getCachedFilteredProducts = createCachedQuery(
   ["products", "filtered"],
-  async (collectionIds: string[] | null, stock: string, priceRange: string, sort: string, page: number, itemsPerPage: number) => {
+  async (
+    collectionIds: string[] | null, 
+    stock: string, 
+    priceRange: string, 
+    sort: string, 
+    page: number, 
+    itemsPerPage: number,
+    specialFilter?: "best-sellers" | "new-arrivals"
+  ) => {
     const whereClause: Prisma.ProductWhereInput = { deletedAt: null };
-    if (collectionIds && collectionIds.length > 0) {
+    
+    // Ignore explicit collectionIds if it's a dynamic smart collection
+    if (collectionIds && collectionIds.length > 0 && !specialFilter) {
       whereClause.collectionId = { in: collectionIds };
+    }
+
+    if (specialFilter === "best-sellers") {
+      // Only include items that are manually marked as Best Seller OR have organically sold at least once
+      whereClause.OR = [
+        { bestSeller: true },
+        { salesCount: { gt: 0 } }
+      ];
     }
     
     if (stock === 'instock') whereClause.stockQuantity = { gt: 0 };
@@ -361,10 +410,18 @@ export const getCachedFilteredProducts = createCachedQuery(
     else if (priceRange === '1000-5000') whereClause.price = { gte: 1000, lte: 5000 };
     else if (priceRange === 'over-5000') whereClause.price = { gt: 5000 };
 
-    let orderByClause: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+    let orderByClause: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] = { createdAt: 'desc' };
+    
     if (sort === 'price-asc') orderByClause = { price: 'asc' };
     else if (sort === 'price-desc') orderByClause = { price: 'desc' };
     else if (sort === 'name-asc') orderByClause = { name: 'asc' };
+    else if (sort === 'newest') {
+      if (specialFilter === "best-sellers") {
+        orderByClause = [{ bestSeller: "desc" }, { salesCount: "desc" }];
+      } else {
+        orderByClause = { createdAt: 'desc' };
+      }
+    }
 
     const [products, totalProducts] = await Promise.all([
       prisma.product.findMany({

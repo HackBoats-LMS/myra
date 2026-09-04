@@ -32,8 +32,8 @@ export default function StoreSettingsForm(props: StoreSettingsFormProps) {
     }
   };
 
-  const field = "w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] text-[#4A3B2C]";
-  const label = "block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest mb-1";
+  const field = "w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F]";
+  const label = "block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest mb-1";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -60,13 +60,13 @@ export default function StoreSettingsForm(props: StoreSettingsFormProps) {
         </div>
       </div>
 
-      <div className="border-t border-[#B6925B]/20 pt-6">
-        <h3 className="font-serif text-lg text-[#4A3B2C] mb-4">Promo Banner</h3>
+      <div className="border-t border-[#7A0B2E]/20 pt-6">
+        <h3 className="font-serif text-lg text-[#2D1F2F] mb-4">Promo Banner</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 md:col-span-2">
             <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name="promoEnabled" defaultChecked={props.promoEnabled} className="accent-[#B6925B]" />
-              <span className="text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">Show promo banner at the top of the store</span>
+              <input type="checkbox" name="promoEnabled" defaultChecked={props.promoEnabled} className="accent-[#7A0B2E]" />
+              <span className="text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Show promo banner at the top of the store</span>
             </label>
           </div>
           <div className="space-y-2">
@@ -84,7 +84,7 @@ export default function StoreSettingsForm(props: StoreSettingsFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 rounded-none"
+          className="bg-[#2D1F2F] hover:bg-[#220510] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50 rounded-none"
         >
           {loading ? "Saving..." : "Save Settings"}
         </button>

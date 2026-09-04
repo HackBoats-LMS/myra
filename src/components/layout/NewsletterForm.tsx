@@ -27,11 +27,11 @@ export default function NewsletterForm() {
         name="email"
         required
         placeholder="Your email address"
-        className="px-3 py-2 text-xs text-[#4A3B2C] bg-white rounded-none focus:outline-none w-56"
+        className="px-3 py-2 text-xs text-[#2D1F2F] bg-white rounded-none focus:outline-none w-56"
       />
       <button
         type="submit"
-        className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#4A3B2C] text-white hover:opacity-90 transition-opacity rounded-none"
+        className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#2D1F2F] text-white hover:opacity-90 transition-opacity rounded-none"
       >
         Subscribe
       </button>

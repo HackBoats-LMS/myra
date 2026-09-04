@@ -6,6 +6,7 @@ import ImageUpload from "@/app/(admin)/admin/_components/ImageUpload";
 import Image from "next/image";
 import type { Prisma } from "@/generated/prisma";
 import { X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 interface CollectionFormProps {
   initialData?: Prisma.CollectionGetPayload<{ select: { id: true; name: true; slug: true; description: true; image: true; banners: true; parentId: true; order: true; showInNav: true } }>;
@@ -50,12 +51,15 @@ export default function CollectionForm({
 
   const currentParentId = initialData?.parentId || defaultParentId || "";
 
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/worker") ? "/worker" : "/admin";
+
   return (
     <AdminForm
       initialData={initialData}
       createAction={createCollection}
       updateAction={updateCollection}
-      onSuccessRedirect="/admin/collections"
+      onSuccessRedirect={`${basePath}/collections`}
       successMessage={initialData ? "Category updated!" : "Category created!"}
       errorMessage="Failed to save category. Please try again."
     >
@@ -65,25 +69,25 @@ export default function CollectionForm({
             {/* 1. Name & Slug */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Category Name</label>
-                <input required defaultValue={initialData?.name} name="name" type="text" onChange={handleNameChange} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="e.g. Sarees or Silk Sarees" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Category Name</label>
+                <input required defaultValue={initialData?.name} name="name" type="text" onChange={handleNameChange} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" placeholder="e.g. Sarees or Silk Sarees" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Slug (auto-generated)</label>
-                <input name="slug" type="text" value={slug} onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="auto-generated from name" />
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Slug (auto-generated)</label>
+                <input name="slug" type="text" value={slug} onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" placeholder="auto-generated from name" />
               </div>
             </div>
 
             {/* 2. Parent Category & Order */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">
                   Parent Category (Optional)
                 </label>
                 <select 
                   name="parentId" 
                   defaultValue={currentParentId}
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]"
+                  className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                 >
                   <option value="">None (Top-Level Category)</option>
                   {parentCollections
@@ -100,14 +104,14 @@ export default function CollectionForm({
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">
                   Display Order
                 </label>
                 <input 
                   defaultValue={initialData?.order ?? 0} 
                   name="order" 
                   type="number" 
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" 
+                  className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
                   placeholder="0" 
                 />
                 <p className="text-[10px] text-gray-500 mt-1">
@@ -117,9 +121,9 @@ export default function CollectionForm({
             </div>
 
             {/* 3. Include in Navbar Option */}
-            <div className="bg-[#FDFBF7] p-4 border border-[#B6925B]/20 flex items-center justify-between">
+            <div className="bg-[#FAF0F2] p-4 border border-[#7A0B2E]/20 flex items-center justify-between">
               <div>
-                <label htmlFor="showInNav" className="block text-xs font-bold uppercase tracking-widest text-[#4A3B2C] cursor-pointer">
+                <label htmlFor="showInNav" className="block text-xs font-bold uppercase tracking-widest text-[#2D1F2F] cursor-pointer">
                   Include in Navbar & Navigation Menu
                 </label>
                 <p className="text-[11px] text-gray-500 mt-1">
@@ -134,20 +138,20 @@ export default function CollectionForm({
                   onChange={(e) => setShowInNav(e.target.checked)}
                   className="sr-only peer" 
                 />
-                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#B6925B]"></div>
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7A0B2E]"></div>
               </label>
               <input type="hidden" name="showInNav" value={String(showInNav)} />
             </div>
 
             {/* 4. Description */}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Description (Optional)</label>
-              <textarea defaultValue={initialData?.description ?? ""} name="description" rows={3} className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" placeholder="Short description of this category..." />
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Description (Optional)</label>
+              <textarea defaultValue={initialData?.description ?? ""} name="description" rows={3} className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" placeholder="Short description of this category..." />
             </div>
 
             {/* 4. Category Thumbnail / Card Image */}
-            <div className="pt-4 border-t border-[#B6925B]/20">
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+            <div className="pt-4 border-t border-[#7A0B2E]/20">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
                 Category Card / Thumbnail Image (Optional)
               </label>
               <p className="text-[11px] text-gray-500 mb-3">
@@ -155,7 +159,7 @@ export default function CollectionForm({
               </p>
 
               {thumbnailImage ? (
-                <div className="relative w-40 h-52 rounded-none overflow-hidden border border-[#B6925B]/30 shadow-sm group">
+                <div className="relative w-40 h-52 rounded-none overflow-hidden border border-[#7A0B2E]/30 shadow-sm group">
                   <Image 
                     fill 
                     src={thumbnailImage} 
@@ -172,7 +176,7 @@ export default function CollectionForm({
                   </button>
                 </div>
               ) : (
-                <div className="w-40 h-52 border border-dashed border-[#B6925B]/40 bg-[#FAFAFA] flex items-center justify-center p-2">
+                <div className="w-40 h-52 border border-dashed border-[#7A0B2E]/40 bg-[#FAFAFA] flex items-center justify-center p-2">
                   <ImageUpload 
                     value="" 
                     onChange={(url) => { if (url) setThumbnailImage(url); }} 
@@ -182,10 +186,10 @@ export default function CollectionForm({
             </div>
 
             {/* 5. Custom Promotional Banners */}
-            <div className="pt-4 border-t border-[#B6925B]/20">
+            <div className="pt-4 border-t border-[#7A0B2E]/20">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
                     Category Landing Page Custom Banners ({banners.length}/5)
                   </label>
                   <p className="text-[11px] text-gray-500 mt-0.5">
@@ -196,7 +200,7 @@ export default function CollectionForm({
 
               <div className="flex flex-wrap gap-4 items-center mt-3">
                 {banners.map((url, index) => (
-                  <div key={index} className="relative w-64 h-36 rounded-none overflow-hidden border border-[#B6925B]/30 shadow-sm group">
+                  <div key={index} className="relative w-64 h-36 rounded-none overflow-hidden border border-[#7A0B2E]/30 shadow-sm group">
                     <Image 
                       fill 
                       src={url} 
@@ -218,7 +222,7 @@ export default function CollectionForm({
                 ))}
 
                 {banners.length < 5 && (
-                  <div className="w-64 h-36 border border-dashed border-[#B6925B]/40 bg-[#FAFAFA] flex items-center justify-center p-3">
+                  <div className="w-64 h-36 border border-dashed border-[#7A0B2E]/40 bg-[#FAFAFA] flex items-center justify-center p-3">
                     <ImageUpload 
                       value="" 
                       onChange={handleAddBanner} 

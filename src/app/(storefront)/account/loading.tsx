@@ -15,8 +15,8 @@ export default function AccountLoading() {
 
         <div className="space-y-6">
           {[1, 2].map((i) => (
-            <div key={i} className="bg-white border border-[#B6925B]/20 shadow-sm p-6 space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-[#B6925B]/10 pb-4">
+            <div key={i} className="bg-white border border-[#7A0B2E]/20 shadow-sm p-6 space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-[#7A0B2E]/10 pb-4">
                 <div className="h-4 w-24 bg-gray-200" />
                 <div className="h-4 w-20 bg-gray-200" />
                 <div className="h-4 w-16 bg-gray-200" />

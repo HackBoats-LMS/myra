@@ -33,14 +33,14 @@ export default function FAQPage() {
     <div className="w-full bg-[#FAFAFA] min-h-screen">
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-10 md:py-24 space-y-12">
         <div className="text-center space-y-4">
-          <h1 className="text-3xl md:text-4xl font-serif text-[#4A3B2C] tracking-wide">Frequently Asked Questions</h1>
+          <h1 className="text-3xl md:text-4xl font-serif text-[#2D1F2F] tracking-wide">Frequently Asked Questions</h1>
           <p className="text-sm text-gray-500 uppercase tracking-widest">Quick support reference guide</p>
         </div>
 
-        <div className="space-y-8 divide-y divide-[#B6925B]/20 pt-6">
+        <div className="space-y-8 divide-y divide-[#7A0B2E]/20 pt-6">
           {FAQS.map((faq, index) => (
             <div key={index} className="pt-8 first:pt-0 space-y-3">
-              <h3 className="text-lg font-bold text-[#4A3B2C] font-serif">{faq.q}</h3>
+              <h3 className="text-lg font-bold text-[#2D1F2F] font-serif">{faq.q}</h3>
               <p className="text-sm text-gray-600 leading-relaxed font-normal">{faq.a}</p>
             </div>
           ))}

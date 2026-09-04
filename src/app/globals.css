@@ -3,11 +3,35 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand Theme Tokens (configured via src/config/theme.ts) */
+  --brand-primary: #7A0B2E;
+  --brand-primary-dark: #5C0820;
+  --brand-primary-deep: #470618;
+  --brand-primary-light: #FAF0F2;
+  --brand-primary-capsule: #F0D5D5;
+  --brand-gold: #CE9222;
+  --brand-gold-warm: #BF9351;
+  --brand-dark: #2D1F2F;
+  --brand-surface: #FAFAFA;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-dark: var(--brand-primary-dark);
+  --color-brand-primary-deep: var(--brand-primary-deep);
+  --color-brand-primary-light: var(--brand-primary-light);
+  --color-brand-primary-capsule: var(--brand-primary-capsule);
+
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-warm: var(--brand-gold-warm);
+
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-surface: var(--brand-surface);
+
   --font-sans: var(--font-inria);
   --font-serif: var(--font-inria);
 }

@@ -33,9 +33,9 @@ export default function StockNotifyButton({ productId }: { productId: string }) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-[#B6925B]/30 p-4 space-y-3 bg-[#FAFAFA]">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">
-        <i className="ri-notification-3-line mr-1 text-[#B6925B]" />
+    <form onSubmit={handleSubmit} className="border border-[#7A0B2E]/30 p-4 space-y-3 bg-[#FAFAFA]">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
+        <i className="ri-notification-3-line mr-1 text-[#7A0B2E]" />
         Notify me when back in stock
       </p>
       <div className="flex gap-2">
@@ -45,12 +45,12 @@ export default function StockNotifyButton({ productId }: { productId: string }) 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
-          className="flex-1 min-w-0 border border-[#B6925B]/30 px-3 py-2.5 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] bg-white rounded-none"
+          className="flex-1 min-w-0 border border-[#7A0B2E]/30 px-3 py-2.5 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] bg-white rounded-none"
         />
         <button
           type="submit"
           disabled={loading}
-          className="bg-[#4A3B2C] hover:bg-[#B6925B] text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-50 whitespace-nowrap"
+          className="bg-[#2D1F2F] hover:bg-[#7A0B2E] text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-50 whitespace-nowrap"
         >
           {loading ? "Saving..." : "Notify me"}
         </button>

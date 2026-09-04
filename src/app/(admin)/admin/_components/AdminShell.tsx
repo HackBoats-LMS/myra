@@ -9,15 +9,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   return (
     <div className="w-full min-h-screen bg-[#FAFAFA]">
       {/* Mobile top bar */}
-      <header className="lg:hidden sticky top-0 z-40 h-16 bg-white border-b border-[#B6925B]/20 flex items-center justify-between px-4 shadow-sm">
+      <header className="lg:hidden sticky top-0 z-40 h-16 bg-white border-b border-[#7A0B2E]/20 flex items-center justify-between px-4 shadow-sm">
         <button
           onClick={() => setOpen(true)}
-          className="p-2 text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center"
+          className="p-2 text-[#2D1F2F] hover:text-[#7A0B2E] transition-colors flex items-center justify-center"
           aria-label="Open menu"
         >
           <Menu className="w-6 h-6 leading-none" />
         </button>
-        <h1 className="text-xs font-bold text-[#4A3B2C] tracking-widest uppercase">Myra Admin</h1>
+        <h1 className="text-xs font-bold text-[#2D1F2F] tracking-widest uppercase">Myra Admin</h1>
         <span className="w-9" />
       </header>
 
@@ -38,8 +38,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       <div className="flex flex-col lg:ml-64">
         {/* Desktop header */}
-        <header className="hidden lg:flex h-16 bg-white border-b border-[#B6925B]/20 items-center px-8 shadow-sm">
-          <h1 className="text-xs font-bold text-[#4A3B2C] tracking-widest uppercase">
+        <header className="hidden lg:flex h-16 bg-white border-b border-[#7A0B2E]/20 items-center px-8 shadow-sm">
+          <h1 className="text-xs font-bold text-[#2D1F2F] tracking-widest uppercase">
             Welcome back, Admin
           </h1>
         </header>

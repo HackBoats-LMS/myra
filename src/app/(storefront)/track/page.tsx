@@ -9,8 +9,8 @@ export default function TrackOrderPage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-16">
       <div className="text-center mb-8">
-        <i className="ri-truck-line text-5xl text-[#B6925B] mx-auto block" />
-        <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide mt-3">
+        <i className="ri-truck-line text-5xl text-[#7A0B2E] mx-auto block" />
+        <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide mt-3">
           Track Your Order
         </h1>
         <p className="text-gray-500 text-sm mt-2">

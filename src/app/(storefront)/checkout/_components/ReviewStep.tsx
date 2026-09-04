@@ -27,18 +27,18 @@ export default function ReviewStep({
   return (
     <div className="space-y-6">
       {/* Items */}
-      <section className="bg-white border border-[#B6925B]/20 p-6 text-left">
-        <h3 className="text-base font-serif font-bold text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3">Your Items</h3>
-        <ul className="divide-y divide-[#B6925B]/10">
+      <section className="bg-white border border-[#7A0B2E]/20 p-6 text-left">
+        <h3 className="text-base font-serif font-bold text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3">Your Items</h3>
+        <ul className="divide-y divide-[#7A0B2E]/10">
           {lines.map((l) => (
             <li key={l.id} className="flex items-center justify-between gap-4 py-3">
               <span className="min-w-0">
-                <span className="block text-sm text-[#4A3B2C] truncate">{l.name}</span>
+                <span className="block text-sm text-[#2D1F2F] truncate">{l.name}</span>
                 {l.variantLabel && <span className="block text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-0.5">{l.variantLabel}</span>}
                 <span className="block text-xs text-gray-400 mt-0.5">Qty: {l.quantity}</span>
               </span>
               <span className="flex flex-col items-end gap-0.5">
-                <span className="text-sm font-bold text-[#4A3B2C]">
+                <span className="text-sm font-bold text-[#2D1F2F]">
                   Rs. {(l.unitPrice * l.quantity).toLocaleString("en-IN")}
                 </span>
                 {l.originalUnitPrice != null && l.originalUnitPrice > l.unitPrice && (
@@ -53,17 +53,17 @@ export default function ReviewStep({
       </section>
 
       {/* Delivery */}
-      <section className="bg-white border border-[#B6925B]/20 p-6 text-left">
-        <h3 className="text-base font-serif font-bold text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3">Delivering To</h3>
+      <section className="bg-white border border-[#7A0B2E]/20 p-6 text-left">
+        <h3 className="text-base font-serif font-bold text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3">Delivering To</h3>
         {isGift ? (
           <div className="text-sm text-gray-700 space-y-1">
-            <p className="font-bold text-[#4A3B2C]">{gift.name}</p>
+            <p className="font-bold text-[#2D1F2F]">{gift.name}</p>
             {gift.phone && <p className="font-mono text-xs">Phone: {gift.phone}</p>}
             <p className="text-xs">{gift.addressLine1}, {gift.city}, {gift.state} {gift.postalCode}, {gift.country}</p>
           </div>
         ) : address ? (
           <div className="text-sm text-gray-700 space-y-1">
-            <p className="font-bold text-[#4A3B2C]">{address.label}</p>
+            <p className="font-bold text-[#2D1F2F]">{address.label}</p>
             <p className="text-xs">{address.addressLine1}, {address.city}, {address.state} - {address.postalCode}, {address.country}</p>
             {deliveryPhone && <p className="font-mono text-xs">Contact: {deliveryPhone}</p>}
           </div>
@@ -73,23 +73,23 @@ export default function ReviewStep({
       </section>
 
       {/* Payment */}
-      <section className="bg-white border border-[#B6925B]/20 p-6 text-left">
-        <h3 className="text-base font-serif font-bold text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3">Payment</h3>
-        <p className="text-sm text-[#4A3B2C] font-bold uppercase tracking-wider">
+      <section className="bg-white border border-[#7A0B2E]/20 p-6 text-left">
+        <h3 className="text-base font-serif font-bold text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3">Payment</h3>
+        <p className="text-sm text-[#2D1F2F] font-bold uppercase tracking-wider">
           {paymentMethod === "RAZORPAY" ? "UPI & Online Payment (Razorpay)" : "Cash on Delivery"}
         </p>
       </section>
 
       {/* Place order */}
       <div className="flex justify-between items-center">
-        <span className="text-sm font-bold uppercase tracking-widest text-[#4A3B2C]">Total</span>
-        <span className="text-2xl text-[#4A3B2C] font-bold">Rs. {pricing.finalTotal.toLocaleString("en-IN")}</span>
+        <span className="text-sm font-bold uppercase tracking-widest text-[#2D1F2F]">Total</span>
+        <span className="text-2xl text-[#2D1F2F] font-bold">Rs. {pricing.finalTotal.toLocaleString("en-IN")}</span>
       </div>
 
       <button
         onClick={onSubmit}
         disabled={isProcessing}
-        className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-8 py-4 text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-50 rounded-none"
+        className="w-full bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-8 py-4 text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-50 rounded-none"
       >
         {isProcessing ? (
           <i className="ri-loader-4-line animate-spin text-lg" />

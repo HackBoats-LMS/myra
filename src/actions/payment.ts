@@ -1,6 +1,6 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { sendEmail } from "@/lib/email/email";
@@ -14,7 +14,7 @@ import {
   fetchRazorpayOrder,
 } from "@/lib/integrations/razorpay";
 import { checkRateLimit, RateLimitError } from "@/lib/rate-limit";
-import { CACHE_TAGS } from "@/lib/cache";
+import { CACHE_TAGS, revalidateTag } from "@/lib/cache";
 
 interface InitiatePaymentInput {
   addressId: string;

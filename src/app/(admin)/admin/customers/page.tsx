@@ -98,25 +98,25 @@ export default async function AdminCustomersPage({
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="border-b border-[#B6925B]/20 pb-4">
-        <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Customers</h2>
-        <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage your customer database and view aggregate spending</p>
+      <div className="border-b border-[#7A0B2E]/20 pb-4">
+        <h2 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Customers</h2>
+        <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">Manage your customer database and view aggregate spending</p>
       </div>
 
       <AdminFilters search={search} placeholder="Search name, email or phone..." />
 
-      <div className="bg-white border border-[#B6925B]/20 relative">
-        <table className="w-full text-left text-sm text-[#4A3B2C]">
-          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
+      <div className="bg-white border border-[#7A0B2E]/20 relative">
+        <table className="w-full text-left text-sm text-[#2D1F2F]">
+          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Customer Info</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Phone Number</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Signup Date</th>
-              <th className="px-6 py-4 text-center border-r border-[#B6925B]/10">Orders Count</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Customer Info</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Phone Number</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Signup Date</th>
+              <th className="px-6 py-4 text-center border-r border-[#7A0B2E]/10">Orders Count</th>
               <th className="px-6 py-4 text-right">Total Spent</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#B6925B]/10">
+          <tbody className="divide-y divide-[#7A0B2E]/10">
             {customers.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest">
@@ -130,9 +130,9 @@ export default async function AdminCustomersPage({
 
                 return (
                   <tr key={customer.id} className="hover:bg-[#FAFAFA] transition-colors group">
-                    <td className="px-6 py-4 border-r border-[#B6925B]/10">
+                    <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                       <div>
-                        <Link href={`/admin/customers/${customer.id}`} className="font-bold text-[#B6925B] hover:text-[#4A3B2C] hover:underline block uppercase tracking-widest text-[10px]">
+                        <Link href={`/admin/customers/${customer.id}`} className="font-bold text-[#7A0B2E] hover:text-[#2D1F2F] hover:underline block uppercase tracking-widest text-[10px]">
                           {customer.name || 'No name provided'}
                         </Link>
                         <div className="flex items-center gap-2 mt-1">
@@ -145,20 +145,20 @@ export default async function AdminCustomersPage({
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">
+                    <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">
                       {customer.phoneNumber || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#B6925B] border-r border-[#B6925B]/10">
+                    <td className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-[#7A0B2E] border-r border-[#7A0B2E]/10">
                       {new Date(customer.createdAt).toLocaleDateString("en-IN", {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
                       })}
                     </td>
-                    <td className="px-6 py-4 text-center font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">
+                    <td className="px-6 py-4 text-center font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">
                       {orderCount}
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-[#4A3B2C]">
+                    <td className="px-6 py-4 text-right font-bold text-[#2D1F2F]">
                       Rs. {totalSpent.toFixed(2)}
                     </td>
                   </tr>

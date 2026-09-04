@@ -83,7 +83,7 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
   };
 
   return (
-    <div className="mt-4 pt-4 border-t border-[#B6925B]/10">
+    <div className="mt-4 pt-4 border-t border-[#7A0B2E]/10">
       {active ? (
         <div className="flex flex-wrap items-center gap-2">
           <span className={`inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border rounded-none
@@ -106,13 +106,13 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <button
             onClick={() => { setType("RETURN"); setOpen(true); }}
-            className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] bg-white border border-[#B6925B]/30 px-3.5 py-2 hover:bg-[#B6925B] hover:text-white hover:border-[#B6925B] transition-all duration-200 rounded-none shadow-sm"
+            className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] bg-white border border-[#7A0B2E]/30 px-3.5 py-2 hover:bg-[#7A0B2E] hover:text-white hover:border-[#7A0B2E] transition-all duration-200 rounded-none shadow-sm"
           >
             Request Return
           </button>
           <button
             onClick={() => { setType("REPLACEMENT"); setOpen(true); }}
-            className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] bg-white border border-[#B6925B]/30 px-3.5 py-2 hover:bg-[#B6925B] hover:text-white hover:border-[#B6925B] transition-all duration-200 rounded-none shadow-sm"
+            className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] bg-white border border-[#7A0B2E]/30 px-3.5 py-2 hover:bg-[#7A0B2E] hover:text-white hover:border-[#7A0B2E] transition-all duration-200 rounded-none shadow-sm"
           >
             Request Replacement
           </button>
@@ -121,15 +121,15 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-none border border-[#B6925B]/20 shadow-xl w-full max-w-md p-6 m-4">
-            <h3 className="text-lg font-serif text-[#4A3B2C] mb-1 tracking-wide">
+          <div className="bg-white rounded-none border border-[#7A0B2E]/20 shadow-xl w-full max-w-md p-6 m-4">
+            <h3 className="text-lg font-serif text-[#2D1F2F] mb-1 tracking-wide">
               {type === "RETURN" ? "Request a Return" : "Request a Replacement"}
             </h3>
             <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">{productName}</p>
 
             <form onSubmit={submit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Type</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Type</label>
                 <div className="flex gap-2">
                   {(["RETURN", "REPLACEMENT"] as const).map((t) => (
                     <button
@@ -137,7 +137,7 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
                       type="button"
                       onClick={() => setType(t)}
                       className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none border transition-colors
-                        ${type === t ? "bg-[#B6925B] text-white border-[#B6925B]" : "bg-[#FAFAFA] text-[#4A3B2C] border-[#B6925B]/30"}`}
+                        ${type === t ? "bg-[#7A0B2E] text-white border-[#7A0B2E]" : "bg-[#FAFAFA] text-[#2D1F2F] border-[#7A0B2E]/30"}`}
                     >
                       {t}
                     </button>
@@ -146,22 +146,22 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Reason</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Reason</label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   rows={3}
                   required
-                  className="w-full rounded-none border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+                  className="w-full rounded-none border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
                   placeholder="Tell us why you'd like to {type.toLowerCase()} this item..."
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
                   Photos (Optional, up to 5)
                 </label>
-                <label className="flex items-center justify-center gap-2 border border-dashed border-[#B6925B]/40 px-3 py-4 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:bg-[#FAFAFA] cursor-pointer rounded-none">
+                <label className="flex items-center justify-center gap-2 border border-dashed border-[#7A0B2E]/40 px-3 py-4 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:bg-[#FAFAFA] cursor-pointer rounded-none">
                   <i className="ri-camera-line text-lg" />
                   {uploading ? "Uploading..." : "Add photos"}
                   <input
@@ -176,7 +176,7 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
                 {images.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {images.map((img, idx) => (
-                      <div key={img.path} className="relative w-16 h-16 border border-[#B6925B]/30 overflow-hidden rounded-none">
+                      <div key={img.path} className="relative w-16 h-16 border border-[#7A0B2E]/30 overflow-hidden rounded-none">
                         <Image src={img.previewUrl} alt={`Return photo ${idx + 1}`} fill className="object-cover" />
                         <button
                           type="button"
@@ -192,19 +192,19 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#B6925B]/10">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#7A0B2E]/10">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   disabled={loading}
-                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#4A3B2C] transition-colors"
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#2D1F2F] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center gap-1.5 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-50"
                 >
                   {loading && <i className="ri-loader-4-line animate-spin text-sm" />}
                   Submit Request

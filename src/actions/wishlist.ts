@@ -3,8 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { cookies } from "next/headers";
-import { revalidateTag } from "next/cache";
-import { CACHE_TAGS } from "@/lib/cache";
+import { CACHE_TAGS, revalidateTag } from "@/lib/cache";
 import { signCookieValue, verifyCookieValue } from "@/lib/cookie-signing";
 
 const GUEST_WISHLIST_COOKIE = "guest_wishlist";

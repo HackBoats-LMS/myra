@@ -53,12 +53,12 @@ export default function AddressForm({ onSaved, onCancel, className = "" }: Addre
   };
 
   const inputCls =
-    "w-full px-3 py-2 text-xs border border-[#B6925B]/30 focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] rounded-none";
-  const labelCls = "block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1.5";
+    "w-full px-3 py-2 text-xs border border-[#7A0B2E]/30 focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F] rounded-none";
+  const labelCls = "block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1.5";
 
   return (
-    <form onSubmit={handleSubmit} className={`border border-[#B6925B]/30 bg-white p-4 space-y-3 ${className}`}>
-      <span className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-widest">Add New Address</span>
+    <form onSubmit={handleSubmit} className={`border border-[#7A0B2E]/30 bg-white p-4 space-y-3 ${className}`}>
+      <span className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-widest">Add New Address</span>
 
       <div>
         <label className={labelCls}>Label</label>
@@ -127,9 +127,9 @@ export default function AddressForm({ onSaved, onCancel, className = "" }: Addre
           type="checkbox"
           checked={form.isDefault}
           onChange={(e) => set("isDefault", e.target.checked)}
-          className="w-4 h-4 accent-[#B6925B]"
+          className="w-4 h-4 accent-[#7A0B2E]"
         />
-        <span className="text-xs text-[#4A3B2C]">Set as default address</span>
+        <span className="text-xs text-[#2D1F2F]">Set as default address</span>
       </label>
 
       {error && <p className="text-[11px] text-red-600 font-medium">{error}</p>}
@@ -138,14 +138,14 @@ export default function AddressForm({ onSaved, onCancel, className = "" }: Addre
         <button
           type="submit"
           disabled={saving}
-          className="flex-1 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center justify-center rounded-none"
+          className="flex-1 bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 flex items-center justify-center rounded-none"
         >
           {saving ? <i className="ri-loader-4-line animate-spin text-base" /> : "Save Address"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#4A3B2C] border border-[#B6925B]/30 hover:bg-[#FAFAFA] transition-colors rounded-none"
+          className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#2D1F2F] border border-[#7A0B2E]/30 hover:bg-[#FAFAFA] transition-colors rounded-none"
         >
           Cancel
         </button>

@@ -32,7 +32,7 @@ export default function CompareButton({
         type="button"
         onClick={handle}
         className={`flex items-center justify-center gap-2 border px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors ${className}
-          ${active ? "bg-[#4A3B2C] text-white border-[#4A3B2C]" : "border-[#B6925B]/40 text-[#4A3B2C] hover:bg-[#FAFAFA]"}`}
+          ${active ? "bg-[#2D1F2F] text-white border-[#2D1F2F]" : "border-[#7A0B2E]/40 text-[#2D1F2F] hover:bg-[#FAFAFA]"}`}
       >
         <i className={`ri-${active ? "check-double-line" : "arrow-left-right-line"} text-sm`} />
         {active ? "In Compare" : "Add to Compare"}
@@ -46,7 +46,7 @@ export default function CompareButton({
       onClick={handle}
       aria-label={active ? "Remove from compare" : "Add to compare"}
       className={`absolute z-10 w-8 h-8 flex items-center justify-center rounded-none transition-colors ${className}
-        ${active ? "bg-[#4A3B2C] text-white" : "bg-white/90 text-[#4A3B2C] hover:bg-[#B6925B] hover:text-white"}`}
+        ${active ? "bg-[#2D1F2F] text-white" : "bg-white/90 text-[#2D1F2F] hover:bg-[#7A0B2E] hover:text-white"}`}
     >
       <i className={`ri-${active ? "check-double-line" : "arrow-left-right-line"} text-sm`} />
     </button>

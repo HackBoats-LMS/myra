@@ -45,6 +45,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
       orderItems: {
         include: {
           product: true,
+          variant: true,
           returnRequests: true,
         },
       },
@@ -75,9 +76,10 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
       const { trackShipment, mapShiprocketStatus } = await import("@/lib/integrations/shiprocket");
       const trackRes = await trackShipment(order.awbNumber);
       // Shiprocket can return status in shipment_track array or directly
-      const shiprocketStatus = 
+      const rawStatus = 
         trackRes.tracking_data?.shipment_track?.[0]?.current_status || 
         (trackRes.tracking_data as Record<string, unknown>)?.current_status;
+      const shiprocketStatus = typeof rawStatus === "string" ? rawStatus : undefined;
         
       if (shiprocketStatus) {
         const mapped = mapShiprocketStatus(shiprocketStatus);
@@ -90,7 +92,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
             await prisma.order.update({
               where: { id: order.id },
               data: { 
-                status: mapped.status, 
+                status: mapped.status as any, 
                 [mapped.timestampField]: new Date() 
               }
             });
@@ -147,7 +149,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
 
         <OrderHeader 
           orderId={order.id} 
-          orderItems={order.orderItems}
+          orderItems={order.orderItems as any}
           createdAt={order.createdAt} 
           status={order.status} 
           canChangeAddress={canChangeAddress} 

@@ -52,9 +52,9 @@ export default function WorkerCapabilitiesSelect({
           checked={inventory}
           onChange={toggleInventory}
           disabled={loading}
-          className="w-4 h-4 accent-[#B6925B]"
+          className="w-4 h-4 accent-[#7A0B2E]"
         />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
           Inventory Management
         </span>
       </label>
@@ -64,9 +64,9 @@ export default function WorkerCapabilitiesSelect({
           checked={shipping}
           onChange={toggleShipping}
           disabled={loading}
-          className="w-4 h-4 accent-[#B6925B]"
+          className="w-4 h-4 accent-[#7A0B2E]"
         />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
           Shipping Management
         </span>
       </label>

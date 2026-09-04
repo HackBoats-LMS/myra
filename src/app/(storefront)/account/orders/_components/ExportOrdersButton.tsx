@@ -32,7 +32,7 @@ export default function ExportOrdersButton() {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="inline-flex items-center gap-2 border border-[#B6925B]/40 text-[#4A3B2C] hover:bg-[#B6925B] hover:text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-none disabled:opacity-50"
+      className="inline-flex items-center gap-2 border border-[#7A0B2E]/40 text-[#2D1F2F] hover:bg-[#7A0B2E] hover:text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-none disabled:opacity-50"
     >
       <i className={`${loading ? "ri-loader-4-line animate-spin" : "ri-download-2-line"} text-sm`} />
       {loading ? "Exporting..." : "Export CSV"}

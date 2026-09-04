@@ -8,14 +8,20 @@ function isSafeVideoUrl(url: string): boolean {
   }
 }
 
+function getVideoMimeType(url: string): string {
+  const pathname = url.split('?')[0].split('#')[0].toLowerCase();
+  if (pathname.endsWith('.webm')) return 'video/webm';
+  return 'video/mp4';
+}
+
 export default function ProductVideoEmbed({ url }: { url: string }) {
   const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
 
   if (youtubeMatch) {
     return (
       <div className="mt-6">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mb-2">Product Video</p>
-        <div className="relative aspect-video overflow-hidden border border-[#B6925B]/20 bg-black">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] mb-2">Product Video</p>
+        <div className="relative aspect-video overflow-hidden border border-[#7A0B2E]/20 bg-black">
           <iframe
             src={`https://www.youtube.com/embed/${youtubeMatch[1]}`}
             className="absolute inset-0 w-full h-full"
@@ -32,7 +38,7 @@ export default function ProductVideoEmbed({ url }: { url: string }) {
   if (!isSafeVideoUrl(url)) {
     return (
       <div className="mt-6">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mb-2">Product Video</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] mb-2">Product Video</p>
         <p className="text-sm text-gray-500">Invalid video URL.</p>
       </div>
     );
@@ -40,9 +46,9 @@ export default function ProductVideoEmbed({ url }: { url: string }) {
 
   return (
     <div className="mt-6">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mb-2">Product Video</p>
-      <video controls className="w-full aspect-video border border-[#B6925B]/20 bg-black object-contain">
-        <source src={url} />
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] mb-2">Product Video</p>
+      <video controls className="w-full aspect-video border border-[#7A0B2E]/20 bg-black object-contain" crossOrigin="anonymous">
+        <source src={url} type={getVideoMimeType(url)} />
         Your browser does not support the video tag.
       </video>
     </div>

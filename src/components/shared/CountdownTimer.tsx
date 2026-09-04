@@ -50,10 +50,10 @@ export default function CountdownTimer({
     <div className={`flex items-center gap-2 ${className}`}>
       {labels.map((label, i) => (
         <div key={label} className="flex flex-col items-center">
-          <div className="bg-[#4A3B2C] text-white text-lg md:text-xl font-bold w-12 md:w-14 py-1.5 text-center rounded-none">
+          <div className="bg-[#2D1F2F] text-white text-lg md:text-xl font-bold w-12 md:w-14 py-1.5 text-center rounded-none">
             {pad(values[i])}
           </div>
-          <span className="text-[9px] uppercase tracking-widest text-[#4A3B2C] mt-1">{label}</span>
+          <span className="text-[9px] uppercase tracking-widest text-[#2D1F2F] mt-1">{label}</span>
         </div>
       ))}
     </div>

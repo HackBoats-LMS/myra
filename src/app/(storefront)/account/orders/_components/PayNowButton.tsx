@@ -59,7 +59,7 @@ export default function PayNowButton({ orderId, amount }: { orderId: string; amo
         description: `Order #${payment.orderId.substring(0, 8)}`,
         order_id: payment.razorpayOrderId,
         prefill: { name: undefined, email: undefined },
-        theme: { color: "#B6925B" },
+        theme: { color: "#7A0B2E" },
         handler: async (response: {
           razorpay_order_id: string;
           razorpay_payment_id: string;
@@ -93,7 +93,7 @@ export default function PayNowButton({ orderId, amount }: { orderId: string; amo
     <button
       onClick={handlePay}
       disabled={isProcessing}
-      className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-6 py-3 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 rounded-none shadow-sm"
+      className="w-full bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-6 py-3 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-50 rounded-none shadow-sm"
     >
       {isProcessing ? (
         <i className="ri-loader-4-line animate-spin text-base" />

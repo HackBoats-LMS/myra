@@ -34,12 +34,12 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
   const currentIndex = steps.findIndex((s) => s.key === status);
 
   return (
-    <div className="bg-white p-5 sm:p-6 border border-[#B6925B]/20 shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-3">
-        <h3 className="font-serif text-[#4A3B2C] text-base sm:text-lg tracking-wide">
+    <div className="bg-white p-5 sm:p-6 border border-[#7A0B2E]/20 shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 pb-3">
+        <h3 className="font-serif text-[#2D1F2F] text-base sm:text-lg tracking-wide">
           Order Tracking
         </h3>
-        <span className="inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30">
+        <span className="inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30">
           {status.replace(/_/g, " ")}
         </span>
       </div>
@@ -54,7 +54,7 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
                 {i > 0 && (
                   <div
                     className={`absolute top-4 -left-1/2 w-full h-[2px] -z-0 ${
-                      i <= currentIndex ? "bg-[#B6925B]" : "bg-gray-200"
+                      i <= currentIndex ? "bg-[#7A0B2E]" : "bg-gray-200"
                     }`}
                   />
                 )}
@@ -62,8 +62,8 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
                   className={`relative z-10 w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-bold leading-none transition-all duration-300 ${
                     reached
                       ? isCurrent
-                        ? "bg-[#B6925B] border-[#B6925B] text-white ring-4 ring-[#B6925B]/15"
-                        : "bg-[#B6925B] border-[#B6925B] text-white"
+                        ? "bg-[#7A0B2E] border-[#7A0B2E] text-white ring-4 ring-[#7A0B2E]/15"
+                        : "bg-[#7A0B2E] border-[#7A0B2E] text-white"
                       : "bg-white border-gray-300 text-gray-400"
                   }`}
                 >
@@ -71,7 +71,7 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
                 </div>
                 <p
                   className={`mt-2.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${
-                    reached ? "text-[#4A3B2C]" : "text-gray-400"
+                    reached ? "text-[#2D1F2F]" : "text-gray-400"
                   }`}
                 >
                   {step.label}

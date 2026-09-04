@@ -14,7 +14,7 @@ export default function ProductBackButton() {
           router.push("/collections");
         }
       }}
-      className="p-1 text-black hover:text-[#B6925B] transition-colors mb-4 inline-flex items-center group cursor-pointer"
+      className="p-1 text-black hover:text-[#7A0B2E] transition-colors mb-4 inline-flex items-center group cursor-pointer"
       aria-label="Go back"
     >
       <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />

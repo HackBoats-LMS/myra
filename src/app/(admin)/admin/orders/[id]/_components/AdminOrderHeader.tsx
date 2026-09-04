@@ -9,10 +9,10 @@ interface AdminOrderHeaderProps {
 
 export default function AdminOrderHeader({ orderId, createdAt, shipmentId }: AdminOrderHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-6">
+    <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 pb-6">
       <div>
-        <h2 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Order #{orderId.split('-')[0]}</h2>
-        <p className="text-[10px] text-[#B6925B] uppercase tracking-widest font-bold mt-1">Placed on {new Date(createdAt).toLocaleDateString()}</p>
+        <h2 className="text-3xl font-serif text-[#2D1F2F] tracking-wide">Order #{orderId.split('-')[0]}</h2>
+        <p className="text-[10px] text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">Placed on {new Date(createdAt).toLocaleDateString()}</p>
       </div>
       <div className="flex items-center gap-3">
         <PrintInvoiceButton />

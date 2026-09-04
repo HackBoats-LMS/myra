@@ -38,47 +38,47 @@ export default function CreateWorkerForm() {
     <div>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none"
+        className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none"
       >
         {open ? <X className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
         {open ? "Cancel" : "Create Worker"}
       </button>
 
       {open && (
-        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-[#B6925B]/20 shadow-sm p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-[#7A0B2E]/20 shadow-sm p-6 space-y-4">
           {error && <div className="p-3 text-xs font-bold uppercase tracking-widest text-red-600 bg-red-50 border border-red-200 text-center rounded-none">{error}</div>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1">Full Name</label>
-              <input name="name" required className="w-full bg-transparent border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none" placeholder="Worker Name" />
+              <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1">Full Name</label>
+              <input name="name" required className="w-full bg-transparent border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none" placeholder="Worker Name" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1">Email</label>
-              <input name="email" type="email" required className="w-full bg-transparent border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none" placeholder="worker@myra.com" />
+              <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1">Email</label>
+              <input name="email" type="email" required className="w-full bg-transparent border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none" placeholder="worker@myra.com" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1">Phone (optional)</label>
-              <input name="phoneNumber" className="w-full bg-transparent border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none" placeholder="9999999999" />
+              <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1">Phone (optional)</label>
+              <input name="phoneNumber" className="w-full bg-transparent border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none" placeholder="9999999999" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-wider mb-1">Temporary Password</label>
-              <input name="password" type="password" required minLength={6} className="w-full bg-transparent border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none" placeholder="At least 6 characters" />
+              <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-wider mb-1">Temporary Password</label>
+              <input name="password" type="password" required minLength={6} className="w-full bg-transparent border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none" placeholder="At least 6 characters" />
             </div>
           </div>
 
           <div className="flex gap-6 pt-2">
             <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={inventory} onChange={(e) => setInventory(e.target.checked)} className="w-4 h-4 accent-[#B6925B]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">Inventory Management</span>
+              <input type="checkbox" checked={inventory} onChange={(e) => setInventory(e.target.checked)} className="w-4 h-4 accent-[#7A0B2E]" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">Inventory Management</span>
             </label>
             <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={shipping} onChange={(e) => setShipping(e.target.checked)} className="w-4 h-4 accent-[#B6925B]" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">Shipping Management</span>
+              <input type="checkbox" checked={shipping} onChange={(e) => setShipping(e.target.checked)} className="w-4 h-4 accent-[#7A0B2E]" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">Shipping Management</span>
             </label>
           </div>
 
-          <button type="submit" disabled={loading} className="bg-[#4A3B2C] hover:bg-[#3a2d20] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors disabled:opacity-70 rounded-none">
+          <button type="submit" disabled={loading} className="bg-[#2D1F2F] hover:bg-[#1a121b] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors disabled:opacity-70 rounded-none">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
             Create Worker Account
           </button>

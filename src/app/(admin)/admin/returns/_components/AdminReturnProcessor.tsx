@@ -50,29 +50,29 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
   };
 
   return (
-    <div className="bg-white border border-[#B6925B]/20 shadow-sm p-6 space-y-5">
-      <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-2">Process Request</h3>
+    <div className="bg-white border border-[#7A0B2E]/20 shadow-sm p-6 space-y-5">
+      <h3 className="font-serif text-lg text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-2">Process Request</h3>
 
       <div className="space-y-2">
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C]">
+        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
           Admin Note (shown to customer on decision)
         </label>
         <textarea
           value={adminNote}
           onChange={(e) => setAdminNote(e.target.value)}
           rows={3}
-          className="w-full rounded-none border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+          className="w-full rounded-none border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
           placeholder="Optional note explaining the decision..."
         />
       </div>
 
-      <div className="flex flex-wrap gap-3 border-t border-[#B6925B]/10 pt-5">
+      <div className="flex flex-wrap gap-3 border-t border-[#7A0B2E]/10 pt-5">
         {request.status === "PENDING" && (
           <>
             <button
               onClick={() => run(() => approveReturn(request.id, adminNote), "Return approved.")}
               disabled={loading}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#7A0B2E] hover:bg-[#5C0820] text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
             >
               <CheckCheck className="w-4 h-4" /> Approve
             </button>
@@ -89,16 +89,16 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
         {request.status === "APPROVED" && (
           <>
             {request.reversePickupScheduledAt ? (
-              <div className="w-full space-y-2 border border-[#B6925B]/20 bg-[#FAFAFA] p-4">
+              <div className="w-full space-y-2 border border-[#7A0B2E]/20 bg-[#FAFAFA] p-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-green-700 flex items-center">
                   <CheckCircle2 className="w-4 h-4 mr-1 shrink-0" />
                   Reverse pickup scheduled via Shiprocket
                 </p>
                 {request.shipmentId && (
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Return Shipment ID: <span className="text-[#4A3B2C] font-mono">{request.shipmentId}</span></p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Return Shipment ID: <span className="text-[#2D1F2F] font-mono">{request.shipmentId}</span></p>
                 )}
                 {request.awbNumber && (
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">AWB: <span className="text-[#4A3B2C] font-mono">{request.awbNumber}</span></p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">AWB: <span className="text-[#2D1F2F] font-mono">{request.awbNumber}</span></p>
                 )}
                 <button
                   onClick={() => run(() => markReturnPickedUp(request.id), "Goods marked as picked up.")}
@@ -112,7 +112,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
               <button
                 onClick={() => run(() => scheduleReversePickup(request.id), "Reverse pickup scheduled.")}
                 disabled={loading}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#4A3B2C] hover:bg-[#B6925B] text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#2D1F2F] hover:bg-[#7A0B2E] text-white text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-60"
               >
                 <Truck className="w-4 h-4" /> Schedule Reverse Pickup via Shiprocket
               </button>
@@ -123,7 +123,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
         {request.status === "PICKED_UP" && request.type === "RETURN" && (
           <div className="w-full flex flex-wrap items-end gap-3">
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
                 Refund Amount (₹) — Max ₹{maxRefundable.toFixed(2)}
               </label>
               <input
@@ -134,7 +134,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
                 value={refundAmount}
                 onChange={(e) => setRefundAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full rounded-none border border-[#B6925B]/30 px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]"
+                className="w-full rounded-none border border-[#7A0B2E]/30 px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
               />
             </div>
             <button

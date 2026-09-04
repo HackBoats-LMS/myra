@@ -195,13 +195,13 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
   return (
     <div className="space-y-8">
       {/* SSR Caching Info Card */}
-      <div className="bg-[#4A3B2C]/5 border border-[#B6925B]/30 p-5 flex items-start justify-between gap-4">
+      <div className="bg-[#2D1F2F]/5 border border-[#7A0B2E]/30 p-5 flex items-start justify-between gap-4">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-[#4A3B2C] text-[#B6925B] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-[#2D1F2F] text-[#7A0B2E] flex items-center justify-center shrink-0">
             <Zap className="w-5 h-5" />
           </div>
           <div className="text-xs space-y-1">
-            <h4 className="font-serif font-bold text-sm text-[#4A3B2C]">
+            <h4 className="font-serif font-bold text-sm text-[#2D1F2F]">
               Dynamic Brand Stories & SSR Cache
             </h4>
             <p className="text-gray-600 leading-relaxed max-w-2xl">
@@ -213,7 +213,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
         <button
           type="button"
           onClick={openCreateModal}
-          className="bg-[#4A3B2C] hover:bg-[#34291f] text-white py-2.5 px-5 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 shrink-0 shadow-sm"
+          className="bg-[#2D1F2F] hover:bg-[#220510] text-white py-2.5 px-5 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 shrink-0 shadow-sm"
         >
           <Plus className="w-4 h-4" /> Add New Story
         </button>
@@ -221,18 +221,18 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
 
       {/* Stories List */}
       {stories.length === 0 ? (
-        <div className="bg-white border border-[#B6925B]/20 p-12 text-center space-y-4">
-          <div className="w-12 h-12 bg-[#B6925B]/15 text-[#4A3B2C] rounded-full flex items-center justify-center mx-auto">
+        <div className="bg-white border border-[#7A0B2E]/20 p-12 text-center space-y-4">
+          <div className="w-12 h-12 bg-[#7A0B2E]/15 text-[#2D1F2F] rounded-full flex items-center justify-center mx-auto">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h3 className="font-serif text-lg font-bold text-[#4A3B2C]">No Custom Brand Stories Yet</h3>
+          <h3 className="font-serif text-lg font-bold text-[#2D1F2F]">No Custom Brand Stories Yet</h3>
           <p className="text-xs text-gray-500 max-w-md mx-auto">
             The storefront is currently showing the 2 default built-in stories. Click &quot;Add New Story&quot; to create your first custom story with images and narrative text!
           </p>
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center gap-2 bg-[#4A3B2C] hover:bg-[#34291f] text-white py-2.5 px-5 text-xs font-bold uppercase tracking-widest transition-colors"
+            className="inline-flex items-center gap-2 bg-[#2D1F2F] hover:bg-[#220510] text-white py-2.5 px-5 text-xs font-bold uppercase tracking-widest transition-colors"
           >
             <Plus className="w-4 h-4" /> Add First Story
           </button>
@@ -247,7 +247,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                 key={story.id}
                 className={`bg-white border transition-all duration-200 p-6 flex flex-col justify-between space-y-5 shadow-sm ${
                   story.isActive
-                    ? "border-[#B6925B]/30 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
+                    ? "border-[#7A0B2E]/30 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
                     : "border-gray-200 opacity-60 bg-gray-50/50"
                 }`}
               >
@@ -255,7 +255,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                   {/* Top Bar: Chapter Number, Status & Ordering */}
                   <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-7 h-7 rounded-full bg-[#4A3B2C] text-[#B6925B] text-xs font-mono font-bold flex items-center justify-center shadow-xs">
+                      <span className="w-7 h-7 rounded-full bg-[#2D1F2F] text-[#7A0B2E] text-xs font-mono font-bold flex items-center justify-center shadow-xs">
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       <span
@@ -295,7 +295,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                   {/* Image Preview & Details Grid */}
                   <div className="flex flex-col sm:flex-row gap-4 items-start">
                     {/* Image Preview */}
-                    <div className="relative w-full sm:w-36 h-36 bg-slate-100 border border-[#B6925B]/30 overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="relative w-full sm:w-36 h-36 bg-slate-100 border border-[#7A0B2E]/30 overflow-hidden shrink-0 flex items-center justify-center">
                       <Image
                         src={story.imageUrl}
                         alt={story.title}
@@ -308,11 +308,11 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                     {/* Text Details */}
                     <div className="space-y-1.5 min-w-0 flex-1">
                       {story.subtitle && (
-                        <p className="text-[11px] font-serif font-bold text-[#B6925B] uppercase tracking-wider line-clamp-1">
+                        <p className="text-[11px] font-serif font-bold text-[#7A0B2E] uppercase tracking-wider line-clamp-1">
                           {story.subtitle}
                         </p>
                       )}
-                      <h3 className="font-serif text-base font-bold text-[#4A3B2C] line-clamp-1">
+                      <h3 className="font-serif text-base font-bold text-[#2D1F2F] line-clamp-1">
                         {story.title}
                       </h3>
                       {story.description && (
@@ -321,8 +321,8 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                         </p>
                       )}
                       {story.linkUrl && (
-                        <div className="flex items-center gap-1 text-[11px] text-[#4A3B2C] font-mono pt-1">
-                          <LinkIcon className="w-3 h-3 text-[#B6925B]" />
+                        <div className="flex items-center gap-1 text-[11px] text-[#2D1F2F] font-mono pt-1">
+                          <LinkIcon className="w-3 h-3 text-[#7A0B2E]" />
                           <span className="truncate">{story.linkUrl}</span>
                         </div>
                       )}
@@ -356,7 +356,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                     <button
                       type="button"
                       onClick={() => openEditModal(story)}
-                      className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+                      className="bg-[#2D1F2F] hover:bg-[#220510] text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors"
                     >
                       <Edit2 className="w-3.5 h-3.5" /> Edit
                     </button>
@@ -379,12 +379,12 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
       {/* Create / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-[#B6925B]/30 w-full max-w-2xl shadow-2xl p-6 sm:p-8 space-y-6 my-8">
+          <div className="bg-white border border-[#7A0B2E]/30 w-full max-w-2xl shadow-2xl p-6 sm:p-8 space-y-6 my-8">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#B6925B]" />
-                <h3 className="font-serif text-xl font-bold text-[#4A3B2C]">
+                <Sparkles className="w-5 h-5 text-[#7A0B2E]" />
+                <h3 className="font-serif text-xl font-bold text-[#2D1F2F]">
                   {formData.id ? "Edit Brand Story" : "Add New Brand Story"}
                 </h3>
               </div>
@@ -401,7 +401,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Image Upload */}
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                <label className="block text-[11px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                   Story Image (Required)
                 </label>
                 <ImageUpload
@@ -415,7 +415,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
 
               {/* Subtitle / Eyebrow */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                <label className="block text-[11px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                   Subtitle / Eyebrow
                 </label>
                 <input
@@ -423,13 +423,13 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                   placeholder="e.g. Where Every Saree Becomes a Statement"
                   value={formData.subtitle}
                   onChange={(e) => setFormData((prev) => ({ ...prev, subtitle: e.target.value }))}
-                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                 />
               </div>
 
               {/* Main Headline Title */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                <label className="block text-[11px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                   Headline Title (Required)
                 </label>
                 <input
@@ -438,13 +438,13 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                   placeholder="e.g. Curated for Every Celebration"
                   value={formData.title}
                   onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                <label className="block text-[11px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                   Story Narrative Description
                 </label>
                 <textarea
@@ -454,13 +454,13 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, description: e.target.value }))
                   }
-                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#4A3B2C] resize-none"
+                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#2D1F2F] resize-none"
                 />
               </div>
 
               {/* Link URL */}
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                <label className="block text-[11px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                   Destination Link URL (Optional)
                 </label>
                 <input
@@ -468,7 +468,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                   placeholder="e.g. /collections/sarees"
                   value={formData.linkUrl}
                   onChange={(e) => setFormData((prev) => ({ ...prev, linkUrl: e.target.value }))}
-                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                  className="w-full border border-gray-300 px-3.5 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                 />
               </div>
 
@@ -484,7 +484,7 @@ export default function BrandStoryManager({ initialStories }: { initialStories: 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-[#4A3B2C] hover:bg-[#34291f] text-white py-2.5 px-6 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 disabled:opacity-50"
+                  className="bg-[#2D1F2F] hover:bg-[#220510] text-white py-2.5 px-6 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>

@@ -4,7 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { revalidateTag } from "next/cache";
 import { sendEmail } from "@/lib/email/email";
 import OrderConfirmationEmail from "@/emails/OrderConfirmationEmail";
 import { isPincodeDeliverable } from "@/actions/pincode";
@@ -16,7 +15,7 @@ import {
   parseGuestCartCookie
 } from "@/features/cart/service";
 import { signCookieValue, verifyCookieValue } from "@/lib/cookie-signing";
-import { CACHE_TAGS } from "@/lib/cache";
+import { CACHE_TAGS, revalidateTag } from "@/lib/cache";
 import { getActiveFlashSales, applyFlashDiscount } from "@/lib/flash-sale";
 import { normalizeIndianPhone } from "@/lib/phone";
 import type { Coupon, Prisma, $Enums } from "@/generated/prisma";

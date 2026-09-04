@@ -30,7 +30,7 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
     <div className="flex items-center justify-between group">
       <button
         onClick={() => scrollByPage(-1)}
-        className="hidden md:flex p-2 text-gray-400 hover:text-[#B6925B] transition-colors"
+        className="hidden md:flex p-2 text-gray-400 hover:text-[#7A0B2E] transition-colors"
         aria-label="Scroll left"
       >
         <span className="text-4xl font-light">&lsaquo;</span>
@@ -47,7 +47,7 @@ export default function ProductCarousel({ products }: ProductCarouselProps) {
       </div>
       <button
         onClick={() => scrollByPage(1)}
-        className="hidden md:flex p-2 text-gray-400 hover:text-[#B6925B] transition-colors"
+        className="hidden md:flex p-2 text-gray-400 hover:text-[#7A0B2E] transition-colors"
         aria-label="Scroll right"
       >
         <span className="text-4xl font-light">&rsaquo;</span>

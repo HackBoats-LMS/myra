@@ -151,10 +151,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start">
           {/* Image Gallery & Video */}
           <div className="lg:col-span-7">
-            <ImageGallery images={product.images} alt={product.name} />
-            {product.videoUrl && (
-              <ProductVideoEmbed url={product.videoUrl} />
-            )}
+            <ImageGallery images={product.images} alt={product.name} videoUrl={product.videoUrl} />
           </div>
 
           {/* Product Info Section */}

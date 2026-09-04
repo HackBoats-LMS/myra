@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  experimental: {
+    cpus: 1,
+    workerThreads: false,
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
   images: {
     formats: ['image/webp'],
     qualities: [75, 90, 100],

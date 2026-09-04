@@ -89,15 +89,15 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 rounded-none">
-      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-4">
+      <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 pb-4">
         <div>
-          <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Orders</h2>
-          <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Manage and fulfill customer orders</p>
+          <h2 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Orders</h2>
+          <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">Manage and fulfill customer orders</p>
         </div>
         <a 
           href="/api/admin/orders/export" 
           download 
-          className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1.5 rounded-none"
+          className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm flex items-center gap-1.5 rounded-none"
         >
           Export CSV
         </a>
@@ -110,19 +110,19 @@ export default async function AdminOrdersPage({
         statusOptions={ORDER_STATUSES.map((s) => ({ value: s, label: s.replace(/_/g, ' ') }))}
       />
 
-      <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
-        <table className="w-full text-left text-sm text-[#4A3B2C]">
-          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
+      <div className="bg-white border border-[#7A0B2E]/20 relative rounded-none">
+        <table className="w-full text-left text-sm text-[#2D1F2F]">
+          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Order ID</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Customer</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Items</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Total</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Status</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Order ID</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Customer</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Items</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Total</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#B6925B]/10">
+          <tbody className="divide-y divide-[#7A0B2E]/10">
             {orders.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
@@ -132,19 +132,19 @@ export default async function AdminOrdersPage({
             ) : (
               orders.map((order) => (
                 <tr key={order.id} className="hover:bg-[#FAFAFA] transition-colors group">
-                  <td className="px-6 py-4 font-mono text-[10px] text-gray-500 font-bold uppercase tracking-widest border-r border-[#B6925B]/10">{order.id.split('-')[0]}</td>
-                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">
+                  <td className="px-6 py-4 font-mono text-[10px] text-gray-500 font-bold uppercase tracking-widest border-r border-[#7A0B2E]/10">{order.id.split('-')[0]}</td>
+                  <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">
                     {order.user?.name || order.user?.email || order.user?.phoneNumber || 'Guest'}
                   </td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10 text-xs font-bold uppercase tracking-widest text-[#B6925B]">{order._count.orderItems} items</td>
-                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">Rs. {order.totalAmount.toFixed(2)}</td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
-                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest bg-[#FAFAFA] border border-[#B6925B]/30 text-[#4A3B2C]">
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10 text-xs font-bold uppercase tracking-widest text-[#7A0B2E]">{order._count.orderItems} items</td>
+                  <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">Rs. {order.totalAmount.toFixed(2)}</td>
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
+                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest bg-[#FAFAFA] border border-[#7A0B2E]/30 text-[#2D1F2F]">
                       {order.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link href={`/admin/orders/${order.id}`} className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none" title="View Details">
+                    <Link href={`/admin/orders/${order.id}`} className="inline-flex text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1 items-center justify-center rounded-none" title="View Details">
                       <Eye className="w-4 h-4" />
                     </Link>
                   </td>

@@ -35,9 +35,9 @@ export default function CollectionBestSellers({
   };
 
   return (
-    <div className="bg-white border border-[#B6925B]/20 shadow-sm">
-      <div className="p-6 border-b border-[#B6925B]/20">
-        <h3 className="text-sm font-bold text-[#4A3B2C] uppercase tracking-widest">Best Sellers</h3>
+    <div className="bg-white border border-[#7A0B2E]/20 shadow-sm">
+      <div className="p-6 border-b border-[#7A0B2E]/20">
+        <h3 className="text-sm font-bold text-[#2D1F2F] uppercase tracking-widest">Best Sellers</h3>
         <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-1">
           Select which products in this collection are featured as Best Sellers.
         </p>
@@ -48,7 +48,7 @@ export default function CollectionBestSellers({
           No products in this collection yet.
         </p>
       ) : (
-        <div className="divide-y divide-[#B6925B]/10">
+        <div className="divide-y divide-[#7A0B2E]/10">
           {products.map((p) => (
             <div key={p.id} className="flex items-center gap-4 p-4 hover:bg-[#FAFAFA] transition-colors">
               <label className="inline-flex items-center gap-3 cursor-pointer flex-1 min-w-0">
@@ -57,16 +57,16 @@ export default function CollectionBestSellers({
                   checked={p.bestSeller}
                   disabled={busy === p.id}
                   onChange={(e) => toggle(p.id, e.target.checked)}
-                  className="w-4 h-4 accent-[#B6925B]"
+                  className="w-4 h-4 accent-[#7A0B2E]"
                 />
-                <span className="relative w-10 h-14 bg-[#FAFAFA] border border-[#B6925B]/20 overflow-hidden flex-shrink-0">
+                <span className="relative w-10 h-14 bg-[#FAFAFA] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
                   {p.images[0] && <Image src={p.images[0]} alt={p.name} fill className="object-cover" />}
                 </span>
-                <span className="text-sm font-bold text-[#4A3B2C] truncate">{p.name}</span>
+                <span className="text-sm font-bold text-[#2D1F2F] truncate">{p.name}</span>
               </label>
               <Link
                 href={`${basePath}/${p.id}`}
-                className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest hover:underline flex-shrink-0"
+                className="text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest hover:underline flex-shrink-0"
               >
                 Edit
               </Link>

@@ -11,8 +11,8 @@ export default function StorefrontError({
   return (
     <div className="w-full bg-[#FAFAFA] min-h-[70vh] flex items-center justify-center px-4">
       <div className="text-center space-y-5 max-w-md">
-        <p className="font-serif text-7xl text-[#B6925B]">500</p>
-        <h1 className="text-2xl md:text-3xl font-serif text-[#4A3B2C] tracking-wide">Something Went Wrong</h1>
+        <p className="font-serif text-7xl text-[#7A0B2E]">500</p>
+        <h1 className="text-2xl md:text-3xl font-serif text-[#2D1F2F] tracking-wide">Something Went Wrong</h1>
         <p className="text-sm text-gray-500">
           We&apos;re having trouble loading this page. Please try again in a moment.
           {error.digest ? (
@@ -22,13 +22,13 @@ export default function StorefrontError({
         <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
           <button
             onClick={reset}
-            className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-none"
+            className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-none"
           >
             Try Again
           </button>
           <Link
             href="/"
-            className="border border-[#B6925B]/40 text-[#4A3B2C] hover:bg-[#B6925B] hover:text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-none"
+            className="border border-[#7A0B2E]/40 text-[#2D1F2F] hover:bg-[#7A0B2E] hover:text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-none"
           >
             Back to Home
           </Link>

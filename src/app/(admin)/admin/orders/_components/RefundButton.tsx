@@ -38,7 +38,7 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
 
   if (maxRefundable <= 0) {
     return (
-      <span className="text-[10px] font-bold px-2.5 py-1 bg-[#FAFAFA] text-gray-500 rounded-none uppercase tracking-widest border border-[#B6925B]/20">
+      <span className="text-[10px] font-bold px-2.5 py-1 bg-[#FAFAFA] text-gray-500 rounded-none uppercase tracking-widest border border-[#7A0B2E]/20">
         Fully Refunded
       </span>
     );
@@ -56,15 +56,15 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm print:hidden">
-          <div className="bg-white rounded-none border border-[#B6925B]/20 shadow-xl w-full max-w-md p-6 m-4">
-            <h3 className="text-lg font-serif text-[#4A3B2C] mb-2 tracking-wide">Process Refund</h3>
+          <div className="bg-white rounded-none border border-[#7A0B2E]/20 shadow-xl w-full max-w-md p-6 m-4">
+            <h3 className="text-lg font-serif text-[#2D1F2F] mb-2 tracking-wide">Process Refund</h3>
             <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">
               Enter the amount you wish to refund. Maximum refundable amount is ₹{maxRefundable.toFixed(2)}.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Refund Amount (₹)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Refund Amount (₹)</label>
                 <input
                   type="number"
                   required
@@ -73,16 +73,16 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
                   max={maxRefundable}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full rounded-none border border-[#B6925B]/20 px-3 py-2 text-sm focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B] text-[#4A3B2C] transition-all"
+                  className="w-full rounded-none border border-[#7A0B2E]/20 px-3 py-2 text-sm focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E] text-[#2D1F2F] transition-all"
                   placeholder="0.00"
                 />
               </div>
 
-              <div className="flex justify-end pt-4 space-x-3 border-t border-[#B6925B]/10 mt-4">
+              <div className="flex justify-end pt-4 space-x-3 border-t border-[#7A0B2E]/10 mt-4">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 text-[10px] font-bold text-gray-500 hover:text-[#4A3B2C] uppercase tracking-widest transition-colors"
+                  className="px-4 py-2 text-[10px] font-bold text-gray-500 hover:text-[#2D1F2F] uppercase tracking-widest transition-colors"
                   disabled={isSubmitting}
                 >
                   Cancel

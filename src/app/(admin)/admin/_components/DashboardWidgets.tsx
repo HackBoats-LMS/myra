@@ -67,11 +67,11 @@ export default function DashboardWidgets({
   const maxRevenue = Math.max(...revenueByDay.map((d) => d.total), 1); // Avoid division by zero
 
   const statusColors: Record<OrderStatus, string> = {
-    PENDING: "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30",
-    READY_TO_SHIP: "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30",
-    SHIPPED: "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30",
-    OUT_FOR_DELIVERY: "bg-[#FAFAFA] text-[#4A3B2C] border border-[#B6925B]/30",
-    DELIVERED: "bg-[#FAFAFA] text-green-700 border border-[#B6925B]/20",
+    PENDING: "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30",
+    READY_TO_SHIP: "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30",
+    SHIPPED: "bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30",
+    OUT_FOR_DELIVERY: "bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30",
+    DELIVERED: "bg-[#FAFAFA] text-green-700 border border-[#7A0B2E]/20",
     CANCELLED: "bg-red-50 text-red-700 border border-red-200",
   };
 
@@ -80,19 +80,19 @@ export default function DashboardWidgets({
       {/* Column 1: Revenue Chart & Top Products */}
       <div className="space-y-8">
         {/* Revenue Chart */}
-        <div className="bg-white border border-[#B6925B]/20 shadow-sm p-6">
-          <h2 className="text-sm font-bold text-[#4A3B2C] mb-6 uppercase tracking-widest">Revenue (Last 7 Days)</h2>
+        <div className="bg-white border border-[#7A0B2E]/20 shadow-sm p-6">
+          <h2 className="text-sm font-bold text-[#2D1F2F] mb-6 uppercase tracking-widest">Revenue (Last 7 Days)</h2>
           <div className="h-64 flex items-end justify-between gap-2">
             {revenueByDay.map((day, i) => {
               const heightPercent = (day.total / maxRevenue) * 100;
               return (
                 <div key={i} className="flex flex-col items-center flex-1 group relative h-full justify-end">
-                  <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-[#4A3B2C] text-white text-xs py-1 px-2 font-bold tracking-widest transition-opacity whitespace-nowrap z-10">
+                  <div className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-[#2D1F2F] text-white text-xs py-1 px-2 font-bold tracking-widest transition-opacity whitespace-nowrap z-10">
                     Rs. {day.total.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                   </div>
                   <div className="w-full flex-1 flex items-end">
                     <div
-                      className="w-full bg-[#B6925B] transition-all duration-300 hover:bg-[#9c7d4e]"
+                      className="w-full bg-[#7A0B2E] transition-all duration-300 hover:bg-[#5C0820]"
                       style={{ height: `${heightPercent || 2}%` }}
                     ></div>
                   </div>
@@ -106,22 +106,22 @@ export default function DashboardWidgets({
         </div>
 
         {/* Top Products */}
-        <div className="bg-white border border-[#B6925B]/20 shadow-sm p-6">
-          <h2 className="text-sm font-bold text-[#4A3B2C] mb-4 uppercase tracking-widest">Top Selling Products</h2>
+        <div className="bg-white border border-[#7A0B2E]/20 shadow-sm p-6">
+          <h2 className="text-sm font-bold text-[#2D1F2F] mb-4 uppercase tracking-widest">Top Selling Products</h2>
           <div className="space-y-4">
             {topProducts.length === 0 ? (
               <p className="text-sm text-gray-500">No sales data yet.</p>
             ) : (
               topProducts.map((p, i) => (
-                <div key={p.id} className="flex items-center gap-4 p-3 hover:bg-[#FAFAFA] border border-transparent hover:border-[#B6925B]/20 transition-all">
-                  <div className="w-8 h-8 flex items-center justify-center bg-[#FAFAFA] border border-[#B6925B]/20 text-[#B6925B] font-bold text-xs">
+                <div key={p.id} className="flex items-center gap-4 p-3 hover:bg-[#FAFAFA] border border-transparent hover:border-[#7A0B2E]/20 transition-all">
+                  <div className="w-8 h-8 flex items-center justify-center bg-[#FAFAFA] border border-[#7A0B2E]/20 text-[#7A0B2E] font-bold text-xs">
                     #{i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-[#4A3B2C] truncate">{p.name}</p>
+                    <p className="text-sm font-bold text-[#2D1F2F] truncate">{p.name}</p>
                     <p className="text-xs text-gray-500 font-medium">{p.totalSold} sold</p>
                   </div>
-                  <Link href={`/admin/products/${p.id}`} className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest hover:underline">
+                  <Link href={`/admin/products/${p.id}`} className="text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest hover:underline">
                     View
                   </Link>
                 </div>
@@ -134,10 +134,10 @@ export default function DashboardWidgets({
       {/* Column 2: Recent Orders & Low Stock */}
       <div className="space-y-8">
         {/* Recent Orders */}
-        <div className="bg-white border border-[#B6925B]/20 shadow-sm p-6">
+        <div className="bg-white border border-[#7A0B2E]/20 shadow-sm p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-sm font-bold text-[#4A3B2C] uppercase tracking-widest">Recent Orders</h2>
-            <Link href="/admin/orders" className="text-[10px] font-bold text-[#B6925B] uppercase tracking-widest hover:underline">
+            <h2 className="text-sm font-bold text-[#2D1F2F] uppercase tracking-widest">Recent Orders</h2>
+            <Link href="/admin/orders" className="text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest hover:underline">
               View All
             </Link>
           </div>
@@ -146,9 +146,9 @@ export default function DashboardWidgets({
               <p className="text-sm text-gray-500">No recent orders.</p>
             ) : (
               recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-3 border border-[#B6925B]/20 hover:bg-[#FAFAFA] transition-colors">
+                <div key={order.id} className="flex items-center justify-between p-3 border border-[#7A0B2E]/20 hover:bg-[#FAFAFA] transition-colors">
                   <div>
-                    <p className="text-sm font-bold text-[#4A3B2C]">
+                    <p className="text-sm font-bold text-[#2D1F2F]">
                       Order #{order.id.slice(-6).toUpperCase()} • {order.user?.name || order.user?.email || "Guest"}
                     </p>
                     <p className="text-xs text-gray-500 mt-1 font-medium">
@@ -159,7 +159,7 @@ export default function DashboardWidgets({
                     <span className={`text-[10px] px-2 py-1 font-bold uppercase tracking-widest ${statusColors[order.status]}`}>
                       {order.status}
                     </span>
-                    <Link href={`/admin/orders/${order.id}`} className="text-sm text-[#B6925B] hover:text-[#4A3B2C] transition-colors">
+                    <Link href={`/admin/orders/${order.id}`} className="text-sm text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors">
                       &rarr;
                     </Link>
                   </div>

@@ -55,22 +55,22 @@ export default function AdminForm<T extends { id?: string }>({
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="space-y-8 max-w-2xl bg-white p-8 border border-[#B6925B]/20 shadow-sm rounded-none"
+      className="space-y-8 max-w-2xl bg-white p-8 border border-[#7A0B2E]/20 shadow-sm rounded-none"
     >
       {children({ isSubmitting, handleSubmit })}
       
-      <div className="flex justify-end pt-6 border-t border-[#B6925B]/20 gap-4">
+      <div className="flex justify-end pt-6 border-t border-[#7A0B2E]/20 gap-4">
         <button 
           type="button" 
           onClick={() => router.back()}
-          className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#4A3B2C] border border-[#B6925B]/20 transition-colors bg-white hover:bg-[#FAFAFA] rounded-none"
+          className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#2D1F2F] border border-[#7A0B2E]/20 transition-colors bg-white hover:bg-[#FAFAFA] rounded-none"
         >
           Cancel
         </button>
         <button 
           type="submit" 
           disabled={isSubmitting}
-          className="bg-[#4A3B2C] hover:bg-[#34291f] text-white px-8 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center disabled:opacity-50 rounded-none"
+          className="bg-[#2D1F2F] hover:bg-[#220510] text-white px-8 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center disabled:opacity-50 rounded-none"
         >
           {isSubmitting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           {initialData?.id ? "Save Changes" : "Create"}

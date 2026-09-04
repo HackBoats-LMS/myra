@@ -67,18 +67,18 @@ export default function OrderItemReview({
   };
 
   return (
-    <div className="mt-4 border-t border-[#B6925B]/10 pt-3">
+    <div className="mt-4 border-t border-[#7A0B2E]/10 pt-3">
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] transition-colors"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors"
         >
           <i className="ri-star-line text-sm" />
           Write a Review
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3 bg-[#FAFAFA] border border-[#B6925B]/20 p-4">
-          <p className="text-[11px] font-bold text-[#4A3B2C] uppercase tracking-widest">{productName}</p>
+        <form onSubmit={handleSubmit} className="space-y-3 bg-[#FAFAFA] border border-[#7A0B2E]/20 p-4">
+          <p className="text-[11px] font-bold text-[#2D1F2F] uppercase tracking-widest">{productName}</p>
 
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -88,12 +88,12 @@ export default function OrderItemReview({
                 onClick={() => setRating(star)}
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
-                className="text-[#B6925B] focus:outline-none transition-transform active:scale-95 flex items-center justify-center"
+                className="text-[#7A0B2E] focus:outline-none transition-transform active:scale-95 flex items-center justify-center"
               >
                 {star <= (hoverRating || rating) ? (
                   <i className="ri-star-fill text-xl" />
                 ) : (
-                  <i className="ri-star-line text-xl text-gray-300 hover:text-[#B6925B]" />
+                  <i className="ri-star-line text-xl text-gray-300 hover:text-[#7A0B2E]" />
                 )}
               </button>
             ))}
@@ -104,11 +104,11 @@ export default function OrderItemReview({
             onChange={(e) => setComment(e.target.value)}
             placeholder="Share your thoughts about this product..."
             rows={3}
-            className="w-full bg-white border border-[#B6925B]/20 rounded-none p-3 text-xs focus:outline-none focus:border-[#B6925B] text-[#4A3B2C] placeholder-gray-400 resize-none"
+            className="w-full bg-white border border-[#7A0B2E]/20 rounded-none p-3 text-xs focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F] placeholder-gray-400 resize-none"
           />
 
           <div>
-            <label className="flex items-center justify-center gap-2 border border-dashed border-[#B6925B]/40 px-3 py-3 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:bg-white cursor-pointer rounded-none">
+            <label className="flex items-center justify-center gap-2 border border-dashed border-[#7A0B2E]/40 px-3 py-3 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:bg-white cursor-pointer rounded-none">
               <i className="ri-camera-line text-lg" />
               {uploading ? "Uploading..." : "Add photos (up to 5)"}
               <input
@@ -123,7 +123,7 @@ export default function OrderItemReview({
             {images.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {images.map((img, idx) => (
-                  <div key={img.path} className="relative w-14 h-14 border border-[#B6925B]/30 overflow-hidden rounded-none">
+                  <div key={img.path} className="relative w-14 h-14 border border-[#7A0B2E]/30 overflow-hidden rounded-none">
                     <Image src={img.previewUrl} alt={`Review photo ${idx + 1}`} fill className="object-cover" />
                     <button
                       type="button"
@@ -143,14 +143,14 @@ export default function OrderItemReview({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="px-3 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#4A3B2C] transition-colors"
+              className="px-3 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#2D1F2F] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <i className="ri-loader-4-line animate-spin text-sm leading-none" />

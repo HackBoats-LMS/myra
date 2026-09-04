@@ -37,11 +37,11 @@ export default function PushNotificationSender() {
     }
   };
 
-  const field = "w-full px-4 py-2 border border-[#B6925B]/20 rounded-none bg-white focus:outline-none focus:border-[#B6925B] text-[#4A3B2C]";
-  const label = "block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest mb-1";
+  const field = "w-full px-4 py-2 border border-[#7A0B2E]/20 rounded-none bg-white focus:outline-none focus:border-[#7A0B2E] text-[#2D1F2F]";
+  const label = "block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest mb-1";
 
   return (
-    <form onSubmit={handleSend} className="bg-white border border-[#B6925B]/20 p-6 space-y-4 shadow-sm">
+    <form onSubmit={handleSend} className="bg-white border border-[#7A0B2E]/20 p-6 space-y-4 shadow-sm">
       <div>
         <label className={label}>Title *</label>
         <input value={title} onChange={(e) => setTitle(e.target.value)} className={field} placeholder="New arrivals are here!" />
@@ -58,7 +58,7 @@ export default function PushNotificationSender() {
         <button
           type="submit"
           disabled={busy}
-          className="bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 rounded-none"
+          className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-50 rounded-none"
         >
           {busy ? "Sending..." : "Broadcast Push Notification"}
         </button>

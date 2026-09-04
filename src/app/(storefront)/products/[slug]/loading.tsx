@@ -39,7 +39,7 @@ export default function ProductDetailsLoading() {
       </div>
 
       {/* Bottom Column: Related Products Skeleton */}
-      <section className="mt-24 border-t border-[#B6925B]/20 pt-16">
+      <section className="mt-24 border-t border-[#7A0B2E]/20 pt-16">
         <div className="h-8 w-48 bg-slate-100 rounded-none mx-auto mb-10 animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {[1, 2, 3, 4].map((idx) => (

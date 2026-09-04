@@ -92,8 +92,8 @@ export default function ProductListTable({
     <div className="space-y-4">
       {/* Bulk Actions Toolbar */}
       {selectedIds.length > 0 && (
-        <div className="bg-[#FAFAFA] border border-[#B6925B]/20 p-3 flex items-center justify-between rounded-none">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#4A3B2C]">
+        <div className="bg-[#FAFAFA] border border-[#7A0B2E]/20 p-3 flex items-center justify-between rounded-none">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#2D1F2F]">
             {selectedIds.length} item(s) selected
           </span>
           <div className="flex items-center gap-2">
@@ -110,7 +110,7 @@ export default function ProductListTable({
                 <button
                   onClick={handleBulkUpdateStock}
                   disabled={isProcessing}
-                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors rounded-none"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors rounded-none"
                 >
                   Update Stock
                 </button>
@@ -127,33 +127,33 @@ export default function ProductListTable({
         </div>
       )}
 
-      <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
+      <div className="bg-white border border-[#7A0B2E]/20 relative rounded-none">
         {isProcessing && (
           <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-10">
-            <Loader2 className="w-8 h-8 text-[#B6925B] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#7A0B2E] animate-spin" />
           </div>
         )}
         
-        <table className="w-full text-left text-sm text-[#4A3B2C]">
-          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
+        <table className="w-full text-left text-sm text-[#2D1F2F]">
+          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
-              <th className="px-6 py-4 w-12 border-r border-[#B6925B]/10">
+              <th className="px-6 py-4 w-12 border-r border-[#7A0B2E]/10">
                 <input
                   type="checkbox"
-                  className="rounded-none border-[#B6925B]/30 text-[#4A3B2C] focus:ring-[#B6925B]"
+                  className="rounded-none border-[#7A0B2E]/30 text-[#2D1F2F] focus:ring-[#7A0B2E]"
                   checked={products.length > 0 && selectedIds.length === products.length}
                   onChange={handleSelectAll}
                 />
               </th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Product Code</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Product Name</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Collection</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Price</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Stock</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Product Code</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Product Name</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Collection</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Price</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Stock</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#B6925B]/10">
+          <tbody className="divide-y divide-[#7A0B2E]/10">
             {products.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
@@ -163,34 +163,34 @@ export default function ProductListTable({
             ) : (
               products.map((product) => (
                 <tr key={product.id} className="hover:bg-[#FAFAFA] transition-colors group">
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                     <input
                       type="checkbox"
-                      className="rounded-none border-[#B6925B]/30 text-[#4A3B2C] focus:ring-[#B6925B]"
+                      className="rounded-none border-[#7A0B2E]/30 text-[#2D1F2F] focus:ring-[#7A0B2E]"
                       checked={selectedIds.includes(product.id)}
                       onChange={() => handleSelect(product.id)}
                     />
                   </td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
-                    <span className="inline-flex items-center font-mono text-[10px] font-bold tracking-widest text-[#B6925B]">
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
+                    <span className="inline-flex items-center font-mono text-[10px] font-bold tracking-widest text-[#7A0B2E]">
                       {product.code || "—"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">{product.name}</td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
-                    <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-white border border-[#B6925B]/30 text-[#B6925B] rounded-none">
+                  <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">{product.name}</td>
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
+                    <span className="inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-white border border-[#7A0B2E]/30 text-[#7A0B2E] rounded-none">
                       {product.collection?.name || 'Uncategorized'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10">Rs. {product.price.toFixed(2)}</td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
+                  <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">Rs. {product.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                     <span className={`inline-flex items-center px-2 py-1 text-[10px] font-bold uppercase tracking-widest border rounded-none ${product.stockQuantity > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
                       {product.stockQuantity} in stock
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
-                      <Link href={`${basePath}/${product.id}`} className="flex items-center justify-center text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 rounded-none" title="Edit Product">
+                      <Link href={`${basePath}/${product.id}`} className="flex items-center justify-center text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1 rounded-none" title="Edit Product">
                         <Pencil className="w-4 h-4" />
                       </Link>
                       {archived ? (

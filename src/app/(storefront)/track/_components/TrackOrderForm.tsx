@@ -22,31 +22,31 @@ export default function TrackOrderForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-[#B6925B]/20 p-6 space-y-4 shadow-sm">
+    <form onSubmit={handleSubmit} className="bg-white border border-[#7A0B2E]/20 p-6 space-y-4 shadow-sm">
       <div>
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Order ID</label>
+        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Order ID</label>
         <input
           value={orderId}
           onChange={(e) => setOrderId(e.target.value)}
           required
           placeholder="e.g. 9f3c... or your order number"
-          className="w-full border border-[#B6925B]/30 px-3 py-2.5 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+          className="w-full border border-[#7A0B2E]/30 px-3 py-2.5 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
         />
       </div>
       <div>
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">Email (used at checkout)</label>
+        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Email (used at checkout)</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="w-full border border-[#B6925B]/30 px-3 py-2.5 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+          className="w-full border border-[#7A0B2E]/30 px-3 py-2.5 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[#4A3B2C] hover:bg-[#B6925B] text-white py-3 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-50"
+        className="w-full bg-[#2D1F2F] hover:bg-[#7A0B2E] text-white py-3 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors disabled:opacity-50"
       >
         {loading ? "Tracking..." : "Track Order"}
       </button>

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { updateTag } from "next/cache";
 import { verifyAdmin } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
-import { CACHE_TAGS } from "@/lib/cache";
+import { CACHE_TAGS, revalidateTag } from "@/lib/cache";
 import { z } from "zod";
 
 const brandStorySchema = z.object({

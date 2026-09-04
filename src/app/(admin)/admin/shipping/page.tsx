@@ -18,24 +18,24 @@ export default async function AdminShippingPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 rounded-none">
-      <div className="border-b border-[#B6925B]/20 pb-4">
-        <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Shipping Settings</h2>
-        <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">Configure delivery charges for your store</p>
+      <div className="border-b border-[#7A0B2E]/20 pb-4">
+        <h2 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Shipping Settings</h2>
+        <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">Configure delivery charges for your store</p>
       </div>
 
-      <div className="bg-white border border-[#B6925B]/20 p-6 md:p-8 shadow-sm rounded-none">
+      <div className="bg-white border border-[#7A0B2E]/20 p-6 md:p-8 shadow-sm rounded-none">
         <ShippingConfigForm initial={initial} />
       </div>
 
-      <div className="bg-[#FAFAFA] border border-[#B6925B]/20 p-6 rounded-none">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-[#4A3B2C] mb-3">Free Shipping Offers</h3>
+      <div className="bg-[#FAFAFA] border border-[#7A0B2E]/20 p-6 rounded-none">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-[#2D1F2F] mb-3">Free Shipping Offers</h3>
         <p className="text-sm text-gray-600 leading-relaxed mb-4">
-          Create a coupon with the offer type <span className="font-bold text-[#B6925B]">Shipping</span> to give free (or
+          Create a coupon with the offer type <span className="font-bold text-[#7A0B2E]">Shipping</span> to give free (or
           discounted) shipping. Free-shipping coupons stack with product discount offers.
         </p>
         <Link
           href="/admin/coupons/new"
-          className="inline-flex items-center gap-2 bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
+          className="inline-flex items-center gap-2 bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors shadow-sm rounded-none"
         >
           <Ticket className="w-4 h-4" />
           Create Shipping Offer

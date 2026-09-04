@@ -248,19 +248,19 @@ const refreshAddresses = async () => {
               <span
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold uppercase tracking-widest border ${
                   done
-                    ? "bg-[#4A3B2C] text-white border-[#4A3B2C]"
+                    ? "bg-[#2D1F2F] text-white border-[#2D1F2F]"
                     : active
-                      ? "bg-[#B6925B] text-white border-[#B6925B]"
-                      : "border-[#B6925B]/40 text-[#B6925B] bg-white"
+                      ? "bg-[#7A0B2E] text-white border-[#7A0B2E]"
+                      : "border-[#7A0B2E]/40 text-[#7A0B2E] bg-white"
                 }`}
               >
                 {done ? <i className="ri-check-line text-sm" /> : i + 1}
               </span>
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? "text-[#4A3B2C]" : "text-gray-400"}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? "text-[#2D1F2F]" : "text-gray-400"}`}>
                 {label}
               </span>
             </div>
-            {i < STEPS.length - 1 && <span className="w-6 h-px bg-[#B6925B]/30" />}
+            {i < STEPS.length - 1 && <span className="w-6 h-px bg-[#7A0B2E]/30" />}
           </div>
         );
       })}
@@ -308,14 +308,14 @@ const refreshAddresses = async () => {
               type="button"
               onClick={goBack}
               disabled={step === 0}
-              className="px-6 py-3 border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-white text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed rounded-none"
+              className="px-6 py-3 border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-white text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed rounded-none"
             >
               Back
             </button>
             <button
               type="button"
               onClick={goNext}
-              className="px-8 py-3 bg-[#B6925B] hover:bg-[#9c7d4e] text-white text-xs font-bold uppercase tracking-widest transition-colors rounded-none"
+              className="px-8 py-3 bg-[#7A0B2E] hover:bg-[#5C0820] text-white text-xs font-bold uppercase tracking-widest transition-colors rounded-none"
             >
               {step === 0 ? "Continue to Payment" : "Review Order"}
             </button>

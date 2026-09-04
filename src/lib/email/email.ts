@@ -77,11 +77,11 @@ export async function sendVerificationEmail(email: string, token: string) {
       to: email,
       subject: "Verify your email address - Myra Shopping Mall",
       html: `
-        <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; border: 1px solid #B6925B; padding: 24px; border-top: 4px solid #4A3B2C;">
-          <h2 style="font-family: serif; color: #4A3B2C; text-align: center;">Welcome to Myra!</h2>
+        <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; border: 1px solid #7A0B2E; padding: 24px; border-top: 4px solid #2D1F2F;">
+          <h2 style="font-family: serif; color: #2D1F2F; text-align: center;">Welcome to Myra!</h2>
           <p style="color: #555; font-size: 14px;">Please verify your email address by clicking the button below:</p>
           <div style="text-align: center; margin: 24px 0;">
-            <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4A3B2C; color: white; text-decoration: none; font-weight: bold; border: 1px solid #B6925B; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;">Verify Email</a>
+            <a href="${verificationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2D1F2F; color: white; text-decoration: none; font-weight: bold; border: 1px solid #7A0B2E; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;">Verify Email</a>
           </div>
           <p style="margin-top: 24px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 12px;">If you didn't create an account, you can safely ignore this email.</p>
         </div>
@@ -137,8 +137,8 @@ export async function sendLowStockAlert(items: { name: string; stockQuantity: nu
       to: adminEmail,
       subject: "Low stock alert — Myra Shopping Mall",
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #B6925B; padding: 24px; border-top: 4px solid #4A3B2C;">
-          <h2 style="font-family: serif; color: #4A3B2C;">Low Stock Alert</h2>
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #7A0B2E; padding: 24px; border-top: 4px solid #2D1F2F;">
+          <h2 style="font-family: serif; color: #2D1F2F;">Low Stock Alert</h2>
           <p style="color: #555; font-size: 14px;">The following products are running low:</p>
           <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
         </div>
@@ -167,12 +167,12 @@ export async function sendAbandonedCartEmail(email: string, items: { name: strin
       to: email,
       subject: "Your Myra bag is waiting for you",
       html: `
-        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border: 1px solid #B6925B;padding:24px;border-top:4px solid #4A3B2C;">
-          <h2 style="font-family: serif; color: #4A3B2C;">Did you forget something?</h2>
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border: 1px solid #7A0B2E;padding:24px;border-top:4px solid #2D1F2F;">
+          <h2 style="font-family: serif; color: #2D1F2F;">Did you forget something?</h2>
           <p style="color: #555; font-size: 14px;">We saved the following items in your bag:</p>
           <div style="background:#FAFAFA;padding:12px;border:1px solid #eee;margin-bottom:16px;">${rows}</div>
           <div style="text-align: center;">
-            <a href="${cartUrl}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;border: 1px solid #B6925B;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Return to your bag</a>
+            <a href="${cartUrl}" style="display:inline-block;padding:12px 24px;background:#2D1F2F;color:#fff;text-decoration:none;font-weight:bold;border: 1px solid #7A0B2E;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Return to your bag</a>
           </div>
         </div>
       `,
@@ -193,12 +193,12 @@ export async function sendStockBackInStockEmail(email: string, productName: stri
       to: email,
       subject: `${productName} is back in stock!`,
       html: `
-        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border: 1px solid #B6925B;padding:24px;border-top:4px solid #4A3B2C;">
-          <h2 style="font-family: serif; color: #4A3B2C;">Good news!</h2>
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border: 1px solid #7A0B2E;padding:24px;border-top:4px solid #2D1F2F;">
+          <h2 style="font-family: serif; color: #2D1F2F;">Good news!</h2>
           <p style="color: #555; font-size: 14px;">The item you were waiting for is back in stock:</p>
-          <p style="font-size: 16px; font-weight: bold; color: #4A3B2C;">${escapeHtml(productName)}</p>
+          <p style="font-size: 16px; font-weight: bold; color: #2D1F2F;">${escapeHtml(productName)}</p>
           <div style="text-align: center;">
-            <a href="${productUrl}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;border: 1px solid #B6925B;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Shop it now</a>
+            <a href="${productUrl}" style="display:inline-block;padding:12px 24px;background:#2D1F2F;color:#fff;text-decoration:none;font-weight:bold;border: 1px solid #7A0B2E;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Shop it now</a>
           </div>
         </div>
       `,
@@ -254,11 +254,11 @@ export async function sendAdminNewOrderEmail(order: AdminOrderSummary) {
       to: adminEmail,
       subject: `New order #${shortOrderId} — Myra Shopping Mall`,
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #B6925B; padding: 24px; border-top: 4px solid #4A3B2C;">
-          <h2 style="font-family: serif; color: #4A3B2C;">New Order Received</h2>
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #7A0B2E; padding: 24px; border-top: 4px solid #2D1F2F;">
+          <h2 style="font-family: serif; color: #2D1F2F;">New Order Received</h2>
           <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
           <div style="text-align:center;margin:24px 0;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/orders/${order.orderId}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">View Order</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/orders/${order.orderId}" style="display:inline-block;padding:12px 24px;background:#2D1F2F;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">View Order</a>
           </div>
         </div>
       `,
@@ -296,11 +296,11 @@ export async function sendAdminNewReturnEmail(input: {
       to: adminEmail,
       subject: `New return/replacement request — Myra Shopping Mall`,
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #B6925B; padding: 24px; border-top: 4px solid #4A3B2C;">
-          <h2 style="font-family: serif; color: #4A3B2C;">New Return Request</h2>
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #7A0B2E; padding: 24px; border-top: 4px solid #2D1F2F;">
+          <h2 style="font-family: serif; color: #2D1F2F;">New Return Request</h2>
           <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
           <div style="text-align:center;margin:24px 0;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/returns/${input.requestId}" style="display:inline-block;padding:12px 24px;background:#4A3B2C;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Review Request</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/returns/${input.requestId}" style="display:inline-block;padding:12px 24px;background:#2D1F2F;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Review Request</a>
           </div>
         </div>
       `,

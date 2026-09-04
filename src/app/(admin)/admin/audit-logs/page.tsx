@@ -62,10 +62,10 @@ export default async function AdminAuditLogsPage({
     <div className="space-y-6">
       <AuditLogsHeader total={total} />
 
-      <div className="bg-white border border-[#B6925B]/20 relative">
+      <div className="bg-white border border-[#7A0B2E]/20 relative">
         <AuditLogsFilter distinctActions={distinctActions} actionFilter={actionFilter} />
         
-        <AuditLogsTable logs={logs} />
+        <AuditLogsTable logs={logs as any} />
 
         <AuditLogsPagination totalPages={totalPages} currentPage={currentPage} actionFilter={actionFilter} />
       </div>

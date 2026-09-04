@@ -6,6 +6,7 @@ import Image from "next/image";
 import AdminForm from "@/app/(admin)/admin/_components/AdminForm";
 import type { Prisma } from "@/generated/prisma";
 import { ChevronLeft, ChevronRight, X, Plus, Layers, Palette } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 interface ProductVariant {
   id: string;
@@ -247,12 +248,15 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
     }
   };
 
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/worker") ? "/worker" : "/admin";
+
   return (
     <AdminForm
       initialData={initialData}
       createAction={wrappedCreateAction}
       updateAction={wrappedUpdateAction}
-      onSuccessRedirect="/admin/products"
+      onSuccessRedirect={`${basePath}/products`}
       successMessage={initialData ? "Product updated!" : "Product created!"}
       errorMessage="Failed to save product. Please try again."
     >
@@ -261,12 +265,12 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
           <div className="space-y-6">
             {/* 1. Images */}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">
                 Product Images ({images.length}/5)
               </label>
               <div className="flex flex-wrap gap-4 items-center">
                 {images.map((img, index) => (
-                  <div key={img.id} className="relative w-28 h-28 rounded-none overflow-hidden border border-[#B6925B]/20 shadow-sm flex-shrink-0 group">
+                  <div key={img.id} className="relative w-28 h-28 rounded-none overflow-hidden border border-[#7A0B2E]/20 shadow-sm flex-shrink-0 group">
                     <Image fill src={img.type === "new" ? img.previewUrl : img.url} alt={`Preview ${index + 1}`} className="object-cover" />
 
                     {/* Reorder Buttons (Hover) */}
@@ -275,7 +279,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                         type="button"
                         disabled={index === 0}
                         onClick={() => dispatchImages({ type: "MOVE", from: index, to: index - 1 })}
-                        className="text-white disabled:opacity-30 hover:text-[#B6925B] p-1 rounded flex items-center justify-center cursor-pointer"
+                        className="text-white disabled:opacity-30 hover:text-[#7A0B2E] p-1 rounded flex items-center justify-center cursor-pointer"
                         aria-label="Move image left"
                       >
                         <ChevronLeft className="w-4 h-4" />
@@ -284,7 +288,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                         type="button"
                         disabled={index === images.length - 1}
                         onClick={() => dispatchImages({ type: "MOVE", from: index, to: index + 1 })}
-                        className="text-white disabled:opacity-30 hover:text-[#B6925B] p-1 rounded flex items-center justify-center cursor-pointer"
+                        className="text-white disabled:opacity-30 hover:text-[#7A0B2E] p-1 rounded flex items-center justify-center cursor-pointer"
                         aria-label="Move image right"
                       >
                         <ChevronRight className="w-4 h-4" />
@@ -302,7 +306,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                 ))}
 
                 {images.length < 5 && (
-                  <div className="w-28 h-28 border border-[#B6925B]/20 rounded-none overflow-hidden">
+                  <div className="w-28 h-28 border border-[#7A0B2E]/20 rounded-none overflow-hidden">
                     <MultiImageDropzone 
                       maxFiles={5 - images.length} 
                       onFilesSelected={(files) => dispatchImages({ type: "ADD_NEW", files })} 
@@ -317,29 +321,29 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
 
             {/* 2. Product Name & Code */}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Product Name</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Product Name</label>
               <input 
                 required 
                 defaultValue={initialData?.name} 
                 name="name" 
                 type="text" 
-                className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" 
+                className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
                 placeholder="e.g. Bright Orange Gotta Patti & Mirror Work Anarkali Suit Set"
               />
               {initialData?.code && (
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B] mt-1">Product Code: {initialData.code}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] mt-1">Product Code: {initialData.code}</p>
               )}
             </div>
 
             {/* 3. Description */}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Description</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Description</label>
               <textarea 
                 required 
                 defaultValue={initialData?.description} 
                 name="description" 
                 rows={4} 
-                className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" 
+                className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
                 placeholder="Describe fabric, embellishments, fitting, occasion, etc."
               />
             </div>
@@ -347,39 +351,39 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             {/* 4. Pricing & Category Hierarchy */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Base Price (Original ₹)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Base Price (Original ₹)</label>
                 <input 
                   defaultValue={initialData?.originalPrice ?? ""} 
                   name="originalPrice" 
                   type="number" 
                   step="0.01" 
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" 
+                  className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
                   placeholder="e.g. 1999" 
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Selling Price (₹)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Selling Price (₹)</label>
                 <input 
                   required 
                   defaultValue={initialData?.price} 
                   name="price" 
                   type="number" 
                   step="0.01" 
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" 
+                  className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
                   placeholder="e.g. 1499" 
                 />
               </div>
 
               {/* Grouped Category & Subcategory Selection */}
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">
                   Category / Subcategory
                 </label>
                 <select 
                   name="collectionId" 
                   defaultValue={initialData?.collectionId || ""} 
-                  className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]"
+                  className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                 >
                   <option value="">Select category / subcategory</option>
                   {topLevelCategories.map(parent => (
@@ -406,19 +410,19 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             {/* 5. Product Attributes */}
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <h3 className="text-sm font-bold text-[#4A3B2C] uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-sm font-bold text-[#2D1F2F] uppercase tracking-widest flex items-center gap-2">
                   Product Details & Attributes
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Product Type</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Product Type</label>
                   <select 
                     name="productType" 
                     value={productType}
                     onChange={handleProductTypeChange}
-                    className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]"
+                    className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                   >
                     <option value="">Select type</option>
                     {["Saree", "Anarkali Suit", "Suit", "Kurti / Ethnic", "Dress", "Lehenga", "Top", "Bottom", "Kids Wear", "Gown"].map((t) => (
@@ -429,8 +433,8 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
               </div>
 
               {/* Dynamic Attributes Builder */}
-              <div className="space-y-2 border border-[#B6925B]/20 p-4 bg-[#FAFAFA]">
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Specifications / Details</label>
+              <div className="space-y-2 border border-[#7A0B2E]/20 p-4 bg-[#FAFAFA]">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Specifications / Details</label>
                 {attributes.map((attr, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <input
@@ -442,7 +446,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                         newAttrs[index].key = e.target.value;
                         setAttributes(newAttrs);
                       }}
-                      className="flex-1 rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]"
+                      className="flex-1 rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                     />
                     <input
                       type="text"
@@ -453,7 +457,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                         newAttrs[index].value = e.target.value;
                         setAttributes(newAttrs);
                       }}
-                      className="flex-[2] rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]"
+                      className="flex-[2] rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                     />
                     <button
                       type="button"
@@ -469,7 +473,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                 <button
                   type="button"
                   onClick={() => setAttributes([...attributes, { key: "", value: "" }])}
-                  className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] flex items-center gap-1 transition-colors"
+                  className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] flex items-center gap-1 transition-colors"
                 >
                   <Plus className="w-3 h-3" /> Add Custom Detail
                 </button>
@@ -477,7 +481,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-2">Product Video (optional)</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Product Video (optional)</label>
               
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <div className="flex-1 w-full">
@@ -487,7 +491,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                     onChange={(e) => setVideoUrl(e.target.value)}
                     type="url" 
                     placeholder="https://... (or upload file below)" 
-                    className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] focus:ring-1 focus:ring-[#B6925B]" 
+                    className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
                     disabled={!!videoFile}
                   />
                 </div>
@@ -495,10 +499,10 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                 <span className="text-[10px] text-gray-400 font-bold uppercase">OR</span>
                 
                 <div className="flex-1 w-full">
-                  <p className="text-[10px] text-gray-500 mb-1">Upload MP4 (Max 50MB)</p>
+                  <p className="text-[10px] text-gray-500 mb-1">Upload MP4 / Video (Max 50MB)</p>
                   <input 
                     type="file" 
-                    accept="video/mp4" 
+                    accept="video/*" 
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
                         setVideoFile(e.target.files[0]);
@@ -507,13 +511,13 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                         setVideoFile(null);
                       }
                     }}
-                    className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-1.5 text-sm text-[#4A3B2C] file:mr-4 file:py-1 file:px-4 file:rounded-none file:border-0 file:text-xs file:font-bold file:bg-[#B6925B]/10 file:text-[#B6925B] hover:file:bg-[#B6925B]/20 cursor-pointer"
+                    className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-1.5 text-sm text-[#2D1F2F] file:mr-4 file:py-1 file:px-4 file:rounded-none file:border-0 file:text-xs file:font-bold file:bg-[#7A0B2E]/10 file:text-[#7A0B2E] hover:file:bg-[#7A0B2E]/20 cursor-pointer"
                   />
                 </div>
               </div>
 
               {videoUrl && !videoFile && (
-                 <video src={videoUrl} controls className="mt-3 h-32 border border-[#B6925B]/20 bg-black" />
+                 <video src={videoUrl} controls className="mt-3 h-32 border border-[#7A0B2E]/20 bg-black" />
               )}
               {videoFile && (
                  <p className="text-[10px] text-green-600 mt-1 font-bold">Selected for upload: {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(2)} MB)</p>
@@ -521,17 +525,17 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             </div>
 
             {/* Mark as Best Seller */}
-            <div className="bg-[#FAFAFA] p-4 border border-[#B6925B]/20">
+            <div className="bg-[#FAFAFA] p-4 border border-[#7A0B2E]/20">
               <label className="flex items-center gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   name="bestSeller"
                   defaultChecked={initialData?.bestSeller ?? false}
                   value="true"
-                  className="w-4 h-4 accent-[#B6925B] cursor-pointer"
+                  className="w-4 h-4 accent-[#7A0B2E] cursor-pointer"
                 />
                 <div>
-                  <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-[#2D1F2F] uppercase tracking-wider block">
                     Mark as Best Seller
                   </span>
                   <span className="text-[10px] text-gray-500 block">
@@ -542,11 +546,11 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             </div>
 
             {/* 6. Variants & Stock Management Workflow */}
-            <div className="pt-6 border-t border-[#B6925B]/20 space-y-4">
+            <div className="pt-6 border-t border-[#7A0B2E]/20 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-sm font-bold text-[#4A3B2C] uppercase tracking-widest flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-[#B6925B]" />
+                  <h3 className="text-sm font-bold text-[#2D1F2F] uppercase tracking-widest flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#7A0B2E]" />
                     Inventory & Options
                   </h3>
                   <p className="text-[11px] text-gray-500 mt-0.5">
@@ -554,14 +558,14 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-[#FDFBF7] px-3 py-1.5 border border-[#B6925B]/20">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A3B2C]">Total Inventory:</span>
-                  <span className="text-sm font-bold text-[#B6925B]">{totalStock} units</span>
+                <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 border border-[#7A0B2E]/20">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D1F2F]">Total Inventory:</span>
+                  <span className="text-sm font-bold text-[#7A0B2E]">{totalStock} units</span>
                 </div>
               </div>
 
               {/* Checkboxes: Need sizes & Need colors */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#FAFAFA] p-4 border border-[#B6925B]/20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#FAFAFA] p-4 border border-[#7A0B2E]/20">
                 <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -581,10 +585,10 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                         });
                       }
                     }}
-                    className="w-4 h-4 accent-[#B6925B] cursor-pointer"
+                    className="w-4 h-4 accent-[#7A0B2E] cursor-pointer"
                   />
                   <div>
-                    <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider block">
+                    <span className="text-xs font-bold text-[#2D1F2F] uppercase tracking-wider block">
                       This product needs sizes (e.g. S, M, L, XL)
                     </span>
                     <span className="text-[10px] text-gray-500 block">
@@ -606,11 +610,11 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                         });
                       }
                     }}
-                    className="w-4 h-4 accent-[#B6925B] cursor-pointer"
+                    className="w-4 h-4 accent-[#7A0B2E] cursor-pointer"
                   />
                   <div>
-                    <span className="text-xs font-bold text-[#4A3B2C] uppercase tracking-wider block flex items-center gap-1.5">
-                      <Palette className="w-3.5 h-3.5 text-[#B6925B]" />
+                    <span className="text-xs font-bold text-[#2D1F2F] uppercase tracking-wider block flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-[#7A0B2E]" />
                       This product needs colors
                     </span>
                     <span className="text-[10px] text-gray-500 block">
@@ -622,9 +626,9 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
 
               {/* If Neither is checked: Single base stock */}
               {!hasSizes && !hasColors && (
-                <div className="bg-white p-4 border border-[#B6925B]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-white p-4 border border-[#7A0B2E]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
                       Standard Product Stock Quantity
                     </label>
                     <p className="text-[11px] text-gray-500">
@@ -638,7 +642,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                       onChange={(e) => setBaseStock(parseInt(e.target.value, 10) || 0)} 
                       type="number" 
                       min="0"
-                      className="w-full rounded-none border border-[#B6925B]/20 bg-white px-3 py-2 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] font-bold" 
+                      className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] font-bold" 
                       placeholder="e.g. 50" 
                     />
                   </div>
@@ -652,13 +656,13 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     {hasSizes && (
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A3B2C] mr-1">Quick Add Size:</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D1F2F] mr-1">Quick Add Size:</span>
                         {COMMON_SIZES.map(s => (
                           <button
                             key={s}
                             type="button"
                             onClick={() => handleAddSizeQuick(s)}
-                            className="px-2 py-1 text-[10px] font-serif border border-[#B6925B]/40 hover:bg-[#B6925B] hover:text-white transition-colors bg-white cursor-pointer"
+                            className="px-2 py-1 text-[10px] font-serif border border-[#7A0B2E]/40 hover:bg-[#7A0B2E] hover:text-white transition-colors bg-white cursor-pointer"
                           >
                             + {s}
                           </button>
@@ -668,13 +672,13 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
 
                     {hasColors && !hasSizes && (
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A3B2C] mr-1">Quick Add Color:</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D1F2F] mr-1">Quick Add Color:</span>
                         {COMMON_COLORS.map(c => (
                           <button
                             key={c}
                             type="button"
                             onClick={() => handleAddColorQuick(c)}
-                            className="px-2 py-1 text-[10px] font-sans border border-[#B6925B]/40 hover:bg-[#B6925B] hover:text-white transition-colors bg-white cursor-pointer"
+                            className="px-2 py-1 text-[10px] font-sans border border-[#7A0B2E]/40 hover:bg-[#7A0B2E] hover:text-white transition-colors bg-white cursor-pointer"
                           >
                             + {c}
                           </button>
@@ -685,7 +689,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                     <button
                       type="button"
                       onClick={() => dispatchVariants({ type: "ADD" })}
-                      className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white bg-[#B6925B] hover:bg-[#9c7d4e] px-3 py-1.5 transition-colors cursor-pointer"
+                      className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white bg-[#7A0B2E] hover:bg-[#5C0820] px-3 py-1.5 transition-colors cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       Add Custom Row
@@ -694,7 +698,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
 
                   {/* Variants Table / Rows */}
                   {variants.length === 0 ? (
-                    <div className="p-6 text-center border border-dashed border-[#B6925B]/40 bg-[#FAFAFA]">
+                    <div className="p-6 text-center border border-dashed border-[#7A0B2E]/40 bg-[#FAFAFA]">
                       <p className="text-xs text-gray-500 font-medium">No options added yet. Click one of the quick size/color buttons above or click &ldquo;Add Custom Row&rdquo;.</p>
                     </div>
                   ) : (
@@ -702,11 +706,11 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                       {variants.map((v, index) => (
                         <div 
                           key={index} 
-                          className="grid grid-cols-12 gap-3 items-center bg-[#FAFAFA] p-3 border border-[#B6925B]/20"
+                          className="grid grid-cols-12 gap-3 items-center bg-[#FAFAFA] p-3 border border-[#7A0B2E]/20"
                         >
                           {/* Size Field (if sizes enabled) */}
                           <div className={hasColors ? "col-span-3 sm:col-span-2" : "col-span-4 sm:col-span-3"}>
-                            <label className="block text-[9px] font-bold text-[#4A3B2C] uppercase tracking-widest mb-1">
+                            <label className="block text-[9px] font-bold text-[#2D1F2F] uppercase tracking-widest mb-1">
                               Size
                             </label>
                             <input 
@@ -714,14 +718,14 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                               onChange={e => dispatchVariants({ type: "UPDATE", index, field: "size", value: e.target.value })} 
                               type="text" 
                               placeholder="e.g. M" 
-                              className="w-full rounded-none border border-[#B6925B]/20 bg-white px-2.5 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]" 
+                              className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-2.5 py-1.5 text-xs text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]" 
                             />
                           </div>
 
                           {/* Color Field (if colors enabled) */}
                           {hasColors && (
                             <div className={hasSizes ? "col-span-3 sm:col-span-2" : "col-span-4 sm:col-span-3"}>
-                              <label className="block text-[9px] font-bold text-[#4A3B2C] uppercase tracking-widest mb-1">
+                              <label className="block text-[9px] font-bold text-[#2D1F2F] uppercase tracking-widest mb-1">
                                 Color
                               </label>
                               <input 
@@ -729,14 +733,14 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                                 onChange={e => dispatchVariants({ type: "UPDATE", index, field: "color", value: e.target.value })} 
                                 type="text" 
                                 placeholder="e.g. Royal Blue" 
-                                className="w-full rounded-none border border-[#B6925B]/20 bg-white px-2.5 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]" 
+                                className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-2.5 py-1.5 text-xs text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]" 
                               />
                             </div>
                           )}
 
                           {/* Stock Quantity (Prominent) */}
                           <div className="col-span-3 sm:col-span-2">
-                            <label className="block text-[9px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">
+                            <label className="block text-[9px] font-bold text-[#7A0B2E] uppercase tracking-widest mb-1">
                               Qty / Stock
                             </label>
                             <input 
@@ -744,13 +748,13 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                               onChange={e => dispatchVariants({ type: "UPDATE", index, field: "stockQuantity", value: parseInt(e.target.value, 10) || 0 })} 
                               type="number" 
                               min="0"
-                              className="w-full rounded-none border border-[#B6925B]/40 bg-white px-2.5 py-1.5 text-xs text-[#4A3B2C] font-bold focus:outline-none focus:border-[#B6925B]" 
+                              className="w-full rounded-none border border-[#7A0B2E]/40 bg-white px-2.5 py-1.5 text-xs text-[#2D1F2F] font-bold focus:outline-none focus:border-[#7A0B2E]" 
                             />
                           </div>
 
                           {/* SKU */}
                           <div className="col-span-3 sm:col-span-3 hidden sm:block">
-                            <label className="block text-[9px] font-bold text-[#4A3B2C] uppercase tracking-widest mb-1">
+                            <label className="block text-[9px] font-bold text-[#2D1F2F] uppercase tracking-widest mb-1">
                               SKU (optional)
                             </label>
                             <input 
@@ -758,13 +762,13 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                               onChange={e => dispatchVariants({ type: "UPDATE", index, field: "sku", value: e.target.value })} 
                               type="text" 
                               placeholder="e.g. SKU-M-BLU" 
-                              className="w-full rounded-none border border-[#B6925B]/20 bg-white px-2.5 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]" 
+                              className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-2.5 py-1.5 text-xs text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]" 
                             />
                           </div>
 
                           {/* Price Offset */}
                           <div className="col-span-2 sm:col-span-2 hidden sm:block">
-                            <label className="block text-[9px] font-bold text-[#4A3B2C] uppercase tracking-widest mb-1">
+                            <label className="block text-[9px] font-bold text-[#2D1F2F] uppercase tracking-widest mb-1">
                               + Price (₹)
                             </label>
                             <input 
@@ -773,7 +777,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                               type="number" 
                               step="0.01" 
                               placeholder="0"
-                              className="w-full rounded-none border border-[#B6925B]/20 bg-white px-2.5 py-1.5 text-xs text-[#4A3B2C] focus:outline-none focus:border-[#B6925B]" 
+                              className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-2.5 py-1.5 text-xs text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]" 
                             />
                           </div>
 

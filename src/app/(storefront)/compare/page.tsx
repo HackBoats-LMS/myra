@@ -49,7 +49,7 @@ export default async function ComparePage() {
         {/* Bottom CTA */}
         <div className="mt-8 flex items-center justify-between text-xs text-gray-400">
           <p>Showing {ordered.length} product{ordered.length !== 1 ? "s" : ""} in comparison</p>
-          <Link href="/" className="text-[#B6925B] hover:text-[#4A3B2C] font-bold uppercase tracking-widest transition-colors text-[10px]">
+          <Link href="/" className="text-[#7A0B2E] hover:text-[#2D1F2F] font-bold uppercase tracking-widest transition-colors text-[10px]">
             + Add more products
           </Link>
         </div>

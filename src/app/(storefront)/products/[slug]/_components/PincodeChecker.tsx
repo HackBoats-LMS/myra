@@ -22,7 +22,7 @@ export default function PincodeChecker() {
 
   return (
     <div className="w-full max-w-sm">
-      <form onSubmit={handleCheck} className="flex items-center border border-[#b88e4f] bg-white px-3 py-2">
+      <form onSubmit={handleCheck} className="flex items-center border border-[#7A0B2E] bg-white px-3 py-2">
         <Truck className="w-4 h-4 text-[#171717] shrink-0 mr-2.5" />
         <input
           value={code}
@@ -39,7 +39,7 @@ export default function PincodeChecker() {
           <button
             type="submit"
             disabled={loading}
-            className="text-[11px] font-serif text-[#b88e4f] hover:underline font-semibold uppercase tracking-wider ml-2 shrink-0 disabled:opacity-50"
+            className="text-[11px] font-serif text-[#7A0B2E] hover:underline font-semibold uppercase tracking-wider ml-2 shrink-0 disabled:opacity-50"
           >
             {loading ? "Checking..." : "Check"}
           </button>

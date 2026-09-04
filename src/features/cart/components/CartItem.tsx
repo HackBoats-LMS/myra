@@ -48,14 +48,14 @@ export default function CartItem({ item }: { item: CartLineItem }) {
   };
 
   return (
-    <div className="flex gap-6 py-6 border-b border-[#B6925B]/20 last:border-0 relative">
+    <div className="flex gap-6 py-6 border-b border-[#7A0B2E]/20 last:border-0 relative">
       {isUpdating && (
         <div className="absolute inset-0 bg-[#FAFAFA]/70 flex items-center justify-center z-10">
-          <i className="ri-loader-4-line animate-spin text-2xl text-[#B6925B]" />
+          <i className="ri-loader-4-line animate-spin text-2xl text-[#7A0B2E]" />
         </div>
       )}
       
-      <Link href={`/products/${item.product.slug}`} className="relative w-24 h-32 md:w-32 md:h-40 bg-[#FAFAFA] flex-shrink-0 rounded-none overflow-hidden border border-[#B6925B]/20 hover:opacity-90 transition-opacity">
+      <Link href={`/products/${item.product.slug}`} className="relative w-24 h-32 md:w-32 md:h-40 bg-[#FAFAFA] flex-shrink-0 rounded-none overflow-hidden border border-[#7A0B2E]/20 hover:opacity-90 transition-opacity">
         {item.product.images[0] && (
           <Image src={item.product.images[0]} alt={item.product.name} fill quality={100} sizes="(max-width: 768px) 96px, 128px" className="object-cover" />
         )}
@@ -65,24 +65,24 @@ export default function CartItem({ item }: { item: CartLineItem }) {
         <div className="flex justify-between items-start">
           <div>
             <Link href={`/products/${item.product.slug}`} className="hover:underline underline-offset-4">
-              <h3 className="text-base font-serif font-bold text-[#4A3B2C]">{item.product.name}</h3>
+              <h3 className="text-base font-serif font-bold text-[#2D1F2F]">{item.product.name}</h3>
             </Link>
             {item.product.collection && (
-              <p className="text-xs text-[#B6925B] mt-1 uppercase tracking-widest">{item.product.collection.name}</p>
+              <p className="text-xs text-[#7A0B2E] mt-1 uppercase tracking-widest">{item.product.collection.name}</p>
             )}
             {item.variant && (
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2 bg-[#FAFAFA] px-2 py-1 inline-block rounded-none border border-[#B6925B]/20">
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2 bg-[#FAFAFA] px-2 py-1 inline-block rounded-none border border-[#7A0B2E]/20">
                 {[item.variant.size, item.variant.color].filter(Boolean).join(" - ")}
               </p>
             )}
           </div>
           <div className="flex flex-col items-end gap-0.5">
             {item.flashPercent ? (
-              <span className="text-[9px] font-bold uppercase tracking-widest bg-[#B6925B] text-white px-1.5 py-0.5 rounded-none">
+              <span className="text-[9px] font-bold uppercase tracking-widest bg-[#7A0B2E] text-white px-1.5 py-0.5 rounded-none">
                 Flash {item.flashPercent}% OFF
               </span>
             ) : null}
-            <p className="text-base font-bold text-[#4A3B2C]">
+            <p className="text-base font-bold text-[#2D1F2F]">
               Rs. {(unitPrice * item.quantity).toLocaleString('en-IN')}
             </p>
             {item.flashPrice != null && item.flashPrice < originalUnitPrice && (
@@ -95,14 +95,14 @@ export default function CartItem({ item }: { item: CartLineItem }) {
         
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center w-24 h-8 border border-[#B6925B]/30 rounded-none bg-white">
-              <button onClick={() => handleUpdate(item.quantity - 1)} disabled={isUpdating || item.quantity <= 1} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
+            <div className="flex items-center w-24 h-8 border border-[#7A0B2E]/30 rounded-none bg-white">
+              <button onClick={() => handleUpdate(item.quantity - 1)} disabled={isUpdating || item.quantity <= 1} className="w-1/3 h-full text-[#2D1F2F] hover:text-[#7A0B2E] transition-colors flex items-center justify-center disabled:opacity-30">
                 <i className="ri-subtract-line text-sm" />
               </button>
-              <div className="w-1/3 h-full flex items-center justify-center text-xs font-bold text-[#4A3B2C]">
+              <div className="w-1/3 h-full flex items-center justify-center text-xs font-bold text-[#2D1F2F]">
                 {item.quantity}
               </div>
-              <button onClick={() => handleUpdate(item.quantity + 1)} disabled={isUpdating || atStockLimit} className="w-1/3 h-full text-[#4A3B2C] hover:text-[#B6925B] transition-colors flex items-center justify-center disabled:opacity-30">
+              <button onClick={() => handleUpdate(item.quantity + 1)} disabled={isUpdating || atStockLimit} className="w-1/3 h-full text-[#2D1F2F] hover:text-[#7A0B2E] transition-colors flex items-center justify-center disabled:opacity-30">
                 <i className="ri-add-line text-sm" />
               </button>
             </div>

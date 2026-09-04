@@ -45,7 +45,7 @@ export default function UserRoleSelect({
 
   if (currentRole === "ADMIN") {
     return (
-      <span className="text-[10px] font-bold uppercase tracking-widest text-[#B6925B]">
+      <span className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E]">
         Admin
       </span>
     );
@@ -57,7 +57,7 @@ export default function UserRoleSelect({
         defaultValue={currentRole}
         onChange={handleChange}
         disabled={loading}
-        className="w-full appearance-none rounded-none border border-[#B6925B]/30 bg-[#FAFAFA] px-3 py-1.5 pr-8 text-[10px] font-bold uppercase tracking-widest text-[#4A3B2C] outline-none focus:border-[#B6925B]"
+        className="w-full appearance-none rounded-none border border-[#7A0B2E]/30 bg-[#FAFAFA] px-3 py-1.5 pr-8 text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] outline-none focus:border-[#7A0B2E]"
       >
         {(["CUSTOMER", "MULTI_WORKER"] as const).map((r) => (
           <option key={r} value={r}>
@@ -67,7 +67,7 @@ export default function UserRoleSelect({
       </select>
       {loading && (
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#B6925B]" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#7A0B2E]" />
         </div>
       )}
     </div>

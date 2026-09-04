@@ -68,26 +68,26 @@ export default async function AdminReturnsPage({
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 rounded-none">
-      <div className="border-b border-[#B6925B]/20 pb-4">
-        <h2 className="text-3xl font-serif font-bold text-[#4A3B2C] tracking-wide">Returns &amp; Replacements</h2>
-        <p className="text-xs text-[#B6925B] font-bold uppercase tracking-widest mt-2">
+      <div className="border-b border-[#7A0B2E]/20 pb-4">
+        <h2 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Returns &amp; Replacements</h2>
+        <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">
           Review and process customer return / replacement requests
         </p>
       </div>
 
-      <div className="bg-white border border-[#B6925B]/20 relative rounded-none">
-        <table className="w-full text-left text-sm text-[#4A3B2C]">
-          <thead className="bg-[#FAFAFA] text-[#B6925B] text-[10px] uppercase font-bold tracking-widest border-b border-[#B6925B]/20">
+      <div className="bg-white border border-[#7A0B2E]/20 relative rounded-none">
+        <table className="w-full text-left text-sm text-[#2D1F2F]">
+          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Product</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Customer</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Type</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Requested</th>
-              <th className="px-6 py-4 border-r border-[#B6925B]/10">Status</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Product</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Customer</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Type</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Requested</th>
+              <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Status</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#B6925B]/10">
+          <tbody className="divide-y divide-[#7A0B2E]/10">
             {returns.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-xs font-bold uppercase tracking-widest rounded-none">
@@ -97,22 +97,22 @@ export default async function AdminReturnsPage({
             ) : (
               returns.map((r) => (
                 <tr key={r.id} className="hover:bg-[#FAFAFA] transition-colors group">
-                  <td className="px-6 py-4 font-bold text-[#4A3B2C] border-r border-[#B6925B]/10 max-w-[220px] truncate">
+                  <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10 max-w-[220px] truncate">
                     {r.orderItem.product.name}
                   </td>
-                  <td className="px-6 py-4 text-xs border-r border-[#B6925B]/10">
-                    <p className="font-bold text-[#4A3B2C]">{r.user.name || "Customer"}</p>
+                  <td className="px-6 py-4 text-xs border-r border-[#7A0B2E]/10">
+                    <p className="font-bold text-[#2D1F2F]">{r.user.name || "Customer"}</p>
                     <p className="text-gray-400">{r.user.email}</p>
                   </td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
-                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-[#B6925B]/30 text-[#4A3B2C] bg-[#FAFAFA]">
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
+                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-[#7A0B2E]/30 text-[#2D1F2F] bg-[#FAFAFA]">
                       {r.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-[10px] font-mono text-gray-500 border-r border-[#B6925B]/10">
+                  <td className="px-6 py-4 text-[10px] font-mono text-gray-500 border-r border-[#7A0B2E]/10">
                     {new Date(r.requestedAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 border-r border-[#B6925B]/10">
+                  <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                     <span className={`inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border rounded-none ${statusBadge[r.status]}`}>
                       {r.status.replace(/_/g, " ")}
                     </span>
@@ -120,7 +120,7 @@ export default async function AdminReturnsPage({
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/admin/returns/${r.id}`}
-                      className="inline-flex text-[#B6925B] hover:text-[#4A3B2C] transition-colors p-1 items-center justify-center rounded-none"
+                      className="inline-flex text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1 items-center justify-center rounded-none"
                       title="Process Request"
                     >
                       <ArrowRightCircle className="w-5 h-5" />

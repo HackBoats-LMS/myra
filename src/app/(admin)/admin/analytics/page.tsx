@@ -54,10 +54,10 @@ export default async function AdminAnalyticsPage({
 
   return (
     <main>
-      <div className="mb-8 border-b border-[#B6925B]/20 pb-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-8 border-b border-[#7A0B2E]/20 pb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Analytics</h1>
-          <p className="text-xs text-[#B6925B] mt-2 font-bold uppercase tracking-widest">Revenue, orders & performance</p>
+          <h1 className="text-3xl font-serif text-[#2D1F2F] tracking-wide">Analytics</h1>
+          <p className="text-xs text-[#7A0B2E] mt-2 font-bold uppercase tracking-widest">Revenue, orders & performance</p>
         </div>
         <div className="flex gap-1">
           {RANGES.map((r) => (
@@ -66,8 +66,8 @@ export default async function AdminAnalyticsPage({
               href={`/admin/analytics?range=${r.key}`}
               className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest border rounded-none transition-colors ${
                 active === r.key
-                  ? "bg-[#B6925B] text-white border-[#B6925B]"
-                  : "bg-white text-[#4A3B2C] border-[#B6925B]/30 hover:bg-[#FAFAFA]"
+                  ? "bg-[#7A0B2E] text-white border-[#7A0B2E]"
+                  : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:bg-[#FAFAFA]"
               }`}
             >
               {r.label}
@@ -78,19 +78,19 @@ export default async function AdminAnalyticsPage({
 
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-5 mb-8">
         {summaryCards.map(({ label, value, icon: IconComponent }) => (
-          <div key={label} className="bg-white border border-[#B6925B]/20 p-6 shadow-sm rounded-none">
-            <div className="w-11 h-11 bg-[#B6925B]/10 text-[#B6925B] flex items-center justify-center mb-3">
+          <div key={label} className="bg-white border border-[#7A0B2E]/20 p-6 shadow-sm rounded-none">
+            <div className="w-11 h-11 bg-[#7A0B2E]/10 text-[#7A0B2E] flex items-center justify-center mb-3">
               <IconComponent className="w-5 h-5" />
             </div>
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>
-            <p className="text-xl font-bold text-[#4A3B2C] mt-1">{value}</p>
+            <p className="text-xl font-bold text-[#2D1F2F] mt-1">{value}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-        <div className="xl:col-span-2 bg-white border border-[#B6925B]/20 p-6 shadow-sm">
-          <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3 mb-5">Daily Revenue</h3>
+        <div className="xl:col-span-2 bg-white border border-[#7A0B2E]/20 p-6 shadow-sm">
+          <h3 className="font-serif text-lg text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3 mb-5">Daily Revenue</h3>
           {daily.length === 0 ? (
             <p className="text-gray-400 text-sm">No sales in this period.</p>
           ) : (
@@ -99,7 +99,7 @@ export default async function AdminAnalyticsPage({
                 <div key={d.day} className="flex-1 flex flex-col items-center justify-end group relative">
                   <div
                     title={`${d.day}: ${currency(d.revenue)} (${d.orders} orders)`}
-                    className="w-full max-w-[28px] bg-[#B6925B] hover:bg-[#4A3B2C] transition-colors rounded-none"
+                    className="w-full max-w-[28px] bg-[#7A0B2E] hover:bg-[#2D1F2F] transition-colors rounded-none"
                     style={{ height: maxDaily > 0 ? `${Math.max((d.revenue / maxDaily) * 100, 2)}%` : "2%" }}
                   />
                   <span className="mt-1 text-[8px] text-gray-400 rotate-0">{d.day.slice(5)}</span>
@@ -109,21 +109,21 @@ export default async function AdminAnalyticsPage({
           )}
         </div>
 
-        <div className="bg-white border border-[#B6925B]/20 p-6 shadow-sm">
-          <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3 mb-5">Order Status</h3>
+        <div className="bg-white border border-[#7A0B2E]/20 p-6 shadow-sm">
+          <h3 className="font-serif text-lg text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3 mb-5">Order Status</h3>
           <div className="space-y-2">
             {statusBreakdown.map((s) => (
               <div key={s.status} className="flex items-center justify-between text-xs">
-                <span className="text-[#4A3B2C] font-semibold capitalize">{s.status.replace(/_/g, " ")}</span>
+                <span className="text-[#2D1F2F] font-semibold capitalize">{s.status.replace(/_/g, " ")}</span>
                 <span className="text-gray-600">{s.count} · {currency(s.revenue)}</span>
               </div>
             ))}
           </div>
-          <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 py-3 mt-6 mb-3">Payment Methods</h3>
+          <h3 className="font-serif text-lg text-[#2D1F2F] border-b border-[#7A0B2E]/20 py-3 mt-6 mb-3">Payment Methods</h3>
           <div className="space-y-2">
             {paymentBreakdown.map((p) => (
               <div key={p.paymentMethod} className="flex items-center justify-between text-xs">
-                <span className="text-[#4A3B2C] font-semibold">{p.paymentMethod.replace(/_/g, " ")}</span>
+                <span className="text-[#2D1F2F] font-semibold">{p.paymentMethod.replace(/_/g, " ")}</span>
                 <span className="text-gray-600">{p.count} orders</span>
               </div>
             ))}
@@ -132,18 +132,18 @@ export default async function AdminAnalyticsPage({
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 bg-white border border-[#B6925B]/20 p-6 shadow-sm">
-          <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3 mb-4">Top Selling Products</h3>
+        <div className="xl:col-span-2 bg-white border border-[#7A0B2E]/20 p-6 shadow-sm">
+          <h3 className="font-serif text-lg text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3 mb-4">Top Selling Products</h3>
           {topProducts.length === 0 ? (
             <p className="text-gray-400 text-sm">No sales yet.</p>
           ) : (
             <div className="space-y-3">
               {topProducts.map((p, i) => (
                 <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-4 p-2 hover:bg-[#FAFAFA] transition-colors rounded-none">
-                  <span className="w-6 text-center font-serif font-bold text-[#B6925B]">{i + 1}</span>
-                  <span className="text-[10px] text-[#B6925B]">{currency(p.revenue)}</span>
+                  <span className="w-6 text-center font-serif font-bold text-[#7A0B2E]">{i + 1}</span>
+                  <span className="text-[10px] text-[#7A0B2E]">{currency(p.revenue)}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-[#4A3B2C] truncate">{p.name}</p>
+                    <p className="text-sm font-bold text-[#2D1F2F] truncate">{p.name}</p>
                   </div>
                   <span className="text-xs text-gray-500 whitespace-nowrap">{p.totalSold} sold</span>
                 </Link>
@@ -152,15 +152,15 @@ export default async function AdminAnalyticsPage({
           )}
         </div>
 
-        <div className="bg-white border border-[#B6925B]/20 p-6 shadow-sm">
-          <h3 className="font-serif text-lg text-[#4A3B2C] border-b border-[#B6925B]/20 pb-3 mb-4">Low Stock Alerts</h3>
+        <div className="bg-white border border-[#7A0B2E]/20 p-6 shadow-sm">
+          <h3 className="font-serif text-lg text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3 mb-4">Low Stock Alerts</h3>
           {lowStock.length === 0 ? (
             <p className="text-gray-400 text-sm">All products are well stocked.</p>
           ) : (
             <div className="space-y-3">
               {lowStock.map((p) => (
                 <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center justify-between gap-3 p-2 hover:bg-red-50 transition-colors rounded-none">
-                  <span className="text-sm font-bold text-[#4A3B2C] truncate">{p.name}</span>
+                  <span className="text-sm font-bold text-[#2D1F2F] truncate">{p.name}</span>
                   <span className={`text-xs font-bold whitespace-nowrap ${p.stockQuantity === 0 ? "text-red-700" : "text-orange-600"}`}>
                     {p.stockQuantity === 0 ? "Out of stock" : `${p.stockQuantity} left`}
                   </span>

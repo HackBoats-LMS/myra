@@ -77,7 +77,7 @@ export default async function StorefrontHome() {
         </div>
 
         {/* 3. Best Sellers */}
-        <BestSellersSection products={bestSellers} />
+        <BestSellersSection products={bestSellers as any} />
 
         {/* 4. Marquee/Ticker */}
         <MarqueeSection />
@@ -86,7 +86,7 @@ export default async function StorefrontHome() {
         <BridalBannerSection />
 
         {/* 6. New Arrivals */}
-        <NewArrivalsSection products={featuredProducts} />
+        <NewArrivalsSection products={featuredProducts as any} />
 
         {/* 6b. Recommended For You (personalized) */}
         <RecommendedForYou />

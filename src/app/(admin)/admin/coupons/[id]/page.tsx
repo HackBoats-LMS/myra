@@ -11,7 +11,7 @@ export default async function EditCouponPage({ params }: { params: { id: string 
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="font-serif text-2xl text-[#4A3B2C] mb-1">Edit Coupon</h1>
+      <h1 className="font-serif text-2xl text-[#2D1F2F] mb-1">Edit Coupon</h1>
       <p className="text-xs text-gray-500 uppercase tracking-widest mb-6">{coupon.code}</p>
       <EditCouponForm
         coupon={{

@@ -16,7 +16,8 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
       address: true,
       orderItems: {
         include: {
-          product: true
+          product: true,
+          variant: true,
         }
       }
     }

@@ -178,12 +178,12 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
   return (
     <div className="space-y-8">
       {/* SSR Caching Info Card */}
-      <div className="bg-[#4A3B2C]/5 border border-[#B6925B]/30 p-5 flex items-start gap-4">
-        <div className="w-10 h-10 bg-[#4A3B2C] text-[#B6925B] flex items-center justify-center shrink-0">
+      <div className="bg-[#2D1F2F]/5 border border-[#7A0B2E]/30 p-5 flex items-start gap-4">
+        <div className="w-10 h-10 bg-[#2D1F2F] text-[#7A0B2E] flex items-center justify-center shrink-0">
           <Zap className="w-5 h-5" />
         </div>
         <div className="text-xs space-y-1">
-          <h4 className="font-serif font-bold text-sm text-[#4A3B2C]">Instant Server Cache with On-Demand Revalidation</h4>
+          <h4 className="font-serif font-bold text-sm text-[#2D1F2F]">Instant Server Cache with On-Demand Revalidation</h4>
           <p className="text-gray-600 leading-relaxed">
             All banner and curated story updates are cached server-side. Page views serve immediately from high-speed memory with <strong>0 database delay</strong>. The cache automatically purges and reloads across the storefront only when you save changes here.
           </p>
@@ -202,30 +202,30 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
           return (
             <div
               key={config.slot}
-              className="bg-white border border-[#B6925B]/20 shadow-sm p-6 flex flex-col justify-between space-y-6"
+              className="bg-white border border-[#7A0B2E]/20 shadow-sm p-6 flex flex-col justify-between space-y-6"
             >
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-serif text-lg font-bold text-[#4A3B2C]">{config.title}</h3>
+                      <h3 className="font-serif text-lg font-bold text-[#2D1F2F]">{config.title}</h3>
                       {config.hasEditorialFields && (
-                        <span className="bg-[#4A3B2C] text-[#B6925B] text-[9px] px-2 py-0.5 font-mono uppercase tracking-wider flex items-center gap-1">
+                        <span className="bg-[#2D1F2F] text-[#7A0B2E] text-[9px] px-2 py-0.5 font-mono uppercase tracking-wider flex items-center gap-1">
                           <Sparkles className="w-2.5 h-2.5" /> Story Block
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">{config.description}</p>
                   </div>
-                  <span className="inline-block bg-[#B6925B]/15 text-[#4A3B2C] border border-[#B6925B]/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
+                  <span className="inline-block bg-[#7A0B2E]/15 text-[#2D1F2F] border border-[#7A0B2E]/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
                     {config.aspectRatio} Ratio
                   </span>
                 </div>
 
                 {/* Sizing recommendation badge */}
                 <div className="bg-[#FAFAFA] border border-gray-200 px-3 py-2 text-[11px] text-gray-600 flex items-center gap-2">
-                  <Info className="w-4 h-4 text-[#B6925B] shrink-0" />
+                  <Info className="w-4 h-4 text-[#7A0B2E] shrink-0" />
                   <span>
                     Recommended Size: <strong>{config.recommendedResolution}</strong>
                   </span>
@@ -233,10 +233,10 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
 
                 {/* Image Preview & Upload */}
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                  <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                     Current Image {bannerData?.imageUrl ? "(Custom Image)" : "(Default Image)"}
                   </label>
-                  <div className="relative w-full h-52 bg-slate-100 border border-dashed border-[#B6925B]/40 overflow-hidden flex items-center justify-center">
+                  <div className="relative w-full h-52 bg-slate-100 border border-dashed border-[#7A0B2E]/40 overflow-hidden flex items-center justify-center">
                     <Image
                       src={displayImage}
                       alt={bannerData?.altText || config.title}
@@ -249,7 +249,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
 
                 {/* Image Uploader */}
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                  <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                     Upload New Image
                   </label>
                   <ImageUpload
@@ -263,7 +263,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                   <div className="space-y-3 pt-2 border-t border-gray-100">
                     {/* Subtitle / Eyebrow */}
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                      <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                         Story Subtitle (Eyebrow Text)
                       </label>
                       <input
@@ -271,13 +271,13 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                         placeholder={config.defaultSubtitle}
                         value={bannerData?.subtitle ?? ""}
                         onChange={(e) => handleFieldChange(config.slot, "subtitle", e.target.value)}
-                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                       />
                     </div>
 
                     {/* Headline Title */}
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                      <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                         Headline Title
                       </label>
                       <input
@@ -285,13 +285,13 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                         placeholder={config.defaultTitle}
                         value={bannerData?.title ?? ""}
                         onChange={(e) => handleFieldChange(config.slot, "title", e.target.value)}
-                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                       />
                     </div>
 
                     {/* Description Text */}
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                      <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                         Story Description
                       </label>
                       <textarea
@@ -299,7 +299,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                         placeholder={config.defaultDescription}
                         value={bannerData?.description ?? ""}
                         onChange={(e) => handleFieldChange(config.slot, "description", e.target.value)}
-                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#4A3B2C] resize-none"
+                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#2D1F2F] resize-none"
                       />
                     </div>
                   </div>
@@ -307,7 +307,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                   /* Standard Banner Title & Alt */
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                      <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                         Banner Title
                       </label>
                       <input
@@ -315,11 +315,11 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                         placeholder={config.title}
                         value={bannerData?.title || ""}
                         onChange={(e) => handleFieldChange(config.slot, "title", e.target.value)}
-                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                      <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                         Alt Text
                       </label>
                       <input
@@ -327,7 +327,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                         placeholder={config.title}
                         value={bannerData?.altText || ""}
                         onChange={(e) => handleFieldChange(config.slot, "altText", e.target.value)}
-                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                        className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                       />
                     </div>
                   </div>
@@ -335,7 +335,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
 
                 {/* Destination Link */}
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-[#4A3B2C] uppercase tracking-widest">
+                  <label className="block text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">
                     Link URL
                   </label>
                   <input
@@ -343,7 +343,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                     placeholder={config.defaultLink}
                     value={bannerData?.linkUrl || ""}
                     onChange={(e) => handleFieldChange(config.slot, "linkUrl", e.target.value)}
-                    className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#4A3B2C]"
+                    className="w-full border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:border-[#2D1F2F]"
                   />
                   <p className="text-[10px] text-gray-400">Example: /collections/sarees or https://...</p>
                 </div>
@@ -355,7 +355,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                   type="button"
                   onClick={() => void handleSave(config)}
                   disabled={isSaving || isResetting}
-                  className="flex-1 bg-[#4A3B2C] hover:bg-[#34291f] text-white py-2.5 px-4 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 bg-[#2D1F2F] hover:bg-[#220510] text-white py-2.5 px-4 text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isSaving ? (
                     <>

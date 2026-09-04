@@ -70,48 +70,48 @@ export default function SignupForm() {
         {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-none border border-red-100">{error}</div>}
         
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Full Name</label>
+          <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">Full Name</label>
           <input
             type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+            className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="John Doe"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Email Address (Optional)</label>
+          <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">Email Address (Optional)</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+            className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Phone Number</label>
+          <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">Phone Number</label>
           <input
             type="text"
             required
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+            className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="e.g. 9876543210"
           />
         </div>
         
         <div>
-          <label className="block text-xs font-bold text-[#4A3B2C] uppercase tracking-wider mb-2">Password</label>
+          <label className="block text-xs font-bold text-[#2D1F2F] uppercase tracking-wider mb-2">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-white border border-[#B6925B]/30 px-4 py-3 text-sm text-[#4A3B2C] focus:outline-none focus:border-[#B6925B] rounded-none"
+            className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="Create a strong password"
           />
         </div>
@@ -119,7 +119,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={isLoading || isGoogleLoading}
-          className="w-full bg-[#B6925B] hover:bg-[#9c7d4e] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 mt-4 rounded-none"
+          className="w-full bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors flex items-center justify-center disabled:opacity-70 mt-4 rounded-none"
         >
           {isLoading ? <i className="ri-loader-4-line animate-spin text-base" /> : "Create Account"}
         </button>
@@ -127,7 +127,7 @@ export default function SignupForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#B6925B]/20" />
+          <div className="w-full border-t border-[#7A0B2E]/20" />
         </div>
         <div className="relative flex justify-center text-sm">
           <span className="px-2 bg-[#FAFAFA] text-xs font-medium text-gray-500 uppercase tracking-widest">Or continue with</span>
@@ -137,10 +137,10 @@ export default function SignupForm() {
       <button
         onClick={handleGoogleSignIn}
         disabled={isLoading || isGoogleLoading}
-        className="w-full bg-white border border-[#B6925B]/30 text-[#4A3B2C] hover:bg-[#FDFBF7] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm rounded-none"
+        className="w-full bg-white border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-[#FAF0F2] px-4 py-3 text-sm font-bold tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-70 shadow-sm rounded-none"
       >
         {isGoogleLoading ? (
-          <i className="ri-loader-4-line animate-spin text-base text-[#B6925B]" />
+          <i className="ri-loader-4-line animate-spin text-base text-[#7A0B2E]" />
         ) : null}
         CONTINUE WITH GOOGLE
       </button>

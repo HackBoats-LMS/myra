@@ -111,55 +111,55 @@ export default async function AdminDashboard() {
       label: "Total Orders",
       value: totalOrders.toLocaleString("en-IN"),
       icon: ShoppingCart,
-      color: "text-[#B6925B]",
-      bg: "bg-[#B6925B]/10",
+      color: "text-[#7A0B2E]",
+      bg: "bg-[#7A0B2E]/10",
     },
     {
       label: "Total Revenue",
       value: `Rs. ${totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: TrendingUp,
-      color: "text-[#B6925B]",
-      bg: "bg-[#B6925B]/10",
+      color: "text-[#7A0B2E]",
+      bg: "bg-[#7A0B2E]/10",
     },
     {
       label: "Total Products",
       value: totalProducts.toLocaleString("en-IN"),
       icon: Package,
-      color: "text-[#B6925B]",
-      bg: "bg-[#B6925B]/10",
+      color: "text-[#7A0B2E]",
+      bg: "bg-[#7A0B2E]/10",
     },
     {
       label: "Customers",
       value: totalCustomers.toLocaleString("en-IN"),
       icon: Users,
-      color: "text-[#B6925B]",
-      bg: "bg-[#B6925B]/10",
+      color: "text-[#7A0B2E]",
+      bg: "bg-[#7A0B2E]/10",
     },
     {
       label: "Low Stock",
       value: lowStockCount.toLocaleString("en-IN"),
       icon: AlertTriangle,
-      color: lowStockCount > 0 ? "text-red-700" : "text-[#B6925B]",
-      bg: lowStockCount > 0 ? "bg-red-50" : "bg-[#B6925B]/10",
+      color: lowStockCount > 0 ? "text-red-700" : "text-[#7A0B2E]",
+      bg: lowStockCount > 0 ? "bg-red-50" : "bg-[#7A0B2E]/10",
     },
   ];
 
   return (
     <main>
-      <div className="mb-8 border-b border-[#B6925B]/20 pb-4">
-        <h1 className="text-3xl font-serif text-[#4A3B2C] tracking-wide">Dashboard</h1>
-        <p className="text-xs text-[#B6925B] mt-2 font-bold uppercase tracking-widest">Live overview of your store</p>
+      <div className="mb-8 border-b border-[#7A0B2E]/20 pb-4">
+        <h1 className="text-3xl font-serif text-[#2D1F2F] tracking-wide">Dashboard</h1>
+        <p className="text-xs text-[#7A0B2E] mt-2 font-bold uppercase tracking-widest">Live overview of your store</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
         {stats.map(({ label, value, icon: IconComponent, color, bg }) => (
-          <div key={label} className="bg-white border border-[#B6925B]/20 p-6 flex items-start gap-4 shadow-sm rounded-none">
-            <div className={`${bg} ${color} w-11 h-11 flex-shrink-0 border border-[#B6925B]/20 flex items-center justify-center rounded-none`}>
+          <div key={label} className="bg-white border border-[#7A0B2E]/20 p-6 flex items-start gap-4 shadow-sm rounded-none">
+            <div className={`${bg} ${color} w-11 h-11 flex-shrink-0 border border-[#7A0B2E]/20 flex items-center justify-center rounded-none`}>
               <IconComponent className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>
-              <p className="text-xl font-bold text-[#4A3B2C] mt-1 break-words leading-tight">{value}</p>
+              <p className="text-xl font-bold text-[#2D1F2F] mt-1 break-words leading-tight">{value}</p>
             </div>
           </div>
         ))}

@@ -85,6 +85,7 @@ interface AdhocOrderPayload {
   order_date: string;
   pickup_location: string;
   billing_customer_name: string;
+  billing_last_name?: string;
   billing_address: string;
   billing_city: string;
   billing_state: string;
@@ -94,6 +95,7 @@ interface AdhocOrderPayload {
   billing_phone: string;
   shipping_is_billing: boolean;
   shipping_customer_name: string;
+  shipping_last_name?: string;
   shipping_address: string;
   shipping_city: string;
   shipping_state: string;

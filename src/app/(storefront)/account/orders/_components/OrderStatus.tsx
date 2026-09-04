@@ -13,11 +13,11 @@ export default function OrderStatus({ orderId, status, paymentMethod, paymentSta
   const shortId = orderId.split('-')[0].toUpperCase();
 
   return (
-    <div className="bg-white p-5 sm:p-6 border border-[#B6925B]/20 shadow-sm space-y-4">
-      <div className="flex items-center justify-between border-b border-[#B6925B]/20 pb-3">
+    <div className="bg-white p-5 sm:p-6 border border-[#7A0B2E]/20 shadow-sm space-y-4">
+      <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 pb-3">
         <div className="flex items-center gap-2">
-          <CreditCard className="w-4 h-4 text-[#B6925B]" />
-          <h3 className="font-serif text-[#4A3B2C] text-base sm:text-lg tracking-wide">
+          <CreditCard className="w-4 h-4 text-[#7A0B2E]" />
+          <h3 className="font-serif text-[#2D1F2F] text-base sm:text-lg tracking-wide">
             Order Status
           </h3>
         </div>
@@ -27,27 +27,27 @@ export default function OrderStatus({ orderId, status, paymentMethod, paymentSta
               ? "bg-green-50 text-green-700 border border-green-200"
               : status === "CANCELLED"
               ? "bg-red-50 text-red-700 border border-red-200"
-              : "bg-[#FAFAFA] text-[#B6925B] border border-[#B6925B]/30"
+              : "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30"
           }`}
         >
           {status.replace(/_/g, " ")}
         </span>
       </div>
 
-      <div className="space-y-3.5 divide-y divide-[#B6925B]/10">
+      <div className="space-y-3.5 divide-y divide-[#7A0B2E]/10">
         <div className="pt-0.5">
-          <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">
+          <span className="block text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest mb-1">
             Order Reference
           </span>
-          <span className="text-sm font-mono font-bold text-[#4A3B2C]">#{shortId}</span>
+          <span className="text-sm font-mono font-bold text-[#2D1F2F]">#{shortId}</span>
         </div>
 
         <div className="pt-3">
-          <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1.5">
+          <span className="block text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest mb-1.5">
             Payment Method
           </span>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold text-[#4A3B2C]">
+            <span className="text-sm font-semibold text-[#2D1F2F]">
               {paymentMethod === "RAZORPAY" ? "Online Payment (Razorpay)" : "Cash on Delivery"}
             </span>
             {paymentStatus === "PAID" && (
@@ -70,15 +70,15 @@ export default function OrderStatus({ orderId, status, paymentMethod, paymentSta
 
         {awbNumber && (
           <div className="pt-3">
-            <span className="block text-[10px] font-bold text-[#B6925B] uppercase tracking-widest mb-1">
+            <span className="block text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest mb-1">
               Courier AWB
             </span>
-            <p className="text-sm font-mono font-bold text-[#4A3B2C]">{awbNumber}</p>
+            <p className="text-sm font-mono font-bold text-[#2D1F2F]">{awbNumber}</p>
             <a
               href={trackingUrl || `https://shiprocket.co/tracking/${awbNumber}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#B6925B] hover:text-[#4A3B2C] underline underline-offset-2 transition-colors"
+              className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] underline underline-offset-2 transition-colors"
             >
               <span>Track on Shiprocket</span>
               <ExternalLink className="w-3 h-3" />

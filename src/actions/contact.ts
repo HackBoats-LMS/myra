@@ -38,8 +38,8 @@ export async function sendContactMessage(formData: FormData) {
     to: process.env.ADMIN_EMAIL || "support@myra.com",
     subject: `Contact form: ${escapeHtml(subject)}`,
     html: `
-      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border:1px solid #B6925B;padding:24px;border-top:4px solid #4A3B2C;">
-        <h2 style="font-family:serif;color:#4A3B2C;">New Contact Message</h2>
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border:1px solid #7A0B2E;padding:24px;border-top:4px solid #2D1F2F;">
+        <h2 style="font-family:serif;color:#2D1F2F;">New Contact Message</h2>
         <p><strong>Name:</strong> ${escapeHtml(name)}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>

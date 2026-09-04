@@ -32,7 +32,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
       
       {/* Desktop Right Promotional Image */}
-      <div className="hidden lg:flex w-1/2 relative bg-[#F7F1E6] items-center justify-center overflow-hidden">
+      <div className="hidden lg:flex w-1/2 relative bg-[#FAFAFA] items-center justify-center overflow-hidden">
         <Image 
           src="/login/login_right1.png" 
           alt="Myra Shopping Mall" 

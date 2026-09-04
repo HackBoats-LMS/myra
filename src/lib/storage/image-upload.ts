@@ -30,12 +30,21 @@ export function detectMediaType(buf: Uint8Array): { mime: string; ext: string; t
     return { mime: "image/webp", ext: "webp", type: "image" };
   }
 
-  // MP4: ... "ftyp" (at byte 4)
-  if (buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) {
+  // WebM: 1A 45 DF A3
+  if (buf[0] === 0x1a && buf[1] === 0x45 && buf[2] === 0xdf && buf[3] === 0xa3) {
+    return { mime: "video/webm", ext: "webm", type: "video" };
+  }
+
+  // MP4 / MOV: Scan first 64 bytes for "ftyp", "moov", or "mdat" box headers
+  const sample = buf.subarray(0, Math.min(buf.length, 64));
+  let headerStr = "";
+  for (let i = 0; i < sample.length; i++) {
+    headerStr += String.fromCharCode(sample[i]);
+  }
+
+  if (headerStr.includes("ftyp") || headerStr.includes("moov") || headerStr.includes("mdat")) {
     return { mime: "video/mp4", ext: "mp4", type: "video" };
   }
 
-  // QuickTime / MOV: ... "moov" (at byte 4) or "mdat"
-  // But MP4 is generally ftyp. We will just support MP4 for now.
   return null;
 }

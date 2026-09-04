@@ -78,12 +78,12 @@ export default async function SearchPage({
           </h1>
           <p className="text-xs md:text-sm text-gray-500 mt-2 font-serif">
             Showing {productsWithReviews.length} of {totalProducts} results for &ldquo;
-            <span className="font-semibold text-[#4A3B2C]">{query}</span>&rdquo;
+            <span className="font-semibold text-[#2D1F2F]">{query}</span>&rdquo;
           </p>
         </div>
 
         {productsWithReviews.length === 0 ? (
-          <div className="text-center text-[#B6925B] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#B6925B]/20 bg-[#FAF8F5]">
+          <div className="text-center text-[#7A0B2E] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#7A0B2E]/20 bg-[#FAFAFA]">
             No products match your search query. Try another term.
           </div>
         ) : (

@@ -9,8 +9,8 @@ interface Variant {
   id: string;
   size: string | null;
   color: string | null;
-  stockQuantity: number;
-  priceOffset: number;
+  stockQuantity?: number;
+  priceOffset?: number;
 }
 
 interface AddToCartProps {
@@ -45,14 +45,14 @@ export default function AddToCartButton({
 
   const selectedVariant = variants.find(v => v.id === selectedVariantId);
   const isCurrentlyOutOfStock = hasDbVariants 
-    ? (selectedVariant ? selectedVariant.stockQuantity <= 0 : false) 
+    ? (selectedVariant ? (selectedVariant.stockQuantity ?? 1) <= 0 : false) 
     : outOfStock;
 
   // Compute effective price including variant offset
   const basePrice = displayPrice ?? 0;
-  const effectivePrice = selectedVariant ? basePrice + selectedVariant.priceOffset : basePrice;
+  const effectivePrice = selectedVariant ? basePrice + (selectedVariant.priceOffset ?? 0) : basePrice;
   const effectiveOriginal = displayOriginal != null 
-    ? (selectedVariant ? displayOriginal + selectedVariant.priceOffset : displayOriginal)
+    ? (selectedVariant ? displayOriginal + (selectedVariant.priceOffset ?? 0) : displayOriginal)
     : null;
 
   // Calculate discount percentage if not already passed
@@ -96,7 +96,7 @@ export default function AddToCartButton({
         <div className="flex flex-wrap gap-3">
           {variants.map((v) => {
             const isSelected = selectedVariantId === v.id;
-            const isOutOfStock = v.stockQuantity <= 0;
+            const isOutOfStock = (v.stockQuantity ?? 1) <= 0;
             return (
               <button
                 key={v.id}
@@ -105,8 +105,8 @@ export default function AddToCartButton({
                 disabled={isOutOfStock}
                 className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center text-sm font-serif border transition-all ${
                   isSelected
-                    ? "border-[#b88e4f] bg-[#b88e4f] text-white font-medium shadow-xs"
-                    : "border-[#b88e4f]/60 text-[#b88e4f] hover:border-[#b88e4f] bg-white"
+                    ? "border-[#7A0B2E] bg-[#7A0B2E] text-white font-medium shadow-xs"
+                    : "border-[#7A0B2E]/60 text-[#7A0B2E] hover:border-[#7A0B2E] bg-white"
                 } ${isOutOfStock ? "opacity-30 cursor-not-allowed line-through" : "cursor-pointer"}`}
               >
                 {v.size || "S"}
@@ -117,11 +117,11 @@ export default function AddToCartButton({
       )}
 
       {/* Quantity Selector */}
-      <div className="flex items-center w-28 h-9 sm:h-10 border border-[#b88e4f] bg-white">
+      <div className="flex items-center w-28 h-9 sm:h-10 border border-[#7A0B2E] bg-white">
         <button
           type="button"
           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-          className="w-8 h-full flex items-center justify-center text-sm font-serif text-[#b88e4f] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
+          className="w-8 h-full flex items-center justify-center text-sm font-serif text-[#7A0B2E] hover:bg-[#FAF0F2] transition-colors cursor-pointer"
           aria-label="Decrease quantity"
         >
           -
@@ -132,7 +132,7 @@ export default function AddToCartButton({
         <button
           type="button"
           onClick={() => setQuantity(quantity + 1)}
-          className="w-8 h-full flex items-center justify-center text-sm font-serif text-[#b88e4f] hover:bg-[#FAF6F0] transition-colors cursor-pointer"
+          className="w-8 h-full flex items-center justify-center text-sm font-serif text-[#7A0B2E] hover:bg-[#FAF0F2] transition-colors cursor-pointer"
           aria-label="Increase quantity"
         >
           +
@@ -164,7 +164,7 @@ export default function AddToCartButton({
           type="button"
           onClick={() => handleAddToCart(false)}
           disabled={isAdding || isCurrentlyOutOfStock}
-          className="w-full bg-white border border-[#b88e4f] text-[#b88e4f] hover:bg-[#FAF6F0] py-3 text-xs sm:text-sm font-serif tracking-wide capitalize transition-colors disabled:opacity-50 cursor-pointer block text-center"
+          className="w-full bg-white border border-[#7A0B2E] text-[#7A0B2E] hover:bg-[#FAF0F2] py-3 text-xs sm:text-sm font-serif tracking-wide capitalize transition-colors disabled:opacity-50 cursor-pointer block text-center"
         >
           {isAdding ? "Adding..." : (isCurrentlyOutOfStock ? "Out of Stock" : "Add To Cart")}
         </button>
@@ -173,7 +173,7 @@ export default function AddToCartButton({
           type="button"
           onClick={() => handleAddToCart(true)}
           disabled={isAdding || isCurrentlyOutOfStock}
-          className="w-full bg-[#b88e4f] hover:bg-[#a37c40] text-white py-3 text-xs sm:text-sm font-serif tracking-wide capitalize transition-colors disabled:opacity-50 cursor-pointer block text-center"
+          className="w-full bg-[#7A0B2E] hover:bg-[#5C0820] text-white py-3 text-xs sm:text-sm font-serif tracking-wide capitalize transition-colors disabled:opacity-50 cursor-pointer block text-center"
         >
           Buy
         </button>
