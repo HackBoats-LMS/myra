@@ -118,17 +118,17 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/shipping-policy" className="hover:underline underline-offset-2 transition-colors">
+                <Link href="/shipping" className="hover:underline underline-offset-2 transition-colors">
                   Shipping Policy
                 </Link>
               </li>
               <li>
-                <Link href="/refund-policy" className="hover:underline underline-offset-2 transition-colors">
+                <Link href="/returns" className="hover:underline underline-offset-2 transition-colors">
                   Refund Policy
                 </Link>
               </li>
               <li>
-                <Link href="/privacy-policy" className="hover:underline underline-offset-2 transition-colors">
+                <Link href="/privacy" className="hover:underline underline-offset-2 transition-colors">
                   Privacy Policy
                 </Link>
               </li>

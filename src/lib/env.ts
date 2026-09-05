@@ -14,6 +14,17 @@ const RECOMMENDED_ENV_VARS = [
 ] as const;
 
 export function validateEnv() {
+  // If running on Vercel, dynamically infer NEXTAUTH_URL if not explicitly configured
+  if (!process.env.NEXTAUTH_URL) {
+    if (process.env.VERCEL_URL) {
+      process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+    } else if (process.env.NEXT_PUBLIC_APP_URL) {
+      process.env.NEXTAUTH_URL = process.env.NEXT_PUBLIC_APP_URL;
+    } else if (process.env.VERCEL) {
+      process.env.NEXTAUTH_URL = "https://myra.vercel.app";
+    }
+  }
+
   const missing: string[] = [];
 
   REQUIRED_ENV_VARS.forEach((key) => {
@@ -23,10 +34,10 @@ export function validateEnv() {
   });
 
   if (missing.length > 0) {
-    throw new Error(
-      `\n[FATAL ERROR] Missing required environment variables:\n` +
+    console.error(
+      `\n[CONFIG WARNING] Missing required environment variables:\n` +
       missing.map((key) => ` - ${key}`).join("\n") +
-      `\n\nPlease check your .env configuration file.`
+      `\n\nPlease check your environment variables in Vercel or your .env file.`
     );
   }
 

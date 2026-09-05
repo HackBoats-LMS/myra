@@ -23,11 +23,16 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
-  // Don't cache API, admin, or cross-origin requests.
-  if (request.mode === "navigate" || url.origin !== self.location.origin) {
-    return;
-  }
-  if (url.pathname.startsWith("/api/")) {
+  // Don't cache API, admin, worker, _next internals, manifest, or cross-origin requests.
+  if (
+    request.mode === "navigate" || 
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/_next/") ||
+    url.pathname.startsWith("/admin") ||
+    url.pathname.startsWith("/worker") ||
+    url.pathname.includes("manifest")
+  ) {
     return;
   }
 

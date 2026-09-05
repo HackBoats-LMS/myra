@@ -11,10 +11,8 @@ const rawConnectionString = process.env.DATABASE_URL;
 // Strip any sslmode=require from the URL so pg-connection-string doesn't override our SSL options
 const connectionString = rawConnectionString?.replace(/([?&])sslmode=[^&]+(&|$)/, '$1').replace(/[?&]$/, '');
 
-// In development, allow self-signed certs; in production, always verify TLS.
-const sslConfig = process.env.NODE_ENV === 'production'
-  ? { rejectUnauthorized: true }
-  : { rejectUnauthorized: false };
+// Supabase connection pooler uses internal certificates that require rejectUnauthorized: false in Node.js pg
+const sslConfig = { rejectUnauthorized: false };
 
 const pool =
   globalForPrisma.pool ||

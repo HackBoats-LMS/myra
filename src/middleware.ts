@@ -9,18 +9,18 @@ function generateNonce(): string {
 
 function buildCspHeader(nonce: string, isProduction: boolean): string {
   const scriptSrc = isProduction
-    ? `script-src 'self' 'nonce-${nonce}' https://checkout.razorpay.com https://*.razorpay.com`
-    : `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com`;
+    ? `script-src 'self' 'nonce-${nonce}' https://checkout.razorpay.com https://*.razorpay.com https://vercel.live https://*.vercel.com https://*.vercel-scripts.com`
+    : `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com https://vercel.live https://*.vercel.com https://*.vercel-scripts.com`;
 
   return [
     "default-src 'self'",
     scriptSrc,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com https://*.googleusercontent.com https://*.razorpay.com https://img.youtube.com",
+    "style-src 'self' 'unsafe-inline' https://vercel.live",
+    "img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com https://*.googleusercontent.com https://*.razorpay.com https://img.youtube.com https://vercel.com https://*.vercel.com https://assets.vercel.com",
     "media-src 'self' https://*.supabase.co blob:",
-    "font-src 'self' https://cdn.jsdelivr.net data:",
-    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com https://lumberjack.razorpay.com https://lumberjack-cx.razorpay.com",
-    "frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://*.razorpay.com https://www.youtube.com",
+    "font-src 'self' https://cdn.jsdelivr.net https://assets.vercel.com data:",
+    "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com https://lumberjack.razorpay.com https://lumberjack-cx.razorpay.com https://vercel.com https://*.vercel.com https://*.vercel.app https://*.vercel-insights.com https://*.vercel-analytics.com https://vercel.live https://*.pusher.com",
+    "frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://*.razorpay.com https://www.youtube.com https://vercel.live",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://api.razorpay.com https://*.razorpay.com",
@@ -81,5 +81,7 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|displaypics|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };
