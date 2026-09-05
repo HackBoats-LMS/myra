@@ -49,13 +49,13 @@ export default function PaymentStep({ paymentMethod, setPaymentMethod }: Payment
               </span>
             </span>
             <div className="flex flex-wrap items-center gap-1.5 pl-5">
-              <span className="inline-block bg-[#FAFAFA] border border-[#7A0B2E]/30 text-[#2D1F2F] text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
+              <span className="inline-block bg-[#F5EFE6] border border-[#7A0B2E]/30 text-[#2D1F2F] text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
                 UPI (GPay / PhonePe / Paytm / QR)
               </span>
-              <span className="inline-block bg-[#FAFAFA] border border-[#7A0B2E]/20 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
+              <span className="inline-block bg-[#F5EFE6] border border-[#7A0B2E]/20 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
                 Cards
               </span>
-              <span className="inline-block bg-[#FAFAFA] border border-[#7A0B2E]/20 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
+              <span className="inline-block bg-[#F5EFE6] border border-[#7A0B2E]/20 text-gray-500 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
                 NetBanking
               </span>
             </div>

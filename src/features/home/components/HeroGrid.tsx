@@ -27,7 +27,7 @@ export default async function HeroGrid() {
   const bottomHref = heroRightBottom?.linkUrl || "/collections/kids";
 
   return (
-    <section className="w-full max-w-[1920px] mx-auto bg-white flex flex-col xl:flex-row">
+    <section className="w-full max-w-[1920px] mx-auto bg-transparent flex flex-col xl:flex-row">
       {/* Main Banner (Full width on iPads/mobile, 60% on desktop) */}
       <div className="w-full xl:w-[60%] relative cursor-pointer aspect-[3/2]">
         <Link href={mainHref} className="block w-full h-full relative">

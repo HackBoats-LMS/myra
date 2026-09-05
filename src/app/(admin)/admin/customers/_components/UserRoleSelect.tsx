@@ -57,7 +57,7 @@ export default function UserRoleSelect({
         defaultValue={currentRole}
         onChange={handleChange}
         disabled={loading}
-        className="w-full appearance-none rounded-none border border-[#7A0B2E]/30 bg-[#FAFAFA] px-3 py-1.5 pr-8 text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] outline-none focus:border-[#7A0B2E]"
+        className="w-full appearance-none rounded-none border border-[#7A0B2E]/30 bg-[#F5EFE6] px-3 py-1.5 pr-8 text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] outline-none focus:border-[#7A0B2E]"
       >
         {(["CUSTOMER", "MULTI_WORKER"] as const).map((r) => (
           <option key={r} value={r}>

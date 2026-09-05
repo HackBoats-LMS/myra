@@ -106,7 +106,7 @@ export default function AddressManager({ addresses }: AddressManagerProps) {
 
   return (
     <div className="bg-white border border-[#7A0B2E]/20 shadow-sm space-y-6 relative rounded-none">
-      <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 p-6 bg-[#FAFAFA]">
+      <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 p-6 bg-[#F5EFE6]">
         <div>
           <h3 className="text-xl font-serif text-[#2D1F2F] tracking-wide">Saved Addresses</h3>
           <p className="text-[10px] text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">Manage your shipping destinations</p>
@@ -291,7 +291,7 @@ export default function AddressManager({ addresses }: AddressManagerProps) {
               <div
                 key={address.id}
                 className={`p-6 border flex flex-col justify-between gap-4 transition-all relative rounded-none ${
-                  address.isDefault ? "border-[#7A0B2E] bg-white shadow-sm" : "border-[#7A0B2E]/20 bg-[#FAFAFA]"
+                  address.isDefault ? "border-[#7A0B2E] bg-white shadow-sm" : "border-[#7A0B2E]/20 bg-[#F5EFE6]"
                 }`}
               >
                 <div className="space-y-3">

@@ -45,7 +45,7 @@ export default function CookieConsent() {
         </button>
         <button
           onClick={() => setIsVisible(false)}
-          className="flex-1 bg-white hover:bg-[#FAFAFA] text-[#2D1F2F] py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors border border-[#7A0B2E]/20 text-center"
+          className="flex-1 bg-white hover:bg-[#F5EFE6] text-[#2D1F2F] py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors border border-[#7A0B2E]/20 text-center"
         >
           Decline
         </button>

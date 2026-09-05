@@ -35,7 +35,7 @@ export default function CustomerOrders({ orders }: CustomerOrdersProps) {
             </thead>
             <tbody className="divide-y divide-[#7A0B2E]/10">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-[#FAFAFA]/50 transition-colors">
+                <tr key={order.id} className="hover:bg-[#F5EFE6]/50 transition-colors">
                   <td className="py-4 font-mono text-xs text-gray-600">#{order.id.split("-")[0]}</td>
                   <td className="py-4 text-xs font-semibold text-gray-600">
                     {new Date(order.createdAt).toLocaleDateString("en-IN", {
@@ -46,10 +46,10 @@ export default function CustomerOrders({ orders }: CustomerOrdersProps) {
                   </td>
                   <td className="py-4">
                     <span className={`inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest
-                      ${order.status === "DELIVERED" ? "bg-[#FAFAFA] text-green-700 border border-[#7A0B2E]/10" :
-                        order.status === "PENDING" ? "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/10" :
-                        order.status === "SHIPPED" ? "bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/10" :
-                        "bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/10"}`}>
+                      ${order.status === "DELIVERED" ? "bg-[#F5EFE6] text-green-700 border border-[#7A0B2E]/10" :
+                        order.status === "PENDING" ? "bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/10" :
+                        order.status === "SHIPPED" ? "bg-[#F5EFE6] text-[#2D1F2F] border border-[#7A0B2E]/10" :
+                        "bg-[#F5EFE6] text-[#2D1F2F] border border-[#7A0B2E]/10"}`}>
                       {order.status}
                     </span>
                   </td>

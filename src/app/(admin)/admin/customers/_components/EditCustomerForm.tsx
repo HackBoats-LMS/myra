@@ -34,7 +34,7 @@ export default function EditCustomerForm({ userId, name, email, phoneNumber }: E
     <div>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-[#FAFAFA] transition-colors rounded-none"
+        className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-[#F5EFE6] transition-colors rounded-none"
       >
         <Pencil className="w-3.5 h-3.5" />
         {open ? "Cancel" : "Edit Profile"}

@@ -137,7 +137,7 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
                       type="button"
                       onClick={() => setType(t)}
                       className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none border transition-colors
-                        ${type === t ? "bg-[#7A0B2E] text-white border-[#7A0B2E]" : "bg-[#FAFAFA] text-[#2D1F2F] border-[#7A0B2E]/30"}`}
+                        ${type === t ? "bg-[#7A0B2E] text-white border-[#7A0B2E]" : "bg-[#F5EFE6] text-[#2D1F2F] border-[#7A0B2E]/30"}`}
                     >
                       {t}
                     </button>
@@ -161,7 +161,7 @@ export default function OrderItemReturn({ orderItemId, productName, orderStatus,
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
                   Photos (Optional, up to 5)
                 </label>
-                <label className="flex items-center justify-center gap-2 border border-dashed border-[#7A0B2E]/40 px-3 py-4 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:bg-[#FAFAFA] cursor-pointer rounded-none">
+                <label className="flex items-center justify-center gap-2 border border-dashed border-[#7A0B2E]/40 px-3 py-4 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:bg-[#F5EFE6] cursor-pointer rounded-none">
                   <i className="ri-camera-line text-lg" />
                   {uploading ? "Uploading..." : "Add photos"}
                   <input

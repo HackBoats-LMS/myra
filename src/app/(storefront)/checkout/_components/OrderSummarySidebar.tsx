@@ -107,7 +107,7 @@ export default function OrderSummarySidebar({
         )}
       </div>
 
-      <div className="bg-[#FAFAFA] p-3.5 border border-[#7A0B2E]/10 text-xs text-[#2D1F2F] font-medium text-center">
+      <div className="bg-[#F5EFE6] p-3.5 border border-[#7A0B2E]/10 text-xs text-[#2D1F2F] font-medium text-center">
         Estimated Delivery: <span className="font-bold">{getDeliveryDateRange()}</span>
       </div>
 

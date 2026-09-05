@@ -89,7 +89,7 @@ export default function AdminReturnProcessor({ request }: AdminReturnProcessorPr
         {request.status === "APPROVED" && (
           <>
             {request.reversePickupScheduledAt ? (
-              <div className="w-full space-y-2 border border-[#7A0B2E]/20 bg-[#FAFAFA] p-4">
+              <div className="w-full space-y-2 border border-[#7A0B2E]/20 bg-[#F5EFE6] p-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-green-700 flex items-center">
                   <CheckCircle2 className="w-4 h-4 mr-1 shrink-0" />
                   Reverse pickup scheduled via Shiprocket

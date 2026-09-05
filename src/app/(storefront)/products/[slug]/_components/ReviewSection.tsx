@@ -28,7 +28,7 @@ export default function ReviewSection({ reviews }: { reviews: Review[] }) {
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
                   {/* Placeholder Avatar */}
-                  <div className="w-10 h-10 rounded-none border border-[#7A0B2E]/20 bg-[#FAFAFA] flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-10 h-10 rounded-none border border-[#7A0B2E]/20 bg-[#F5EFE6] flex items-center justify-center overflow-hidden shrink-0">
                     <span className="text-gray-500 font-bold text-lg">
                       {(review.user.name || "V").charAt(0).toUpperCase()}
                     </span>
@@ -61,7 +61,7 @@ export default function ReviewSection({ reviews }: { reviews: Review[] }) {
               {review.images.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-1">
                   {review.images.map((src, i) => (
-                    <div key={`${src}-${i}`} className="relative w-16 h-16 border border-[#7A0B2E]/20 overflow-hidden rounded-none bg-[#FAFAFA]">
+                    <div key={`${src}-${i}`} className="relative w-16 h-16 border border-[#7A0B2E]/20 overflow-hidden rounded-none bg-[#F5EFE6]">
                       <Image src={src} alt={`${review.user.name || "Review"} photo ${i + 1}`} fill className="object-cover" />
                     </div>
                   ))}

@@ -52,7 +52,7 @@ export default function ChangeOrderAddressButton({
           setSelectedId(null);
           setOpen(true);
         }}
-        className="inline-flex items-center justify-center gap-2 bg-white hover:bg-[#FAFAFA] text-[#2D1F2F] hover:text-[#7A0B2E] border border-[#7A0B2E]/30 hover:border-[#7A0B2E] px-4 sm:px-5 py-2.5 rounded-none text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-200 shadow-sm flex-1 sm:flex-initial"
+        className="inline-flex items-center justify-center gap-2 bg-white hover:bg-[#F5EFE6] text-[#2D1F2F] hover:text-[#7A0B2E] border border-[#7A0B2E]/30 hover:border-[#7A0B2E] px-4 sm:px-5 py-2.5 rounded-none text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-200 shadow-sm flex-1 sm:flex-initial"
       >
         <i className="ri-map-pin-2-line text-sm" />
         <span>Change Address</span>
@@ -62,7 +62,7 @@ export default function ChangeOrderAddressButton({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => !loading && setOpen(false)} />
           <div className="relative bg-white w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-xl border border-[#7A0B2E]/20">
-            <div className="p-6 border-b border-[#7A0B2E]/20 bg-[#FAFAFA] flex items-center justify-between">
+            <div className="p-6 border-b border-[#7A0B2E]/20 bg-[#F5EFE6] flex items-center justify-between">
               <h3 className="font-serif text-lg text-[#2D1F2F] tracking-wide">Change Delivery Address</h3>
               <button
                 onClick={() => setOpen(false)}
@@ -86,7 +86,7 @@ export default function ChangeOrderAddressButton({
                     disabled={loading}
                     className={`w-full text-left p-4 border rounded-none transition-colors ${
                       selectedId === addr.id
-                        ? "border-[#7A0B2E] bg-[#FAFAFA]"
+                        ? "border-[#7A0B2E] bg-[#F5EFE6]"
                         : "border-[#7A0B2E]/20 hover:border-[#7A0B2E]/50"
                     }`}
                   >

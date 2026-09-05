@@ -85,7 +85,7 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
 
       <div className="bg-white border border-[#7A0B2E]/20 shadow-sm overflow-hidden">
         <table className="w-full text-left text-sm text-[#2D1F2F]">
-          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
+          <thead className="bg-[#F5EFE6] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Pincode</th>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">City</th>
@@ -103,7 +103,7 @@ export default function PincodeManager({ pincodes }: { pincodes: Pincode[] }) {
               </tr>
             ) : (
               pincodes.map((p) => (
-                <tr key={p.id} className="hover:bg-[#FAFAFA] transition-colors">
+                <tr key={p.id} className="hover:bg-[#F5EFE6] transition-colors">
                   <td className="px-6 py-4 font-mono text-xs font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">{p.code}</td>
                   <td className="px-6 py-4 text-xs border-r border-[#7A0B2E]/10">{p.city || "—"}</td>
                   <td className="px-6 py-4 text-xs border-r border-[#7A0B2E]/10">{p.state || "—"}</td>

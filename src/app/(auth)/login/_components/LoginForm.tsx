@@ -71,6 +71,7 @@ function LoginFormInner() {
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="Phone number or email"
+            suppressHydrationWarning
           />
         </div>
         
@@ -83,6 +84,7 @@ function LoginFormInner() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="••••••••"
+            suppressHydrationWarning
           />
         </div>
 
@@ -106,7 +108,7 @@ function LoginFormInner() {
           <div className="w-full border-t border-[#7A0B2E]/20" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-[#FAFAFA] text-xs font-medium text-gray-500 uppercase tracking-widest">Or continue with</span>
+          <span className="px-2 bg-[#F5EFE6] text-xs font-medium text-gray-500 uppercase tracking-widest">Or continue with</span>
         </div>
       </div>
 

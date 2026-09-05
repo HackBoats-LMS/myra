@@ -145,7 +145,7 @@ export default function AddressForm({ onSaved, onCancel, className = "" }: Addre
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#2D1F2F] border border-[#7A0B2E]/30 hover:bg-[#FAFAFA] transition-colors rounded-none"
+          className="px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[#2D1F2F] border border-[#7A0B2E]/30 hover:bg-[#F5EFE6] transition-colors rounded-none"
         >
           Cancel
         </button>

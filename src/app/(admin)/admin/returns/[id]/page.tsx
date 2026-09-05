@@ -91,7 +91,7 @@ export default async function AdminReturnDetailPage({ params }: { params: Promis
           </div>
 
           {request.adminNote && (
-            <div className="bg-[#FAFAFA] border border-[#7A0B2E]/20 p-6">
+            <div className="bg-[#F5EFE6] border border-[#7A0B2E]/20 p-6">
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] mb-2">Admin Note</h4>
               <p className="text-sm text-[#2D1F2F]">{request.adminNote}</p>
             </div>

@@ -43,7 +43,7 @@ export async function sendContactMessage(formData: FormData) {
         <p><strong>Name:</strong> ${escapeHtml(name)}</p>
         <p><strong>Email:</strong> ${escapeHtml(email)}</p>
         <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
-        <div style="background:#FAFAFA;padding:12px;border:1px solid #eee;margin-top:12px;white-space:pre-line;">${escapeHtml(message)}</div>
+        <div style="background:#F5EFE6;padding:12px;border:1px solid #eee;margin-top:12px;white-space:pre-line;">${escapeHtml(message)}</div>
       </div>
     `,
   });

@@ -75,7 +75,7 @@ export default function DeliveryStep({
         </h3>
 
         {hasNoAddresses ? (
-          <div className="bg-[#FAFAFA] border border-[#7A0B2E]/20 p-4 text-xs text-[#2D1F2F]">
+          <div className="bg-[#F5EFE6] border border-[#7A0B2E]/20 p-4 text-xs text-[#2D1F2F]">
             <p>You have no saved addresses. Add one below to continue.</p>
           </div>
         ) : (
@@ -83,7 +83,7 @@ export default function DeliveryStep({
             <button
               type="button"
               onClick={() => setIsAddressOpen((o) => !o)}
-              className="w-full flex items-center justify-between gap-3 bg-[#FAFAFA] border border-[#7A0B2E]/30 px-3.5 py-3 text-left focus:outline-none focus:border-[#7A0B2E] transition-colors rounded-none"
+              className="w-full flex items-center justify-between gap-3 bg-[#F5EFE6] border border-[#7A0B2E]/30 px-3.5 py-3 text-left focus:outline-none focus:border-[#7A0B2E] transition-colors rounded-none"
               aria-haspopup="listbox"
               aria-expanded={isAddressOpen}
             >
@@ -130,7 +130,7 @@ export default function DeliveryStep({
                           }
                           setIsAddressOpen(false);
                         }}
-                        className={`w-full flex items-start justify-between gap-3 px-3.5 py-3 text-left border-b border-[#7A0B2E]/10 last:border-b-0 transition-colors rounded-none ${isSelected ? "bg-[#7A0B2E]/10" : "hover:bg-[#FAFAFA]"}`}
+                        className={`w-full flex items-start justify-between gap-3 px-3.5 py-3 text-left border-b border-[#7A0B2E]/10 last:border-b-0 transition-colors rounded-none ${isSelected ? "bg-[#7A0B2E]/10" : "hover:bg-[#F5EFE6]"}`}
                       >
                         <span className="min-w-0">
                           <span className="flex items-center gap-2">

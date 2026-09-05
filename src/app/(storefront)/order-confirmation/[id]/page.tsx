@@ -27,7 +27,7 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   if (!order) notFound();
 
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen">
+    <div className="w-full bg-[#F5EFE6] min-h-screen">
       <div className="max-w-3xl mx-auto px-6 py-10 md:py-24 text-center">
         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-50 border border-green-200 text-green-700 flex items-center justify-center text-3xl">
           ✓
@@ -84,14 +84,14 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
             </div>
 
             {order.giftName ? (
-              <div className="bg-[#FAFAFA] border border-[#7A0B2E]/10 p-4 text-sm text-gray-700 mt-4 space-y-1">
+              <div className="bg-[#F5EFE6] border border-[#7A0B2E]/10 p-4 text-sm text-gray-700 mt-4 space-y-1">
                 <span className="block text-xs font-bold uppercase tracking-widest text-[#7A0B2E] mb-1">Gift — Delivering to</span>
                 <p><span className="font-bold text-[#2D1F2F]">{order.giftName}</span></p>
                 {order.giftPhone && <p className="font-mono">Phone: {order.giftPhone}</p>}
                 <p>{order.giftAddressLine1}, {order.giftCity}, {order.giftState} {order.giftPostalCode}, {order.giftCountry}</p>
               </div>
             ) : order.address && (
-              <div className="bg-[#FAFAFA] border border-[#7A0B2E]/10 p-4 text-sm text-gray-700 mt-4">
+              <div className="bg-[#F5EFE6] border border-[#7A0B2E]/10 p-4 text-sm text-gray-700 mt-4">
                 <span className="block text-xs font-bold uppercase tracking-widest text-[#7A0B2E] mb-2">Delivering to</span>
                 {order.address.addressLine1}, {order.address.city}, {order.address.state} {order.address.postalCode},{" "}
                 {order.address.country}

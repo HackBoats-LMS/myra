@@ -93,7 +93,7 @@ export default async function AdminProductsPage({
         <div className="flex items-center gap-2">
           <Link
             href={archived ? '/admin/products' : '/admin/products?view=archived'}
-            className="border border-[#7A0B2E]/30 hover:bg-[#FAFAFA] text-[#2D1F2F] px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors rounded-none"
+            className="border border-[#7A0B2E]/30 hover:bg-[#F5EFE6] text-[#2D1F2F] px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors rounded-none"
           >
             <Archive className="w-4 h-4" />
             {archived ? 'Active Products' : 'Archived'}

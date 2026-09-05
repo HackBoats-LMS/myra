@@ -31,7 +31,7 @@ const categories: CategoryButton[] = [
     href: '/collections/bridal',
     image: '/displaypics/home/bridal/image3.png',
     style: {
-      desktop: { width: '46%', height: '125%', left: '16px', bottom: '0px', scale: 1.15 },
+      desktop: { width: '43%', height: '115%', left: '16px', bottom: '0px', scale: 1.15 },
       mobile: { width: '80%', height: '130%', bottom: '0px', scale: 1.15 },
     },
   },
@@ -127,7 +127,7 @@ export default function CategoryButtons() {
   return (
     <>
       {/* Mobile, Tablet & iPad Pro Layout (< 1280px): Scaled Oval Capsules with Labels Below (at top of page) */}
-      <section className="xl:hidden w-full px-2 sm:px-4 md:px-8 lg:px-12 pt-12 sm:pt-16 md:pt-24 lg:pt-28 pb-2.5 sm:pb-3 md:pb-4 lg:pb-5 bg-white border-b border-[#7A0B2E]/15">
+      <section className="xl:hidden w-full px-2 sm:px-4 md:px-8 lg:px-12 pt-12 sm:pt-16 md:pt-24 lg:pt-28 pb-2.5 sm:pb-3 md:pb-4 lg:pb-5 bg-transparent border-b border-[#7A0B2E]/15">
         <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8 items-start justify-items-center max-w-[960px] mx-auto">
           {categories.map((cat) => (
             <Link
@@ -136,7 +136,7 @@ export default function CategoryButtons() {
               className="flex flex-col items-center gap-1.5 sm:gap-2.5 md:gap-3 w-full max-w-[85px] sm:max-w-[110px] md:max-w-[145px] lg:max-w-[170px] group cursor-pointer"
             >
               {/* Oval Capsule */}
-              <div className="relative w-[74px] sm:w-[96px] md:w-[130px] lg:w-[155px] h-[40px] sm:h-[52px] md:h-[68px] lg:h-[80px] rounded-full bg-[#F0D5D5] shadow-sm transition-transform duration-200 group-hover:scale-105">
+              <div className="relative w-[74px] sm:w-[96px] md:w-[130px] lg:w-[155px] h-[40px] sm:h-[52px] md:h-[68px] lg:h-[80px] rounded-full bg-[#EBDCD9] shadow-sm transition-transform duration-200 group-hover:scale-105">
                 {/* Popout Image Layer */}
                 <div className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-50px_0px_-50px)]">
                   {renderMobileImages(cat)}
@@ -162,7 +162,7 @@ export default function CategoryButtons() {
               className="relative group block w-full max-w-[325px] h-[112px] xl:h-[125px] cursor-pointer transition-transform duration-300 hover:scale-[1.03]"
             >
               {/* Base Pill Capsule Layer */}
-              <div className="absolute inset-0 bg-[#F0D5D5] rounded-full overflow-hidden shadow-sm transition-shadow duration-300 group-hover:shadow-md">
+              <div className="absolute inset-0 bg-[#EBDCD9] rounded-full overflow-hidden shadow-sm transition-shadow duration-300 group-hover:shadow-md">
                 {renderDesktopImages(cat)}
               </div>
               

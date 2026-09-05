@@ -52,7 +52,7 @@ export default function StaffLoginForm({ title, subtitle, iconName = "lock", red
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-[#FAFAFA] rounded-none">
+    <div className="w-full min-h-screen flex items-center justify-center bg-[#F5EFE6] rounded-none">
       <div className="w-full max-w-md bg-white p-8 border border-[#7A0B2E]/20 shadow-sm rounded-none">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-[#2D1F2F] flex items-center justify-center mb-4 rounded-none">

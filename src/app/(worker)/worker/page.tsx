@@ -75,7 +75,7 @@ export default async function WorkerDashboardPage() {
 
       {!canInventory && !canShipping && (
         <div className="bg-white border border-[#7A0B2E]/20 p-8 text-center shadow-sm">
-          <div className="w-12 h-12 bg-[#FAFAFA] border border-[#7A0B2E]/20 flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 bg-[#F5EFE6] border border-[#7A0B2E]/20 flex items-center justify-center mx-auto mb-4">
             <Wrench className="w-6 h-6 text-[#7A0B2E]" />
           </div>
           <h3 className="font-serif text-lg text-[#2D1F2F] mb-2">No Modules Assigned</h3>
@@ -100,7 +100,7 @@ export default async function WorkerDashboardPage() {
                   <span className="block text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest mb-2">{stat.label}</span>
                   <span className={`text-3xl font-serif font-bold ${stat.color}`}>{stat.value}</span>
                 </div>
-                <div className="w-10 h-10 bg-[#FAFAFA] border border-[#7A0B2E]/20 flex items-center justify-center rounded-none">
+                <div className="w-10 h-10 bg-[#F5EFE6] border border-[#7A0B2E]/20 flex items-center justify-center rounded-none">
                   <Icon className={`w-5 h-5 ${stat.color}`} />
                 </div>
               </Link>

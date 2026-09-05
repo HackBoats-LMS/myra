@@ -433,7 +433,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
               </div>
 
               {/* Dynamic Attributes Builder */}
-              <div className="space-y-2 border border-[#7A0B2E]/20 p-4 bg-[#FAFAFA]">
+              <div className="space-y-2 border border-[#7A0B2E]/20 p-4 bg-[#F5EFE6]">
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Specifications / Details</label>
                 {attributes.map((attr, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -525,7 +525,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             </div>
 
             {/* Mark as Best Seller */}
-            <div className="bg-[#FAFAFA] p-4 border border-[#7A0B2E]/20">
+            <div className="bg-[#F5EFE6] p-4 border border-[#7A0B2E]/20">
               <label className="flex items-center gap-3 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -558,14 +558,14 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 border border-[#7A0B2E]/20">
+                <div className="flex items-center gap-2 bg-[#F5EFE6] px-3 py-1.5 border border-[#7A0B2E]/20">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D1F2F]">Total Inventory:</span>
                   <span className="text-sm font-bold text-[#7A0B2E]">{totalStock} units</span>
                 </div>
               </div>
 
               {/* Checkboxes: Need sizes & Need colors */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#FAFAFA] p-4 border border-[#7A0B2E]/20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#F5EFE6] p-4 border border-[#7A0B2E]/20">
                 <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -698,7 +698,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
 
                   {/* Variants Table / Rows */}
                   {variants.length === 0 ? (
-                    <div className="p-6 text-center border border-dashed border-[#7A0B2E]/40 bg-[#FAFAFA]">
+                    <div className="p-6 text-center border border-dashed border-[#7A0B2E]/40 bg-[#F5EFE6]">
                       <p className="text-xs text-gray-500 font-medium">No options added yet. Click one of the quick size/color buttons above or click &ldquo;Add Custom Row&rdquo;.</p>
                     </div>
                   ) : (
@@ -706,7 +706,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                       {variants.map((v, index) => (
                         <div 
                           key={index} 
-                          className="grid grid-cols-12 gap-3 items-center bg-[#FAFAFA] p-3 border border-[#7A0B2E]/20"
+                          className="grid grid-cols-12 gap-3 items-center bg-[#F5EFE6] p-3 border border-[#7A0B2E]/20"
                         >
                           {/* Size Field (if sizes enabled) */}
                           <div className={hasColors ? "col-span-3 sm:col-span-2" : "col-span-4 sm:col-span-3"}>

@@ -58,7 +58,7 @@ export default async function StorefrontHome() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd }} />
       <OpeningAnimation />
-      <div className="w-full bg-[#FAFAFA]">
+      <div className="w-full bg-[#F5EFE6]">
 
         {/* Mobile, Tablet & iPad Pro: Category Buttons at the top */}
         <div className="block xl:hidden">

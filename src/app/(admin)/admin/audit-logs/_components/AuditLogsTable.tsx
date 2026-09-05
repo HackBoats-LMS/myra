@@ -19,7 +19,7 @@ export default function AuditLogsTable({ logs }: AuditLogsTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-[#2D1F2F]">
-        <thead className="bg-[#FAFAFA] text-[#7A0B2E] uppercase text-[10px] font-bold tracking-widest border-b border-[#7A0B2E]/20">
+        <thead className="bg-[#F5EFE6] text-[#7A0B2E] uppercase text-[10px] font-bold tracking-widest border-b border-[#7A0B2E]/20">
           <tr>
             <th className="px-4 py-3 border-r border-[#7A0B2E]/10">Action</th>
             <th className="px-4 py-3 border-r border-[#7A0B2E]/10">Entity</th>
@@ -37,7 +37,7 @@ export default function AuditLogsTable({ logs }: AuditLogsTableProps) {
             </tr>
           ) : (
             logs.map((log) => (
-              <tr key={log.id} className="hover:bg-[#FAFAFA] transition-colors group">
+              <tr key={log.id} className="hover:bg-[#F5EFE6] transition-colors group">
                 <td className="px-4 py-3 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">{formatAction(log.action)}</td>
                 <td className="px-4 py-3 text-[#2D1F2F] border-r border-[#7A0B2E]/10">
                   {log.entity ? (

@@ -40,6 +40,7 @@ function updateGlobalsCss(colors) {
   let css = fs.readFileSync(globalsCssPath, "utf8");
 
   const varMap = {
+    "--background": colors.background,
     "--brand-primary": colors.primary,
     "--brand-primary-dark": colors.primaryDark,
     "--brand-primary-deep": colors.primaryDeep,

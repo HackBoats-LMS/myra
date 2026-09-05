@@ -77,7 +77,7 @@ export default function OrderItemReview({
           Write a Review
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3 bg-[#FAFAFA] border border-[#7A0B2E]/20 p-4">
+        <form onSubmit={handleSubmit} className="space-y-3 bg-[#F5EFE6] border border-[#7A0B2E]/20 p-4">
           <p className="text-[11px] font-bold text-[#2D1F2F] uppercase tracking-widest">{productName}</p>
 
           <div className="flex items-center gap-1">

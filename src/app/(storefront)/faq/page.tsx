@@ -30,7 +30,7 @@ const FAQS = [
 
 export default function FAQPage() {
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen">
+    <div className="w-full bg-[#F5EFE6] min-h-screen">
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-10 md:py-24 space-y-12">
         <div className="text-center space-y-4">
           <h1 className="text-3xl md:text-4xl font-serif text-[#2D1F2F] tracking-wide">Frequently Asked Questions</h1>

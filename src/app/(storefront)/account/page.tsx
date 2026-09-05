@@ -83,7 +83,7 @@ export default async function AccountPage() {
   } catch (error) {
     console.warn("Database unreachable in AccountPage:", error instanceof Error ? error.message : "unknown error");
     return (
-      <div className="w-full bg-[#FAFAFA] min-h-screen flex items-center justify-center">
+      <div className="w-full bg-[#F5EFE6] min-h-screen flex items-center justify-center">
         <div className="max-w-md w-full bg-white p-8 border border-[#7A0B2E]/20 text-center">
           <h1 className="text-2xl font-serif text-[#2D1F2F] mb-4">Database Connection Error</h1>
           <p className="text-gray-500 mb-6">We could not load your account details because the database is currently unreachable. Please try again later or check your database status.</p>
@@ -95,7 +95,7 @@ export default async function AccountPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen">
+    <div className="w-full bg-[#F5EFE6] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
         <header className="mb-10 pb-8 border-b border-[#7A0B2E]/20 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -124,7 +124,7 @@ export default async function AccountPage() {
 
             {user.orders.length === 0 ? (
               <div className="bg-white border border-[#7A0B2E]/20 p-12 md:p-20 text-center flex flex-col items-center justify-center flex-grow min-h-[400px]">
-                <div className="w-20 h-20 rounded-full bg-[#FAFAFA] border border-[#7A0B2E]/20 flex items-center justify-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-[#F5EFE6] border border-[#7A0B2E]/20 flex items-center justify-center mb-6">
                   <i className="ri-shopping-bag-3-line text-3xl text-[#7A0B2E]" />
                 </div>
                 <h3 className="text-xl md:text-2xl font-serif text-[#2D1F2F] mb-3">No Orders Yet</h3>
@@ -142,10 +142,10 @@ export default async function AccountPage() {
                     <li key={order.id}>
                       <Link
                         href={`/account/orders/${order.id}`}
-                        className="flex items-center justify-between gap-4 px-6 py-5 hover:bg-[#FAFAFA] transition-colors"
+                        className="flex items-center justify-between gap-4 px-6 py-5 hover:bg-[#F5EFE6] transition-colors"
                       >
                         <div className="flex items-center gap-5 min-w-0">
-                          <div className="relative w-16 h-20 bg-[#FAFAFA] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
+                          <div className="relative w-16 h-20 bg-[#F5EFE6] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
                             {order.orderItems[0]?.product.images[0] && (
                               <Image src={order.orderItems[0].product.images[0]} alt={order.orderItems[0].product.name} fill quality={100} className="object-cover" />
                             )}
@@ -159,10 +159,10 @@ export default async function AccountPage() {
                               {order.orderItems.length > 1 && ` +${order.orderItems.length - 1} more`}
                             </p>
                             <span className={`inline-flex items-center px-2.5 py-1 rounded-none text-[9px] font-bold uppercase tracking-widest mt-2
-                              ${order.status === 'DELIVERED' ? 'bg-[#FAFAFA] text-green-700 border border-[#7A0B2E]/20' :
-                                order.status === 'SHIPPED' ? 'bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30' :
+                              ${order.status === 'DELIVERED' ? 'bg-[#F5EFE6] text-green-700 border border-[#7A0B2E]/20' :
+                                order.status === 'SHIPPED' ? 'bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/30' :
                                 order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border border-red-200' :
-                                'bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30'}`}>
+                                'bg-[#F5EFE6] text-[#2D1F2F] border border-[#7A0B2E]/30'}`}>
                               {order.status}
                             </span>
                           </div>

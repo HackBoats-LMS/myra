@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function CompareEmptyState() {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-32 text-center space-y-6">
-      <div className="w-24 h-24 mx-auto bg-[#FAFAFA] border border-[#7A0B2E]/20 flex items-center justify-center">
+      <div className="w-24 h-24 mx-auto bg-[#F5EFE6] border border-[#7A0B2E]/20 flex items-center justify-center">
         <i className="ri-arrow-left-right-line text-4xl text-[#7A0B2E]" />
       </div>
       <div>

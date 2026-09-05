@@ -27,7 +27,7 @@ export default async function AdminShippingPage() {
         <ShippingConfigForm initial={initial} />
       </div>
 
-      <div className="bg-[#FAFAFA] border border-[#7A0B2E]/20 p-6 rounded-none">
+      <div className="bg-[#F5EFE6] border border-[#7A0B2E]/20 p-6 rounded-none">
         <h3 className="text-xs font-bold uppercase tracking-widest text-[#2D1F2F] mb-3">Free Shipping Offers</h3>
         <p className="text-sm text-gray-600 leading-relaxed mb-4">
           Create a coupon with the offer type <span className="font-bold text-[#7A0B2E]">Shipping</span> to give free (or

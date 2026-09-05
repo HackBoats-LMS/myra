@@ -39,18 +39,18 @@ export interface BrandTheme {
 }
 
 export const theme: BrandTheme = {
-  name: "Luxury Indian Maroon & Gold",
+  name: "Warm Raw Silk Ivory & Maroon",
   colors: {
     primary: "#7A0B2E",
     primaryDark: "#5C0820",
     primaryDeep: "#470618",
-    primaryLight: "#FAF0F2",
-    primaryCapsule: "#F0D5D5",
+    primaryLight: "#F7EFF0",
+    primaryCapsule: "#EBDCD9",
     gold: "#CE9222",
     goldWarm: "#BF9351",
     dark: "#2D1F2F",
-    surface: "#FAFAFA",
-    background: "#FFFFFF",
+    surface: "#F5EFE6",
+    background: "#F5EFE6",
   },
 };
 

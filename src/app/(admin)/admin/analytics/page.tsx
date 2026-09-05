@@ -67,7 +67,7 @@ export default async function AdminAnalyticsPage({
               className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest border rounded-none transition-colors ${
                 active === r.key
                   ? "bg-[#7A0B2E] text-white border-[#7A0B2E]"
-                  : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:bg-[#FAFAFA]"
+                  : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:bg-[#F5EFE6]"
               }`}
             >
               {r.label}
@@ -139,7 +139,7 @@ export default async function AdminAnalyticsPage({
           ) : (
             <div className="space-y-3">
               {topProducts.map((p, i) => (
-                <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-4 p-2 hover:bg-[#FAFAFA] transition-colors rounded-none">
+                <Link key={p.id} href={`/admin/products/${p.id}`} className="flex items-center gap-4 p-2 hover:bg-[#F5EFE6] transition-colors rounded-none">
                   <span className="w-6 text-center font-serif font-bold text-[#7A0B2E]">{i + 1}</span>
                   <span className="text-[10px] text-[#7A0B2E]">{currency(p.revenue)}</span>
                   <div className="flex-1 min-w-0">

@@ -176,7 +176,7 @@ export default function CollectionForm({
                   </button>
                 </div>
               ) : (
-                <div className="w-40 h-52 border border-dashed border-[#7A0B2E]/40 bg-[#FAFAFA] flex items-center justify-center p-2">
+                <div className="w-40 h-52 border border-dashed border-[#7A0B2E]/40 bg-[#F5EFE6] flex items-center justify-center p-2">
                   <ImageUpload 
                     value="" 
                     onChange={(url) => { if (url) setThumbnailImage(url); }} 
@@ -222,7 +222,7 @@ export default function CollectionForm({
                 ))}
 
                 {banners.length < 5 && (
-                  <div className="w-64 h-36 border border-dashed border-[#7A0B2E]/40 bg-[#FAFAFA] flex items-center justify-center p-3">
+                  <div className="w-64 h-36 border border-dashed border-[#7A0B2E]/40 bg-[#F5EFE6] flex items-center justify-center p-3">
                     <ImageUpload 
                       value="" 
                       onChange={handleAddBanner} 

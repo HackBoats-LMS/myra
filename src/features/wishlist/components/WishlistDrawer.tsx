@@ -137,7 +137,7 @@ export default function WishlistDrawer() {
       {/* Drawer Container */}
       <div className={`relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col z-10 rounded-none transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${closing ? "translate-x-full" : "translate-x-0"}`}>
         {/* Header */}
-        <div className="px-6 py-6 border-b border-[#7A0B2E]/20 flex items-center justify-between bg-[#FAFAFA]">
+        <div className="px-6 py-6 border-b border-[#7A0B2E]/20 flex items-center justify-between bg-[#F5EFE6]">
           <div className="flex items-center gap-2 text-[#2D1F2F]">
             <i className="ri-heart-line text-lg text-[#7A0B2E]" />
             <h2 className="text-xl font-serif tracking-wide">Your Wishlist</h2>
@@ -159,7 +159,7 @@ export default function WishlistDrawer() {
             </div>
           ) : items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
-              <div className="w-20 h-20 border border-[#7A0B2E]/20 bg-[#FAFAFA] flex items-center justify-center text-[#7A0B2E]">
+              <div className="w-20 h-20 border border-[#7A0B2E]/20 bg-[#F5EFE6] flex items-center justify-center text-[#7A0B2E]">
                 <i className="ri-heart-line text-4xl" />
               </div>
               <div>
@@ -178,7 +178,7 @@ export default function WishlistDrawer() {
               {items.map((item) => (
                 <div key={item.id} className="flex gap-4 pt-6 first:pt-0">
                   {/* Product image */}
-                  <Link href={`/products/${item.product.slug}`} onClick={closeWishlist} className="relative w-20 h-28 bg-[#FAFAFA] border border-[#7A0B2E]/20 flex-shrink-0 rounded-none">
+                  <Link href={`/products/${item.product.slug}`} onClick={closeWishlist} className="relative w-20 h-28 bg-[#F5EFE6] border border-[#7A0B2E]/20 flex-shrink-0 rounded-none">
                     {item.product.images?.[0] ? (
                       <Image
                         src={item.product.images[0]}
@@ -233,7 +233,7 @@ export default function WishlistDrawer() {
 
         {/* Footer (if items > 0) */}
         {items.length > 0 && (
-          <div className="border-t border-[#7A0B2E]/20 p-6 bg-[#FAFAFA] space-y-4">
+          <div className="border-t border-[#7A0B2E]/20 p-6 bg-[#F5EFE6] space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Items Saved</span>
               <span className="text-xl font-serif text-[#2D1F2F]">{items.length}</span>

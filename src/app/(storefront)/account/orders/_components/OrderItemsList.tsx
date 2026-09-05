@@ -27,7 +27,7 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
 
   return (
     <div className="bg-white border border-[#7A0B2E]/20 overflow-hidden shadow-sm h-fit">
-      <div className="p-4 sm:p-6 border-b border-[#7A0B2E]/20 bg-[#FAFAFA] flex items-center justify-between">
+      <div className="p-4 sm:p-6 border-b border-[#7A0B2E]/20 bg-[#F5EFE6] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Package className="w-4 h-4 text-[#7A0B2E]" />
           <h3 className="font-serif text-[#2D1F2F] text-base sm:text-lg tracking-wide">
@@ -45,7 +45,7 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
             <div className="flex items-start sm:items-center gap-4">
               <Link
                 href={`/products/${item.product.slug}`}
-                className="relative w-16 sm:w-20 aspect-[3/4] bg-[#FAFAFA] overflow-hidden flex-shrink-0 border border-[#7A0B2E]/20 hover:opacity-90 transition-opacity"
+                className="relative w-16 sm:w-20 aspect-[3/4] bg-[#F5EFE6] overflow-hidden flex-shrink-0 border border-[#7A0B2E]/20 hover:opacity-90 transition-opacity"
               >
                 {item.product.images[0] ? (
                   <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" />
@@ -65,7 +65,7 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
                     Qty: <span className="text-[#2D1F2F]">{item.quantity}</span>
                   </span>
                   {item.product.sku && (
-                    <span className="text-[9px] font-mono font-bold text-[#7A0B2E] uppercase tracking-wider bg-[#FAFAFA] border border-[#7A0B2E]/20 px-1.5 py-0.5">
+                    <span className="text-[9px] font-mono font-bold text-[#7A0B2E] uppercase tracking-wider bg-[#F5EFE6] border border-[#7A0B2E]/20 px-1.5 py-0.5">
                       {item.product.sku}
                     </span>
                   )}
@@ -95,7 +95,7 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
         ))}
       </div>
 
-      <div className="bg-[#FAFAFA] p-4 sm:p-6 flex justify-between items-center border-t border-[#7A0B2E]/20">
+      <div className="bg-[#F5EFE6] p-4 sm:p-6 flex justify-between items-center border-t border-[#7A0B2E]/20">
         <div>
           <span className="block font-bold text-[#2D1F2F] text-[10px] sm:text-xs uppercase tracking-widest">
             Total Paid

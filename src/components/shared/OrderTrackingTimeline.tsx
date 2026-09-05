@@ -39,7 +39,7 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
         <h3 className="font-serif text-[#2D1F2F] text-base sm:text-lg tracking-wide">
           Order Tracking
         </h3>
-        <span className="inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30">
+        <span className="inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/30">
           {status.replace(/_/g, " ")}
         </span>
       </div>

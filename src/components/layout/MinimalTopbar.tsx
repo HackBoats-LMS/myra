@@ -13,7 +13,7 @@ interface MinimalTopbarProps {
 
 export default function MinimalTopbar({ cartCount, wishlistCount, isLoggedIn }: MinimalTopbarProps) {
   return (
-    <nav className="w-full bg-white border-b border-[#7A0B2E]/20 flex items-center px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 relative z-50">
+    <nav className="w-full bg-[#FDFAF7] border-b border-[#7A0B2E]/15 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 relative z-50">
       {/* Logo (left) */}
       <div className="flex-1 flex items-center justify-start">
         <Link href="/" className="flex items-center">

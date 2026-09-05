@@ -92,7 +92,7 @@ export default function ProductListTable({
     <div className="space-y-4">
       {/* Bulk Actions Toolbar */}
       {selectedIds.length > 0 && (
-        <div className="bg-[#FAFAFA] border border-[#7A0B2E]/20 p-3 flex items-center justify-between rounded-none">
+        <div className="bg-[#F5EFE6] border border-[#7A0B2E]/20 p-3 flex items-center justify-between rounded-none">
           <span className="text-xs font-bold uppercase tracking-widest text-[#2D1F2F]">
             {selectedIds.length} item(s) selected
           </span>
@@ -110,7 +110,7 @@ export default function ProductListTable({
                 <button
                   onClick={handleBulkUpdateStock}
                   disabled={isProcessing}
-                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-[#FAFAFA] disabled:opacity-50 transition-colors rounded-none"
+                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-white border border-[#7A0B2E]/30 text-[#2D1F2F] hover:bg-[#F5EFE6] disabled:opacity-50 transition-colors rounded-none"
                 >
                   Update Stock
                 </button>
@@ -135,7 +135,7 @@ export default function ProductListTable({
         )}
         
         <table className="w-full text-left text-sm text-[#2D1F2F]">
-          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
+          <thead className="bg-[#F5EFE6] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
               <th className="px-6 py-4 w-12 border-r border-[#7A0B2E]/10">
                 <input
@@ -162,7 +162,7 @@ export default function ProductListTable({
               </tr>
             ) : (
               products.map((product) => (
-                <tr key={product.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                <tr key={product.id} className="hover:bg-[#F5EFE6] transition-colors group">
                   <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                     <input
                       type="checkbox"

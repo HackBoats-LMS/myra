@@ -50,12 +50,12 @@ export default function CartItem({ item }: { item: CartLineItem }) {
   return (
     <div className="flex gap-6 py-6 border-b border-[#7A0B2E]/20 last:border-0 relative">
       {isUpdating && (
-        <div className="absolute inset-0 bg-[#FAFAFA]/70 flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-[#F5EFE6]/70 flex items-center justify-center z-10">
           <i className="ri-loader-4-line animate-spin text-2xl text-[#7A0B2E]" />
         </div>
       )}
       
-      <Link href={`/products/${item.product.slug}`} className="relative w-24 h-32 md:w-32 md:h-40 bg-[#FAFAFA] flex-shrink-0 rounded-none overflow-hidden border border-[#7A0B2E]/20 hover:opacity-90 transition-opacity">
+      <Link href={`/products/${item.product.slug}`} className="relative w-24 h-32 md:w-32 md:h-40 bg-[#F5EFE6] flex-shrink-0 rounded-none overflow-hidden border border-[#7A0B2E]/20 hover:opacity-90 transition-opacity">
         {item.product.images[0] && (
           <Image src={item.product.images[0]} alt={item.product.name} fill quality={100} sizes="(max-width: 768px) 96px, 128px" className="object-cover" />
         )}
@@ -71,7 +71,7 @@ export default function CartItem({ item }: { item: CartLineItem }) {
               <p className="text-xs text-[#7A0B2E] mt-1 uppercase tracking-widest">{item.product.collection.name}</p>
             )}
             {item.variant && (
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2 bg-[#FAFAFA] px-2 py-1 inline-block rounded-none border border-[#7A0B2E]/20">
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2 bg-[#F5EFE6] px-2 py-1 inline-block rounded-none border border-[#7A0B2E]/20">
                 {[item.variant.size, item.variant.color].filter(Boolean).join(" - ")}
               </p>
             )}

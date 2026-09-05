@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Curated sarees and ethnic wear crafted for every celebration.",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAFAFA",
+    background_color: "#F5EFE6",
     theme_color: "#7A0B2E",
     icons: [
       {

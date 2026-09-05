@@ -5,7 +5,7 @@ export default function StoreLocationSection() {
     "https://www.google.com/maps/search/?api=1&query=Myra+Shopping+Mall+5-155+G+Plus+3+Floors+Koritepadu+Rd+Vinayak+Nagar+Guntur+Andhra+Pradesh+522007";
 
   return (
-    <section className="w-full bg-[#FAFAFA] py-10 sm:py-14 md:py-16 lg:py-20 px-4 sm:px-6 md:px-8 lg:px-12 border-t border-[#7A0B2E]/10">
+    <section className="w-full bg-[#F5EFE6] py-10 sm:py-14 md:py-16 lg:py-20 px-4 sm:px-6 md:px-8 lg:px-12 border-t border-[#7A0B2E]/10">
       <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-center gap-8 md:gap-8 lg:gap-14 xl:gap-20">
         
         {/* Storefront Image */}

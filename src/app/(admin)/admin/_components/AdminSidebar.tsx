@@ -82,7 +82,7 @@ export default function AdminSidebar({ onNavigate }: SidebarProps) {
     <aside className="w-64 bg-[#2D1F2F] text-white h-screen sticky top-0 overflow-hidden flex flex-col shadow-xl z-50">
       <div className="p-6 border-b border-[#7A0B2E]/20 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-serif tracking-widest text-[#FAFAFA]">MYRA</h2>
+          <h2 className="text-2xl font-serif tracking-widest text-[#F5EFE6]">MYRA</h2>
           <p className="text-[10px] tracking-widest text-[#7A0B2E] uppercase mt-1 font-bold">Admin Panel</p>
         </div>
         {onNavigate && (

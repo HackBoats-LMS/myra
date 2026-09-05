@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #F5EFE6;
   --foreground: #171717;
 
   /* Brand Theme Tokens (configured via src/config/theme.ts) */
   --brand-primary: #7A0B2E;
   --brand-primary-dark: #5C0820;
   --brand-primary-deep: #470618;
-  --brand-primary-light: #FAF0F2;
-  --brand-primary-capsule: #F0D5D5;
+  --brand-primary-light: #F7EFF0;
+  --brand-primary-capsule: #EBDCD9;
   --brand-gold: #CE9222;
   --brand-gold-warm: #BF9351;
   --brand-dark: #2D1F2F;
-  --brand-surface: #FAFAFA;
+  --brand-surface: #F5EFE6;
 }
 
 @theme inline {

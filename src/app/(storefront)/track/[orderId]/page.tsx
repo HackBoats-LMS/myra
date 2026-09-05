@@ -60,7 +60,7 @@ export default async function PublicTrackOrderPage({
       <OrderTrackingTimeline status={order.status} order={order as unknown as Record<string, unknown>} />
 
       {order.awbNumber && (
-        <div className="bg-[#FAFAFA] border border-[#7A0B2E]/20 p-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-[#F5EFE6] border border-[#7A0B2E]/20 p-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Tracking / AWB Number</p>
             <p className="font-mono text-sm text-[#2D1F2F] font-bold">{order.awbNumber}</p>
@@ -85,7 +85,7 @@ export default async function PublicTrackOrderPage({
           <div className="divide-y divide-[#7A0B2E]/10">
             {order.orderItems.map((item) => (
               <div key={item.id} className="flex items-center gap-4 p-4">
-                <div className="relative w-14 h-14 border border-[#7A0B2E]/20 overflow-hidden rounded-none bg-[#FAFAFA] shrink-0">
+                <div className="relative w-14 h-14 border border-[#7A0B2E]/20 overflow-hidden rounded-none bg-[#F5EFE6] shrink-0">
                   {item.product.images[0] ? (
                     <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" />
                   ) : (
