@@ -24,10 +24,8 @@ export default function PwaRegister() {
     window.addEventListener("appinstalled", installedEvent);
 
     if ("PushManager" in window && "serviceWorker" in navigator && "Notification" in window) {
-      Promise.resolve()
-        .then(() => setPushSupported(true))
-        .then(() => Notification.requestPermission?.())
-        .then((perm) => setPushEnabled(perm === "granted"));
+      setPushSupported(true);
+      setPushEnabled(Notification.permission === "granted");
     }
 
     return () => {
@@ -46,6 +44,13 @@ export default function PwaRegister() {
     if (!pushSupported || busy) return;
     setBusy(true);
     try {
+      if (Notification.permission !== "granted") {
+        const perm = await Notification.requestPermission();
+        if (perm !== "granted") {
+          setPushEnabled(false);
+          return;
+        }
+      }
       const reg = await navigator.serviceWorker.ready;
       const key = (await getVapidKey()) as Uint8Array<ArrayBuffer>;
       const sub = await reg.pushManager.subscribe({

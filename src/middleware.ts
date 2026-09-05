@@ -20,6 +20,7 @@ function buildCspHeader(nonce: string, isProduction: boolean): string {
     "media-src 'self' https://*.supabase.co blob:",
     "font-src 'self' https://cdn.jsdelivr.net https://assets.vercel.com data:",
     "connect-src 'self' https://*.supabase.co https://api.razorpay.com https://*.razorpay.com https://lumberjack.razorpay.com https://lumberjack-cx.razorpay.com https://vercel.com https://*.vercel.com https://*.vercel.app https://*.vercel-insights.com https://*.vercel-analytics.com https://vercel.live https://*.pusher.com",
+    "manifest-src 'self' https://vercel.com https://*.vercel.com https://*.vercel.app",
     "frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://*.razorpay.com https://www.youtube.com https://vercel.live",
     "object-src 'none'",
     "base-uri 'self'",

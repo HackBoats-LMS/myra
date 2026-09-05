@@ -29,10 +29,10 @@ const categories: CategoryButton[] = [
   {
     name: 'BRIDAL',
     href: '/collections/bridal',
-    image: '/displaypics/home/bridal/image.png',
+    image: '/displaypics/home/bridal/image3.png',
     style: {
-      desktop: { width: '46%', height: '180%', left: '16px', bottom: '0px', scale: 1.15 },
-      mobile: { width: '80%', height: '140%', bottom: '0px', scale: 1.15 },
+      desktop: { width: '46%', height: '125%', left: '16px', bottom: '0px', scale: 1.15 },
+      mobile: { width: '80%', height: '130%', bottom: '0px', scale: 1.15 },
     },
   },
   {
