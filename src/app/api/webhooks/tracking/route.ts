@@ -98,6 +98,11 @@ export async function POST(req: NextRequest) {
       newStatus = mapped.status;
       data.status = mapped.status;
       data[mapped.timestampField] = new Date();
+
+      // If COD order is delivered, courier collected cash at doorstep -> mark payment as PAID
+      if (mapped.status === "DELIVERED" && order.paymentMethod === "CASH_ON_DELIVERY" && order.paymentStatus !== "PAID") {
+        data.paymentStatus = "PAID";
+      }
     }
 
     await prisma.order.update({ where: { id: order.id }, data });

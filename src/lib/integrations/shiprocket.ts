@@ -110,6 +110,7 @@ interface AdhocOrderPayload {
   }[];
   payment_method: "COD" | "Prepaid";
   shipping_charges: number;
+  discount?: number;
   sub_total: number;
   length: number;
   breadth: number;
@@ -202,8 +203,9 @@ export function buildAdhocPayload(order: NonNullable<OrderForShipment>): AdhocOr
     })),
     payment_method: order.paymentMethod === "RAZORPAY" && order.paymentStatus === "PAID" ? "Prepaid" : "COD",
     shipping_charges: Math.round(order.shippingAmount || 0),
-    // Shiprocket computes the grand total as sub_total + shipping_charges, so
-    // sub_total must be the items-only subtotal (shipping/tax are excluded here).
+    discount: Math.round(order.discountAmount || 0),
+    // Shiprocket computes the grand total as (sub_total - discount) + shipping_charges.
+    // sub_total must be the items-only subtotal (shipping/tax excluded).
     sub_total: Math.round(
       order.orderItems.reduce((sum, i) => sum + i.price * i.quantity, 0)
     ),

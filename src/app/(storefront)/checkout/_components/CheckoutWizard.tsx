@@ -1,9 +1,10 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { checkoutCart } from "@/actions/cart";
 import { getUserAddresses } from "@/actions/address";
 import { initiateRazorpayPayment } from "@/actions/payment";
+import { isPincodeCodDeliverable } from "@/actions/pincode";
 import { normalizeIndianPhone } from "@/lib/phone";
 import { useToast } from "@/components/ui/Toast";
 import { useRazorpay } from "@/hooks/useRazorpay";
@@ -69,6 +70,8 @@ export default function CheckoutWizard({
   const [isGift, setIsGift] = useState(false);
   const [gift, setGift] = useState<CheckoutGift>(EMPTY_GIFT);
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "RAZORPAY">("COD");
+  const [isCodAvailable, setIsCodAvailable] = useState(true);
+  const [isCheckingCod, setIsCheckingCod] = useState(false);
 
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(autoAppliedCoupon || null);
   const [appliedCouponType, setAppliedCouponType] = useState<string | null>(autoAppliedCoupon ? "STANDARD" : null);
@@ -82,13 +85,23 @@ export default function CheckoutWizard({
   // exactly what will be charged.
   const pricing: CheckoutPricing = useMemo(() => {
     const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
-    const baseShipping = subtotal >= shipping.freeShippingThreshold ? 0 : shipping.flatRate;
+
+    const isCod = paymentMethod === "COD";
+    const activeFlatRate =
+      isCod && typeof shipping.codFlatRate === "number" ? shipping.codFlatRate : shipping.flatRate;
+    const activeThreshold =
+      isCod && typeof shipping.codFreeShippingThreshold === "number"
+        ? shipping.codFreeShippingThreshold
+        : shipping.freeShippingThreshold;
+    const codHandlingFee = isCod ? (shipping.codHandlingFee ?? 0) : 0;
+
+    const baseShipping = subtotal >= activeThreshold ? 0 : activeFlatRate;
     const shippingAmount =
       appliedCouponType === "SHIPPING"
         ? Math.max(0, baseShipping - Math.min(appliedCouponValue, baseShipping))
         : baseShipping;
     const discount = Math.min(discountAmount, subtotal);
-    const taxBase = Math.max(subtotal - discount, 0) + shippingAmount;
+    const taxBase = Math.max(subtotal - discount, 0) + shippingAmount + codHandlingFee;
     const taxAmount = taxPercent > 0 ? Math.round((taxBase * (taxPercent / 100)) * 100) / 100 : 0;
     const finalTotal = Math.max(taxBase + taxAmount, 0);
     const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -96,10 +109,11 @@ export default function CheckoutWizard({
       subtotal: round2(subtotal),
       discountAmount: round2(discount),
       shippingAmount: round2(shippingAmount),
+      codHandlingFee: round2(codHandlingFee),
       taxAmount: round2(taxAmount),
       finalTotal: round2(finalTotal),
     };
-  }, [lines, shipping, appliedCouponType, appliedCouponValue, discountAmount, taxPercent]);
+  }, [lines, shipping, appliedCouponType, appliedCouponValue, discountAmount, taxPercent, paymentMethod]);
 
 // Re-read saved addresses after an inline add so the new one appears. If the
 // currently selected address no longer exists (or none was selected), pick the
@@ -141,6 +155,37 @@ const refreshAddresses = async () => {
   };
 
   const selectedAddress = addressList.find((a) => a.id === selectedAddressId) || null;
+  const currentPincode = isGift ? gift.postalCode.trim() : selectedAddress?.postalCode?.trim() || "";
+
+  useEffect(() => {
+    if (!currentPincode || !/^\d{6}$/.test(currentPincode)) {
+      setIsCodAvailable(true);
+      return;
+    }
+
+    let active = true;
+    setIsCheckingCod(true);
+
+    isPincodeCodDeliverable(currentPincode)
+      .then((deliverable) => {
+        if (!active) return;
+        setIsCodAvailable(deliverable);
+        if (!deliverable) {
+          setPaymentMethod("RAZORPAY");
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setIsCodAvailable(true);
+      })
+      .finally(() => {
+        if (active) setIsCheckingCod(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentPincode]);
 
   // Step 1 validation.
   const deliveryValid = (() => {
@@ -183,6 +228,13 @@ const refreshAddresses = async () => {
     setProcessing(true);
 
     const deliveryPhone = isGift ? undefined : selectedPhone.trim() || undefined;
+
+    if (paymentMethod === "COD" && !isCodAvailable) {
+      setProcessing(false);
+      toast.error("Cash on Delivery is not available for this delivery pincode. Please select UPI / Online Payment.");
+      return;
+    }
+
     const giftPayload = isGift
       ? {
           name: gift.name.trim(),
@@ -287,7 +339,14 @@ const refreshAddresses = async () => {
             onAddressListChange={refreshAddresses}
           />
         )}
-        {step === 1 && <PaymentStep paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} />}
+        {step === 1 && (
+          <PaymentStep
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            isCodAvailable={isCodAvailable}
+            isCheckingCod={isCheckingCod}
+          />
+        )}
         {step === 2 && (
           <ReviewStep
             lines={lines}

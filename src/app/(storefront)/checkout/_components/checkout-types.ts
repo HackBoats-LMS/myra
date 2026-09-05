@@ -25,6 +25,9 @@ export interface CheckoutGift {
 export interface CheckoutShipping {
   flatRate: number;
   freeShippingThreshold: number;
+  codFlatRate?: number;
+  codFreeShippingThreshold?: number;
+  codHandlingFee?: number;
 }
 
 export interface CheckoutOrderLine {
@@ -43,6 +46,7 @@ export interface CheckoutPricing {
   subtotal: number;
   discountAmount: number;
   shippingAmount: number;
+  codHandlingFee: number;
   taxAmount: number;
   finalTotal: number;
 }

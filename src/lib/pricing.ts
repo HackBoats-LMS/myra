@@ -25,6 +25,7 @@ export interface PricingResult {
   totalAmount: number;
   discountAmount: number;
   shippingAmount: number;
+  codHandlingFee: number;
   taxAmount: number;
   finalAmount: number;
 }
@@ -32,6 +33,9 @@ export interface PricingResult {
 export interface ShippingConfig {
   flatRate: number;
   freeShippingThreshold: number;
+  codFlatRate?: number;
+  codFreeShippingThreshold?: number;
+  codHandlingFee?: number;
 }
 
 /**
@@ -41,11 +45,14 @@ export interface ShippingConfig {
 export function calculateShipping(
   totalAmount: number,
   config: ShippingConfig,
-  freeShipping = false
+  freeShipping = false,
+  isCod = false
 ): number {
   if (freeShipping) return 0;
-  if (totalAmount >= config.freeShippingThreshold) return 0;
-  return config.flatRate;
+  const activeRate = isCod && typeof config.codFlatRate === "number" ? config.codFlatRate : config.flatRate;
+  const activeThreshold = isCod && typeof config.codFreeShippingThreshold === "number" ? config.codFreeShippingThreshold : config.freeShippingThreshold;
+  if (totalAmount >= activeThreshold) return 0;
+  return activeRate;
 }
 
 /**
@@ -64,7 +71,8 @@ export function calculateOrderTotal(
   items: CartItem[],
   coupon?: Coupon | null,
   shippingConfig?: ShippingConfig | null,
-  taxPercent: number = 0
+  taxPercent: number = 0,
+  paymentMethod: 'CASH_ON_DELIVERY' | 'RAZORPAY' | 'COD' = 'RAZORPAY'
 ): PricingResult {
   const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -103,15 +111,18 @@ export function calculateOrderTotal(
   const discount = Math.min(discountAmount, totalAmount);
 
   // Shipping: free if the threshold is met, or reduced/waived by a SHIPPING coupon.
+  const isCod = paymentMethod === 'CASH_ON_DELIVERY' || paymentMethod === 'COD';
   const config = shippingConfig || { flatRate: 0, freeShippingThreshold: 0 };
-  let shippingAmount = calculateShipping(totalAmount, config, false);
+  let shippingAmount = calculateShipping(totalAmount, config, false, isCod);
   if (appliedType === 'SHIPPING' && coupon) {
     shippingAmount -= calculateShippingDiscount(shippingAmount, coupon.discountValue);
   }
 
-  // Tax is applied to the discounted subtotal (plus shipping).
-  const taxBase = Math.max(totalAmount - discount, 0) + shippingAmount;
-  const taxAmount = taxPercent > 0 ? Math.round(taxBase * (taxPercent / 100) * 100) / 100 : 0;
+  const codHandlingFee = isCod ? Math.max(0, config.codHandlingFee ?? 0) : 0;
+
+  // Tax is applied to the discounted subtotal (plus shipping and COD handling).
+  const taxBase = Math.max(totalAmount - discount, 0) + shippingAmount + codHandlingFee;
+  const taxAmount = taxPercent > 0 ? Math.round((taxBase * (taxPercent / 100)) * 100) / 100 : 0;
 
   const finalAmount = Math.max(taxBase + taxAmount, 0);
 
@@ -122,6 +133,7 @@ export function calculateOrderTotal(
     totalAmount: round2(totalAmount),
     discountAmount: round2(discount),
     shippingAmount: round2(shippingAmount),
+    codHandlingFee: round2(codHandlingFee),
     taxAmount: round2(taxAmount),
     finalAmount: round2(finalAmount),
   };

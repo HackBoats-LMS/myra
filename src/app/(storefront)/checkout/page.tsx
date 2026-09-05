@@ -29,12 +29,19 @@ export default async function CheckoutPage() {
     redirect("/cart");
   }
 
-  const [addresses, shippingConfig, checkoutUser, storeSettings] = await Promise.all([
+  const [addresses, shippingConfig, checkoutUser, storeSettings, codSettings] = await Promise.all([
     prisma.address.findMany({ where: { userId }, orderBy: { createdAt: "asc" } }),
     prisma.shippingConfig.findUnique({ where: { id: "global" } }),
     prisma.user.findUnique({ where: { id: userId }, select: { phoneNumber: true, phoneNumber2: true } }),
     getStoreSettings(),
+    prisma.storeSetting.findMany({
+      where: { key: { in: ["codFlatRate", "codFreeShippingThreshold", "codHandlingFee"] } },
+    }),
   ]);
+
+  const codMap = new Map(codSettings.map((s) => [s.key, s.value]));
+  const defaultOnlineRate = shippingConfig?.flatRate ?? 49;
+  const defaultOnlineThreshold = shippingConfig?.freeShippingThreshold ?? 999;
 
   let autoCoupon: { code: string | null; discount: number } = { code: null, discount: 0 };
   try {
@@ -87,8 +94,13 @@ export default async function CheckoutPage() {
           }))}
           phones={[checkoutUser?.phoneNumber, checkoutUser?.phoneNumber2].filter(Boolean) as string[]}
           shipping={{
-            flatRate: shippingConfig?.flatRate ?? 49,
-            freeShippingThreshold: shippingConfig?.freeShippingThreshold ?? 999,
+            flatRate: defaultOnlineRate,
+            freeShippingThreshold: defaultOnlineThreshold,
+            codFlatRate: codMap.has("codFlatRate") ? parseFloat(codMap.get("codFlatRate")!) : defaultOnlineRate,
+            codFreeShippingThreshold: codMap.has("codFreeShippingThreshold")
+              ? parseFloat(codMap.get("codFreeShippingThreshold")!)
+              : defaultOnlineThreshold,
+            codHandlingFee: parseFloat(codMap.get("codHandlingFee") || "0") || 0,
           }}
           taxPercent={storeSettings.taxPercent}
           autoAppliedCoupon={autoCoupon.code}
