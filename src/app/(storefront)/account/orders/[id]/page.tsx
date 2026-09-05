@@ -126,7 +126,7 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
   const canReview = order.status === "DELIVERED";
 
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen py-6 sm:py-10 md:py-14">
+    <div className="w-full bg-[#F5EFE6] min-h-screen py-6 sm:py-10 md:py-14">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {

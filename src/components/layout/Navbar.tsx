@@ -16,7 +16,7 @@ interface NavbarProps {
 
 export default function Navbar({ cartCount, wishlistCount, isLoggedIn, navLinks = NAV_LINKS }: NavbarProps) {
   return (
-    <nav className="w-full bg-white border-b border-[#7A0B2E]/20 flex items-center px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 lg:py-3 relative z-50">
+    <nav className="w-full bg-[#FDFAF7] border-b border-[#7A0B2E]/15 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 lg:py-3 relative z-50">
       {/* Logo (left) */}
       <div className="flex-1 flex items-center justify-start">
         <Link href="/" className="flex items-center">

@@ -9,7 +9,7 @@ export default function StorefrontError({
   reset: () => void;
 }) {
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-[70vh] flex items-center justify-center px-4">
+    <div className="w-full bg-[#F5EFE6] min-h-[70vh] flex items-center justify-center px-4">
       <div className="text-center space-y-5 max-w-md">
         <p className="font-serif text-7xl text-[#7A0B2E]">500</p>
         <h1 className="text-2xl md:text-3xl font-serif text-[#2D1F2F] tracking-wide">Something Went Wrong</h1>

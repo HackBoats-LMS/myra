@@ -140,7 +140,7 @@ export async function sendLowStockAlert(items: { name: string; stockQuantity: nu
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #7A0B2E; padding: 24px; border-top: 4px solid #2D1F2F;">
           <h2 style="font-family: serif; color: #2D1F2F;">Low Stock Alert</h2>
           <p style="color: #555; font-size: 14px;">The following products are running low:</p>
-          <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
+          <pre style="white-space: pre-line; background:#F5EFE6; padding:12px; border: 1px solid #eee;">${rows}</pre>
         </div>
       `,
     })
@@ -170,7 +170,7 @@ export async function sendAbandonedCartEmail(email: string, items: { name: strin
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;border: 1px solid #7A0B2E;padding:24px;border-top:4px solid #2D1F2F;">
           <h2 style="font-family: serif; color: #2D1F2F;">Did you forget something?</h2>
           <p style="color: #555; font-size: 14px;">We saved the following items in your bag:</p>
-          <div style="background:#FAFAFA;padding:12px;border:1px solid #eee;margin-bottom:16px;">${rows}</div>
+          <div style="background:#F5EFE6;padding:12px;border:1px solid #eee;margin-bottom:16px;">${rows}</div>
           <div style="text-align: center;">
             <a href="${cartUrl}" style="display:inline-block;padding:12px 24px;background:#2D1F2F;color:#fff;text-decoration:none;font-weight:bold;border: 1px solid #7A0B2E;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Return to your bag</a>
           </div>
@@ -256,7 +256,7 @@ export async function sendAdminNewOrderEmail(order: AdminOrderSummary) {
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #7A0B2E; padding: 24px; border-top: 4px solid #2D1F2F;">
           <h2 style="font-family: serif; color: #2D1F2F;">New Order Received</h2>
-          <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
+          <pre style="white-space: pre-line; background:#F5EFE6; padding:12px; border: 1px solid #eee;">${rows}</pre>
           <div style="text-align:center;margin:24px 0;">
             <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/orders/${order.orderId}" style="display:inline-block;padding:12px 24px;background:#2D1F2F;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">View Order</a>
           </div>
@@ -298,7 +298,7 @@ export async function sendAdminNewReturnEmail(input: {
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #7A0B2E; padding: 24px; border-top: 4px solid #2D1F2F;">
           <h2 style="font-family: serif; color: #2D1F2F;">New Return Request</h2>
-          <pre style="white-space: pre-line; background:#FAFAFA; padding:12px; border: 1px solid #eee;">${rows}</pre>
+          <pre style="white-space: pre-line; background:#F5EFE6; padding:12px; border: 1px solid #eee;">${rows}</pre>
           <div style="text-align:center;margin:24px 0;">
             <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/returns/${input.requestId}" style="display:inline-block;padding:12px 24px;background:#2D1F2F;color:#fff;text-decoration:none;font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;">Review Request</a>
           </div>

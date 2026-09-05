@@ -32,7 +32,7 @@ export default function CompareButton({
         type="button"
         onClick={handle}
         className={`flex items-center justify-center gap-2 border px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors ${className}
-          ${active ? "bg-[#2D1F2F] text-white border-[#2D1F2F]" : "border-[#7A0B2E]/40 text-[#2D1F2F] hover:bg-[#FAFAFA]"}`}
+          ${active ? "bg-[#2D1F2F] text-white border-[#2D1F2F]" : "border-[#7A0B2E]/40 text-[#2D1F2F] hover:bg-[#F5EFE6]"}`}
       >
         <i className={`ri-${active ? "check-double-line" : "arrow-left-right-line"} text-sm`} />
         {active ? "In Compare" : "Add to Compare"}

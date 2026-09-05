@@ -78,7 +78,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm text-[#2D1F2F]">
-        <thead className="bg-[#FAFAFA] text-[#7A0B2E] border-b border-[#7A0B2E]/20 uppercase text-[10px] font-bold tracking-widest">
+        <thead className="bg-[#F5EFE6] text-[#7A0B2E] border-b border-[#7A0B2E]/20 uppercase text-[10px] font-bold tracking-widest">
           <tr>
             <th className="p-4 border-r border-[#7A0B2E]/10">Product</th>
             <th className="p-4 border-r border-[#7A0B2E]/10">Rating</th>
@@ -90,10 +90,10 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
         </thead>
         <tbody className="divide-y divide-[#7A0B2E]/10">
           {reviews.map((review) => (
-            <tr key={review.id} className="hover:bg-[#FAFAFA] transition-colors group">
+            <tr key={review.id} className="hover:bg-[#F5EFE6] transition-colors group">
               <td className="p-4 border-r border-[#7A0B2E]/10">
                 <Link href={`/products/${review.product.slug}`} target="_blank" className="flex items-center gap-3 group/link">
-                  <div className="relative w-10 h-10 bg-[#FAFAFA] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0 rounded-none">
+                  <div className="relative w-10 h-10 bg-[#F5EFE6] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0 rounded-none">
                     {review.product.images[0] && (
                       <Image src={review.product.images[0]} alt={review.product.name} fill className="object-cover" />
                     )}
@@ -114,7 +114,7 @@ export default function AdminReviewList({ initialReviews }: { initialReviews: Re
                 {review.images && review.images.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {review.images.map((src, i) => (
-                      <div key={`${src}-${i}`} className="relative w-10 h-10 border border-[#7A0B2E]/20 overflow-hidden rounded-none bg-[#FAFAFA]">
+                      <div key={`${src}-${i}`} className="relative w-10 h-10 border border-[#7A0B2E]/20 overflow-hidden rounded-none bg-[#F5EFE6]">
                         <Image src={src} alt="Review photo" fill className="object-cover" />
                       </div>
                     ))}

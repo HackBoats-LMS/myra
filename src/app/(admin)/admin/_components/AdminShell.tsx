@@ -7,7 +7,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="w-full min-h-screen bg-[#FAFAFA]">
+    <div className="w-full min-h-screen bg-[#F5EFE6]">
       {/* Mobile top bar */}
       <header className="lg:hidden sticky top-0 z-40 h-16 bg-white border-b border-[#7A0B2E]/20 flex items-center justify-between px-4 shadow-sm">
         <button

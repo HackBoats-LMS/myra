@@ -32,7 +32,7 @@ function AttributeRow({
   highlight?: boolean;
 }) {
   return (
-    <tr className={`border-b border-[#7A0B2E]/10 ${highlight ? "bg-[#FAFAFA]" : "bg-white"}`}>
+    <tr className={`border-b border-[#7A0B2E]/10 ${highlight ? "bg-[#F5EFE6]" : "bg-white"}`}>
       <td className="py-4 px-5 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] w-40 align-middle whitespace-nowrap border-r border-[#7A0B2E]/10">
         {label}
       </td>
@@ -92,7 +92,7 @@ export default function CompareTable({ ordered, priced }: CompareTableProps) {
       <table className="w-full border-collapse" style={{ minWidth: `${Math.max(540, 200 * ordered.length + 160)}px` }}>
         <thead>
           <tr className="border-b-2 border-[#7A0B2E]/20">
-            <th className="w-40 p-5 border-r border-[#7A0B2E]/10 bg-[#FAFAFA] align-bottom">
+            <th className="w-40 p-5 border-r border-[#7A0B2E]/10 bg-[#F5EFE6] align-bottom">
               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 Attributes
               </span>
@@ -113,7 +113,7 @@ export default function CompareTable({ ordered, priced }: CompareTableProps) {
                 <th key={p.id} className="p-5 align-top text-left border-r last:border-r-0 border-[#7A0B2E]/10">
                   <div className="flex flex-col gap-4">
                     <Link href={`/products/${p.slug}`} className="group block">
-                      <div className="relative aspect-[3/4] w-full max-w-[180px] mx-auto overflow-hidden bg-[#FAFAFA] border border-[#7A0B2E]/20">
+                      <div className="relative aspect-[3/4] w-full max-w-[180px] mx-auto overflow-hidden bg-[#F5EFE6] border border-[#7A0B2E]/20">
                         {savings && (
                           <div className="absolute top-2 left-2 z-10 bg-[#7A0B2E] text-white text-[9px] font-black px-2 py-1 uppercase tracking-wider">
                             -{savings}%

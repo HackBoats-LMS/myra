@@ -112,7 +112,7 @@ export default async function AdminOrdersPage({
 
       <div className="bg-white border border-[#7A0B2E]/20 relative rounded-none">
         <table className="w-full text-left text-sm text-[#2D1F2F]">
-          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
+          <thead className="bg-[#F5EFE6] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Order ID</th>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Customer</th>
@@ -131,7 +131,7 @@ export default async function AdminOrdersPage({
               </tr>
             ) : (
               orders.map((order) => (
-                <tr key={order.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                <tr key={order.id} className="hover:bg-[#F5EFE6] transition-colors group">
                   <td className="px-6 py-4 font-mono text-[10px] text-gray-500 font-bold uppercase tracking-widest border-r border-[#7A0B2E]/10">{order.id.split('-')[0]}</td>
                   <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">
                     {order.user?.name || order.user?.email || order.user?.phoneNumber || 'Guest'}
@@ -139,7 +139,7 @@ export default async function AdminOrdersPage({
                   <td className="px-6 py-4 border-r border-[#7A0B2E]/10 text-xs font-bold uppercase tracking-widest text-[#7A0B2E]">{order._count.orderItems} items</td>
                   <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">Rs. {order.totalAmount.toFixed(2)}</td>
                   <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
-                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest bg-[#FAFAFA] border border-[#7A0B2E]/30 text-[#2D1F2F]">
+                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest bg-[#F5EFE6] border border-[#7A0B2E]/30 text-[#2D1F2F]">
                       {order.status}
                     </span>
                   </td>

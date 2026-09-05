@@ -34,7 +34,7 @@ export default function OrderAddress({ user, address }: OrderAddressProps) {
           </h3>
         </div>
         {address?.label && (
-          <span className="text-[9px] font-bold text-[#7A0B2E] uppercase tracking-widest bg-[#FAFAFA] border border-[#7A0B2E]/20 px-2 py-0.5">
+          <span className="text-[9px] font-bold text-[#7A0B2E] uppercase tracking-widest bg-[#F5EFE6] border border-[#7A0B2E]/20 px-2 py-0.5">
             {address.label}
           </span>
         )}

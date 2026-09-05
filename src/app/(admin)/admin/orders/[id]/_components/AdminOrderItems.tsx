@@ -45,7 +45,7 @@ export default function AdminOrderItems({ orderId, orderItems, totalAmount, refu
       <div className="divide-y divide-[#7A0B2E]/10">
         {orderItems.map((item) => (
           <div key={item.id} className={`p-6 flex items-center gap-4 ${item.isCancelled ? 'opacity-50' : ''}`}>
-            <div className="relative w-16 h-24 bg-[#FAFAFA] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
+            <div className="relative w-16 h-24 bg-[#F5EFE6] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
               {item.product.images[0] && (
                 <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover grayscale-0" />
               )}
@@ -64,7 +64,7 @@ export default function AdminOrderItems({ orderId, orderItems, totalAmount, refu
         ))}
       </div>
 
-      <div className="bg-[#FAFAFA] p-6 flex flex-col gap-2 border-t border-[#7A0B2E]/20">
+      <div className="bg-[#F5EFE6] p-6 flex flex-col gap-2 border-t border-[#7A0B2E]/20">
         <div className="flex justify-between items-center">
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">Total Amount</span>
           <span className="text-xl font-serif text-[#2D1F2F]">₹{totalAmount.toFixed(2)}</span>

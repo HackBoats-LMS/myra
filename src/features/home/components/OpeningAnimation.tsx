@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import MyraLogo from '@/components/shared/MyraLogo';
 
 const OpeningAnimation = () => {
     // 0 = closed, 1 = inner doors open, 2 = all doors slide off, 3 = hidden
@@ -46,11 +47,7 @@ const OpeningAnimation = () => {
                 <div className={`absolute inset-0 bg-[#f0f0f0] flex items-center justify-center z-0 transition-opacity duration-700 ease-in-out ${
                     phase >= 2 ? 'opacity-0' : 'opacity-100'
                 }`}>
-                    <img 
-                        src="/displaypics/myralogo.png" 
-                        alt="Myra Logo" 
-                        className="h-16 md:h-24 lg:h-32 object-contain" 
-                    />
+                    <MyraLogo className="h-16 md:h-24 lg:h-32 w-auto object-contain" />
                 </div>
 
                 {/* The Doors Container */}

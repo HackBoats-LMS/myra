@@ -33,7 +33,7 @@ export default function StockNotifyButton({ productId }: { productId: string }) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-[#7A0B2E]/30 p-4 space-y-3 bg-[#FAFAFA]">
+    <form onSubmit={handleSubmit} className="border border-[#7A0B2E]/30 p-4 space-y-3 bg-[#F5EFE6]">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
         <i className="ri-notification-3-line mr-1 text-[#7A0B2E]" />
         Notify me when back in stock

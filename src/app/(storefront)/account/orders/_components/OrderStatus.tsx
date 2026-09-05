@@ -27,7 +27,7 @@ export default function OrderStatus({ orderId, status, paymentMethod, paymentSta
               ? "bg-green-50 text-green-700 border border-green-200"
               : status === "CANCELLED"
               ? "bg-red-50 text-red-700 border border-red-200"
-              : "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30"
+              : "bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/30"
           }`}
         >
           {status.replace(/_/g, " ")}

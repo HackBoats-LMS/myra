@@ -57,7 +57,7 @@ export default async function AdminWorkersPage() {
       <div className="bg-white border border-[#7A0B2E]/20 relative rounded-none overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left text-sm text-[#2D1F2F]">
-            <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
+            <thead className="bg-[#F5EFE6] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
               <tr>
                 <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Worker</th>
                 <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Contact</th>
@@ -75,7 +75,7 @@ export default async function AdminWorkersPage() {
                 </tr>
               ) : (
                 workers.map((w) => (
-                  <tr key={w.id} className="hover:bg-[#FAFAFA] transition-colors">
+                  <tr key={w.id} className="hover:bg-[#F5EFE6] transition-colors">
                     <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10">{w.name || "Unnamed"}</td>
                     <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                       <p className="text-xs font-bold uppercase tracking-widest text-[#7A0B2E]">{w.email || "—"}</p>
@@ -90,7 +90,7 @@ export default async function AdminWorkersPage() {
                     </td>
                     <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                       <span className={`inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border
-                        ${w.isDisabled ? "bg-red-50 text-red-700 border-red-200" : "bg-[#FAFAFA] text-green-700 border-[#7A0B2E]/20"}`}>
+                        ${w.isDisabled ? "bg-red-50 text-red-700 border-red-200" : "bg-[#F5EFE6] text-green-700 border-[#7A0B2E]/20"}`}>
                         {w.isDisabled ? "Disabled" : "Active"}
                       </span>
                     </td>

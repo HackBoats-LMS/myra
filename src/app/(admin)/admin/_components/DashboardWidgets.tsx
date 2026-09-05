@@ -67,11 +67,11 @@ export default function DashboardWidgets({
   const maxRevenue = Math.max(...revenueByDay.map((d) => d.total), 1); // Avoid division by zero
 
   const statusColors: Record<OrderStatus, string> = {
-    PENDING: "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30",
-    READY_TO_SHIP: "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30",
-    SHIPPED: "bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30",
-    OUT_FOR_DELIVERY: "bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30",
-    DELIVERED: "bg-[#FAFAFA] text-green-700 border border-[#7A0B2E]/20",
+    PENDING: "bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/30",
+    READY_TO_SHIP: "bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/30",
+    SHIPPED: "bg-[#F5EFE6] text-[#2D1F2F] border border-[#7A0B2E]/30",
+    OUT_FOR_DELIVERY: "bg-[#F5EFE6] text-[#2D1F2F] border border-[#7A0B2E]/30",
+    DELIVERED: "bg-[#F5EFE6] text-green-700 border border-[#7A0B2E]/20",
     CANCELLED: "bg-red-50 text-red-700 border border-red-200",
   };
 
@@ -113,8 +113,8 @@ export default function DashboardWidgets({
               <p className="text-sm text-gray-500">No sales data yet.</p>
             ) : (
               topProducts.map((p, i) => (
-                <div key={p.id} className="flex items-center gap-4 p-3 hover:bg-[#FAFAFA] border border-transparent hover:border-[#7A0B2E]/20 transition-all">
-                  <div className="w-8 h-8 flex items-center justify-center bg-[#FAFAFA] border border-[#7A0B2E]/20 text-[#7A0B2E] font-bold text-xs">
+                <div key={p.id} className="flex items-center gap-4 p-3 hover:bg-[#F5EFE6] border border-transparent hover:border-[#7A0B2E]/20 transition-all">
+                  <div className="w-8 h-8 flex items-center justify-center bg-[#F5EFE6] border border-[#7A0B2E]/20 text-[#7A0B2E] font-bold text-xs">
                     #{i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -146,7 +146,7 @@ export default function DashboardWidgets({
               <p className="text-sm text-gray-500">No recent orders.</p>
             ) : (
               recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-3 border border-[#7A0B2E]/20 hover:bg-[#FAFAFA] transition-colors">
+                <div key={order.id} className="flex items-center justify-between p-3 border border-[#7A0B2E]/20 hover:bg-[#F5EFE6] transition-colors">
                   <div>
                     <p className="text-sm font-bold text-[#2D1F2F]">
                       Order #{order.id.slice(-6).toUpperCase()} • {order.user?.name || order.user?.email || "Guest"}

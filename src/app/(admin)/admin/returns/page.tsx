@@ -77,7 +77,7 @@ export default async function AdminReturnsPage({
 
       <div className="bg-white border border-[#7A0B2E]/20 relative rounded-none">
         <table className="w-full text-left text-sm text-[#2D1F2F]">
-          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
+          <thead className="bg-[#F5EFE6] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Product</th>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Customer</th>
@@ -96,7 +96,7 @@ export default async function AdminReturnsPage({
               </tr>
             ) : (
               returns.map((r) => (
-                <tr key={r.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                <tr key={r.id} className="hover:bg-[#F5EFE6] transition-colors group">
                   <td className="px-6 py-4 font-bold text-[#2D1F2F] border-r border-[#7A0B2E]/10 max-w-[220px] truncate">
                     {r.orderItem.product.name}
                   </td>
@@ -105,7 +105,7 @@ export default async function AdminReturnsPage({
                     <p className="text-gray-400">{r.user.email}</p>
                   </td>
                   <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
-                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-[#7A0B2E]/30 text-[#2D1F2F] bg-[#FAFAFA]">
+                    <span className="inline-flex items-center px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest border border-[#7A0B2E]/30 text-[#2D1F2F] bg-[#F5EFE6]">
                       {r.type}
                     </span>
                   </td>

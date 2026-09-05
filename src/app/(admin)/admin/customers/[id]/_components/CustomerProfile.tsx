@@ -45,7 +45,7 @@ export default function CustomerProfile({ customer }: CustomerProfileProps) {
         <div>
           <span className="block text-[8px] text-gray-400 uppercase tracking-widest font-bold mb-1">Status</span>
           <span className={`inline-flex items-center px-3 py-1 text-[10px] font-bold uppercase tracking-widest
-            ${customer.isDisabled ? "bg-red-50 text-red-700 border border-red-200" : "bg-[#FAFAFA] text-green-700 border border-[#7A0B2E]/20"}`}>
+            ${customer.isDisabled ? "bg-red-50 text-red-700 border border-red-200" : "bg-[#F5EFE6] text-green-700 border border-[#7A0B2E]/20"}`}>
             {customer.isDisabled ? "Banned" : "Active"}
           </span>
         </div>

@@ -71,7 +71,7 @@ export default async function AllProductsPage({
         </div>
 
         {productsWithReviews.length === 0 ? (
-          <div className="text-center text-[#7A0B2E] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#7A0B2E]/20 bg-[#FAFAFA]">
+          <div className="text-center text-[#7A0B2E] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#7A0B2E]/20 bg-[#F5EFE6]">
             No products available at the moment.
           </div>
         ) : (

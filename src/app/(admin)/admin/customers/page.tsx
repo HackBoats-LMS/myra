@@ -107,7 +107,7 @@ export default async function AdminCustomersPage({
 
       <div className="bg-white border border-[#7A0B2E]/20 relative">
         <table className="w-full text-left text-sm text-[#2D1F2F]">
-          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
+          <thead className="bg-[#F5EFE6] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Customer Info</th>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Phone Number</th>
@@ -129,7 +129,7 @@ export default async function AdminCustomersPage({
                 const totalSpent = customer.orders.reduce((sum: number, order) => sum + order.totalAmount, 0);
 
                 return (
-                  <tr key={customer.id} className="hover:bg-[#FAFAFA] transition-colors group">
+                  <tr key={customer.id} className="hover:bg-[#F5EFE6] transition-colors group">
                     <td className="px-6 py-4 border-r border-[#7A0B2E]/10">
                       <div>
                         <Link href={`/admin/customers/${customer.id}`} className="font-bold text-[#7A0B2E] hover:text-[#2D1F2F] hover:underline block uppercase tracking-widest text-[10px]">

@@ -23,7 +23,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen rounded-none">
+    <div className="w-full bg-[#F5EFE6] min-h-screen rounded-none">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-10 md:py-24 space-y-12">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-serif text-[#2D1F2F] tracking-wide">Contact Us</h1>

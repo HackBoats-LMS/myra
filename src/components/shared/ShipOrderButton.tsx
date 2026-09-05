@@ -21,7 +21,7 @@ export default function ShipOrderButton({
   if (shipped) {
     return (
       <div className="flex gap-2">
-        <span className="inline-flex items-center gap-1.5 bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
+        <span className="inline-flex items-center gap-1.5 bg-[#F5EFE6] text-[#2D1F2F] border border-[#7A0B2E]/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest">
           <Truck className="w-4 h-4 text-[#7A0B2E]" />
           Shipped via Shiprocket
         </span>

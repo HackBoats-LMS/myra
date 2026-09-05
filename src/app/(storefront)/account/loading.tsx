@@ -1,6 +1,6 @@
 export default function AccountLoading() {
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen">
+    <div className="w-full bg-[#F5EFE6] min-h-screen">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-16 animate-pulse">
         <div className="mb-8">
           <div className="h-8 w-40 bg-gray-200" />

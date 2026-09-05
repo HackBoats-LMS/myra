@@ -77,7 +77,7 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
     <div className="w-full h-full rounded-none">
       <label 
         className={`flex flex-col items-center justify-center w-full h-full min-h-[112px] border-2 border-dashed rounded-none ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer transition-colors'} ${
-          isDragging ? "border-[#7A0B2E] bg-[#7A0B2E]/5" : "border-[#7A0B2E]/30 bg-[#FAFAFA] hover:bg-white"
+          isDragging ? "border-[#7A0B2E] bg-[#7A0B2E]/5" : "border-[#7A0B2E]/30 bg-[#F5EFE6] hover:bg-white"
         }`}
         onDragOver={disabled ? undefined : handleDragOver}
         onDragLeave={disabled ? undefined : handleDragLeave}

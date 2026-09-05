@@ -143,7 +143,7 @@ export default async function CollectionPage({
   return (
     <div className="w-full bg-white min-h-screen">
       {/* 1. Breadcrumb Navigation */}
-      <div className="border-b border-[#7A0B2E]/15 bg-[#FAFAFA]">
+      <div className="border-b border-[#7A0B2E]/15 bg-[#F5EFE6]">
         <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-3">
           <nav className="flex items-center gap-2 text-xs font-serif lowercase text-gray-500">
             <Link href="/" className="hover:text-[#7A0B2E] transition-colors">home</Link>
@@ -177,7 +177,7 @@ export default async function CollectionPage({
             {/* Elegant Luxury Gradient Overlay with Lower-Third Title Placement */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end justify-center pb-8 sm:pb-12 md:pb-16">
               <div className="text-center px-4 max-w-3xl">
-                <span className="text-[10px] sm:text-xs text-[#F0D5D5] uppercase tracking-[0.25em] font-bold block mb-2 drop-shadow">
+                <span className="text-[10px] sm:text-xs text-[#F3E8E8] uppercase tracking-[0.25em] font-bold block mb-2 drop-shadow">
                   {isMainCategory ? "Exclusive Collection" : `Category / ${collection.parent?.name || "Collection"}`}
                 </span>
                 <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif text-white tracking-tight drop-shadow-md capitalize">
@@ -214,7 +214,7 @@ export default async function CollectionPage({
           )}
         </div>
       ) : (
-        <div className="border-b border-[#7A0B2E]/15 bg-[#FAFAFA] py-10 md:py-16">
+        <div className="border-b border-[#7A0B2E]/15 bg-[#F5EFE6] py-10 md:py-16">
           <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 text-center">
             <span className="text-[10px] text-[#7A0B2E] uppercase tracking-[0.2em] font-bold block mb-1">
               {isMainCategory ? "Collection" : `Category / ${collection.parent?.name || ""}`}
@@ -253,7 +253,7 @@ export default async function CollectionPage({
                 <Link
                   key={child.id}
                   href={`/collections/${child.slug}`}
-                  className="group relative flex flex-col bg-[#FAFAFA] border border-[#7A0B2E]/20 hover:border-[#7A0B2E] transition-all duration-300 shadow-sm hover:shadow-md overflow-hidden"
+                  className="group relative flex flex-col bg-[#F5EFE6] border border-[#7A0B2E]/20 hover:border-[#7A0B2E] transition-all duration-300 shadow-sm hover:shadow-md overflow-hidden"
                 >
                   {/* Thumbnail / Image container */}
                   <div className="relative aspect-[3/4] w-full bg-[#FAF0F2] overflow-hidden">
@@ -265,7 +265,7 @@ export default async function CollectionPage({
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#FAFAFA] to-[#FAF0F2]">
+                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#F5EFE6] to-[#FAF0F2]">
                         <Sparkles className="w-8 h-8 text-[#7A0B2E]/40 mb-2 group-hover:scale-110 transition-transform" />
                         <span className="font-serif text-sm font-bold text-[#2D1F2F]">
                           {child.name}
@@ -294,7 +294,7 @@ export default async function CollectionPage({
 
       {/* 4. Subcategory Quick Pill Buttons Bar */}
       {subcategoryList.length > 0 && (
-        <div className="sticky top-0 z-30 bg-[#FAFAFA]/95 backdrop-blur-md border-b border-[#7A0B2E]/20 py-3.5 px-4 shadow-xs">
+        <div className="sticky top-0 z-30 bg-[#F5EFE6]/95 backdrop-blur-md border-b border-[#7A0B2E]/20 py-3.5 px-4 shadow-xs">
           <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-[11px] font-bold uppercase tracking-widest text-[#2D1F2F] whitespace-nowrap">
               {isMainCategory ? "Filter By Subcategory:" : `More in ${mainCategoryName}:`}
@@ -354,7 +354,7 @@ export default async function CollectionPage({
         </div>
 
         {productsWithReviews.length === 0 ? (
-          <div className="text-center text-[#7A0B2E] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#7A0B2E]/20 bg-[#FAFAFA]">
+          <div className="text-center text-[#7A0B2E] text-xs uppercase tracking-widest font-semibold py-16 md:py-24 border border-dashed border-[#7A0B2E]/20 bg-[#F5EFE6]">
             No products found in this category yet.
           </div>
         ) : (

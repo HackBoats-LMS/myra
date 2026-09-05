@@ -201,7 +201,7 @@ export default function CollectionListTable({
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm text-[#2D1F2F]">
-          <thead className="bg-[#FAFAFA] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
+          <thead className="bg-[#F5EFE6] text-[#7A0B2E] text-[10px] uppercase font-bold tracking-widest border-b border-[#7A0B2E]/20">
             <tr>
               <th className="px-4 py-4 w-28 border-r border-[#7A0B2E]/10 text-center">Order</th>
               <th className="px-6 py-4 border-r border-[#7A0B2E]/10">Category / Subcategory</th>
@@ -225,7 +225,7 @@ export default function CollectionListTable({
                 return (
                   <React.Fragment key={mainCat.id}>
                     {/* Top Level Category Row */}
-                    <tr className="bg-[#FAFAFA] hover:bg-[#FAF0F2] transition-colors font-medium border-t-2 border-[#7A0B2E]/20">
+                    <tr className="bg-[#F5EFE6] hover:bg-[#FAF0F2] transition-colors font-medium border-t-2 border-[#7A0B2E]/20">
                       {/* Order Controls */}
                       <td className="px-3 py-3 border-r border-[#7A0B2E]/10 text-center">
                         <div className="flex items-center justify-center gap-1">
@@ -356,7 +356,7 @@ export default function CollectionListTable({
                     {mainCat.children.map((sub, subIdx) => {
                       const isSubNavVisible = sub.showInNav ?? true;
                       return (
-                        <tr key={sub.id} className="hover:bg-[#FAFAFA] transition-colors bg-white">
+                        <tr key={sub.id} className="hover:bg-[#F5EFE6] transition-colors bg-white">
                           {/* Subcategory Order Controls */}
                           <td className="px-3 py-2.5 border-r border-[#7A0B2E]/10 text-center">
                             <div className="flex items-center justify-center gap-1">
@@ -445,7 +445,7 @@ export default function CollectionListTable({
                           </td>
 
                           <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-center">
-                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] bg-[#FAFAFA] border border-gray-200 text-gray-600">
+                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] bg-[#F5EFE6] border border-gray-200 text-gray-600">
                               {sub._count.products} products
                             </span>
                           </td>

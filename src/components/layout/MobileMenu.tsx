@@ -58,7 +58,7 @@ export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount
       {/* Slide-down panel */}
       <div
         className={`
-          fixed left-0 right-0 top-[65px] bg-white border-b border-[#7A0B2E]/20 shadow-lg z-40
+          fixed left-0 right-0 top-[65px] bg-[#FDFAF7] border-b border-[#7A0B2E]/15 shadow-lg z-40
           transition-all duration-300 ease-in-out overflow-hidden
           ${isOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0 pointer-events-none"}
         `}

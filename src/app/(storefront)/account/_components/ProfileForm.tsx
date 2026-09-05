@@ -102,7 +102,7 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
     <div className="space-y-6">
       {/* Account Details Box */}
       <div className="bg-white border border-[#7A0B2E]/20 shadow-sm relative rounded-none">
-        <div className="p-6 border-b border-[#7A0B2E]/20 bg-[#FAFAFA]">
+        <div className="p-6 border-b border-[#7A0B2E]/20 bg-[#F5EFE6]">
           {/* Title row */}
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-xl font-serif text-[#2D1F2F] tracking-wide flex-shrink-0">Account Details</h3>
@@ -152,7 +152,7 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
                     placeholder="e.g. +91 98765 43210"
                     className={`w-full rounded-none border px-3 py-2 text-sm font-medium transition-all ${
                       user.phoneNumber 
-                        ? "border-[#7A0B2E]/10 bg-[#FAFAFA] text-gray-500 cursor-not-allowed" 
+                        ? "border-[#7A0B2E]/10 bg-[#F5EFE6] text-gray-500 cursor-not-allowed" 
                         : "border-[#7A0B2E]/20 bg-white text-[#2D1F2F] placeholder-gray-400 focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                     }`} 
                   />
@@ -302,7 +302,7 @@ export default function ProfileForm({ user }: { user: Omit<User, 'password'> & {
         </button>
 
         {showPasswordSection && (
-          <form onSubmit={handlePasswordSubmit} className="p-6 border-t border-[#7A0B2E]/20 space-y-4 bg-[#FAFAFA]">
+          <form onSubmit={handlePasswordSubmit} className="p-6 border-t border-[#7A0B2E]/20 space-y-4 bg-[#F5EFE6]">
             {user.hasPassword && (
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Current Password</label>

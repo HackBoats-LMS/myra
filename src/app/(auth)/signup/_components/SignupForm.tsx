@@ -78,6 +78,7 @@ export default function SignupForm() {
             onChange={(e) => setName(e.target.value)}
             className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="John Doe"
+            suppressHydrationWarning
           />
         </div>
 
@@ -89,6 +90,7 @@ export default function SignupForm() {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="you@example.com"
+            suppressHydrationWarning
           />
         </div>
 
@@ -101,6 +103,7 @@ export default function SignupForm() {
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="e.g. 9876543210"
+            suppressHydrationWarning
           />
         </div>
         
@@ -113,6 +116,7 @@ export default function SignupForm() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full bg-white border border-[#7A0B2E]/30 px-4 py-3 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
             placeholder="Create a strong password"
+            suppressHydrationWarning
           />
         </div>
 
@@ -130,7 +134,7 @@ export default function SignupForm() {
           <div className="w-full border-t border-[#7A0B2E]/20" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-[#FAFAFA] text-xs font-medium text-gray-500 uppercase tracking-widest">Or continue with</span>
+          <span className="px-2 bg-[#F5EFE6] text-xs font-medium text-gray-500 uppercase tracking-widest">Or continue with</span>
         </div>
       </div>
 

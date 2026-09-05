@@ -63,7 +63,7 @@ export default function AdminForm<T extends { id?: string }>({
         <button 
           type="button" 
           onClick={() => router.back()}
-          className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#2D1F2F] border border-[#7A0B2E]/20 transition-colors bg-white hover:bg-[#FAFAFA] rounded-none"
+          className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-[#2D1F2F] border border-[#7A0B2E]/20 transition-colors bg-white hover:bg-[#F5EFE6] rounded-none"
         >
           Cancel
         </button>

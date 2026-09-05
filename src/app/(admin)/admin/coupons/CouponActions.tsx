@@ -39,7 +39,7 @@ export default function CouponActions({ couponId, initialStatus }: { couponId: s
     <div className="flex items-center justify-end gap-2">
       <Link
         href={`/admin/coupons/${couponId}`}
-        className="p-1.5 text-[#7A0B2E] hover:text-[#2D1F2F] hover:bg-[#FAFAFA] border border-[#7A0B2E]/20 rounded-none transition-colors flex items-center justify-center"
+        className="p-1.5 text-[#7A0B2E] hover:text-[#2D1F2F] hover:bg-[#F5EFE6] border border-[#7A0B2E]/20 rounded-none transition-colors flex items-center justify-center"
         title="Edit"
       >
         <Pencil className="w-4 h-4" />
@@ -47,7 +47,7 @@ export default function CouponActions({ couponId, initialStatus }: { couponId: s
       <button
         onClick={handleToggle}
         disabled={loading}
-        className="p-1.5 text-[#7A0B2E] hover:text-[#2D1F2F] hover:bg-[#FAFAFA] border border-[#7A0B2E]/20 rounded-none transition-colors disabled:opacity-50 flex items-center justify-center"
+        className="p-1.5 text-[#7A0B2E] hover:text-[#2D1F2F] hover:bg-[#F5EFE6] border border-[#7A0B2E]/20 rounded-none transition-colors disabled:opacity-50 flex items-center justify-center"
         title={isActive ? "Deactivate" : "Activate"}
       >
         {loading ? (

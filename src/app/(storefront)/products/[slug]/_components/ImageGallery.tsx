@@ -69,7 +69,7 @@ export default function ImageGallery({ images, alt, videoUrl }: { images: string
               key={i}
               onClick={() => setSelected(i)}
               className={`
-                relative flex-shrink-0 w-16 sm:w-full aspect-[3/4] bg-[#FAFAFA] overflow-hidden rounded-none transition-all border flex items-center justify-center
+                relative flex-shrink-0 w-16 sm:w-full aspect-[3/4] bg-[#F5EFE6] overflow-hidden rounded-none transition-all border flex items-center justify-center
                 ${selected === i
                   ? "border-[#7A0B2E] ring-1 ring-[#7A0B2E] opacity-100"
                   : "border-transparent opacity-70 hover:opacity-100 hover:border-[#7A0B2E]/40"}
@@ -119,7 +119,7 @@ export default function ImageGallery({ images, alt, videoUrl }: { images: string
 
       {/* Main media container */}
       <div 
-        className="relative flex-1 w-full bg-[#FAFAFA] overflow-hidden rounded-none border border-black/5 order-1 sm:order-2 flex flex-col justify-center"
+        className="relative flex-1 w-full bg-[#F5EFE6] overflow-hidden rounded-none border border-black/5 order-1 sm:order-2 flex flex-col justify-center"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ cursor: mediaItems[selected].type === 'image' ? 'zoom-in' : 'default' }}
@@ -137,7 +137,7 @@ export default function ImageGallery({ images, alt, videoUrl }: { images: string
             className="transition-transform duration-150 ease-out block"
           />
         ) : (
-          <div className="relative w-full bg-[#FAFAFA] flex items-center justify-center">
+          <div className="relative w-full bg-[#F5EFE6] flex items-center justify-center">
             {mediaItems[selected].src.includes("youtube") || mediaItems[selected].src.includes("youtu.be") ? (
                <iframe
                  src={`https://www.youtube.com/embed/${mediaItems[selected].src.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)?.[1]}`}

@@ -57,7 +57,7 @@ export default async function OrdersPage({
   });
 
   return (
-    <div className="w-full bg-[#FAFAFA] min-h-screen">
+    <div className="w-full bg-[#F5EFE6] min-h-screen">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-16">
         <div className="mb-8">
 
@@ -73,7 +73,7 @@ export default async function OrdersPage({
         <div className="flex flex-wrap items-center gap-2 mb-8">
           <Link
             href="/account/orders"
-            className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-colors rounded-none ${!statusFilter ? "bg-[#7A0B2E] text-white border-[#7A0B2E]" : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:bg-[#FAFAFA]"}`}
+            className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-colors rounded-none ${!statusFilter ? "bg-[#7A0B2E] text-white border-[#7A0B2E]" : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:bg-[#F5EFE6]"}`}
           >
             All
           </Link>
@@ -81,7 +81,7 @@ export default async function OrdersPage({
             <Link
               key={s}
               href={`/account/orders?status=${s}`}
-              className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-colors rounded-none ${statusFilter === s ? "bg-[#7A0B2E] text-white border-[#7A0B2E]" : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:bg-[#FAFAFA]"}`}
+              className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border transition-colors rounded-none ${statusFilter === s ? "bg-[#7A0B2E] text-white border-[#7A0B2E]" : "bg-white text-[#2D1F2F] border-[#7A0B2E]/30 hover:bg-[#F5EFE6]"}`}
             >
               {s.replace(/_/g, " ")}
             </Link>
@@ -114,10 +114,10 @@ export default async function OrdersPage({
                   <div>
                     <p className="text-[10px] text-[#7A0B2E] uppercase tracking-widest font-bold">Status</p>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-widest mt-1.5
-                      ${order.status === "DELIVERED" ? "bg-[#FAFAFA] text-green-700 border border-[#7A0B2E]/20" :
-                        order.status === "SHIPPED" || order.status === "READY_TO_SHIP" || order.status === "OUT_FOR_DELIVERY" ? "bg-[#FAFAFA] text-[#7A0B2E] border border-[#7A0B2E]/30" :
+                      ${order.status === "DELIVERED" ? "bg-[#F5EFE6] text-green-700 border border-[#7A0B2E]/20" :
+                        order.status === "SHIPPED" || order.status === "READY_TO_SHIP" || order.status === "OUT_FOR_DELIVERY" ? "bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/30" :
                         order.status === "CANCELLED" ? "bg-red-50 text-red-700 border border-red-200" :
-                        "bg-[#FAFAFA] text-[#2D1F2F] border border-[#7A0B2E]/30"}`}>
+                        "bg-[#F5EFE6] text-[#2D1F2F] border border-[#7A0B2E]/30"}`}>
                       {order.status}
                     </span>
                   </div>
@@ -132,7 +132,7 @@ export default async function OrdersPage({
                 <div className="p-6 divide-y divide-[#7A0B2E]/10">
                   {order.orderItems.slice(0, 3).map((item: OrderItemWithProduct) => (
                     <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex items-center gap-4">
-                      <div className="relative w-16 h-20 bg-[#FAFAFA] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
+                      <div className="relative w-16 h-20 bg-[#F5EFE6] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
                         {item.product.images[0] && (
                           <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" />
                         )}

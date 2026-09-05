@@ -52,7 +52,7 @@ export default function FlashSaleBannerClient({
           }`}
       >
         <div
-          className={`relative pointer-events-auto w-full max-w-lg bg-[#FAFAFA] shadow-2xl transition-all duration-300 ease-out ${visible ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
+          className={`relative pointer-events-auto w-full max-w-lg bg-[#F5EFE6] shadow-2xl transition-all duration-300 ease-out ${visible ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
             }`}
           onClick={(e) => e.stopPropagation()}
         >

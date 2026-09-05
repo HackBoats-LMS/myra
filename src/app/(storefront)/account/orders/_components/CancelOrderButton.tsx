@@ -99,7 +99,7 @@ export default function CancelOrderButton({ orderId, orderItems }: { orderId: st
               {activeItems.length > 1 && (
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-3">Select items to cancel</label>
-                  <div className="space-y-3 border border-[#7A0B2E]/20 p-3 bg-[#FAFAFA]">
+                  <div className="space-y-3 border border-[#7A0B2E]/20 p-3 bg-[#F5EFE6]">
                     {activeItems.map(item => (
                       <label key={item.id} className="flex items-center justify-between cursor-pointer group">
                         <div className="flex items-center gap-3 flex-1 min-w-0">

@@ -224,7 +224,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                 </div>
 
                 {/* Sizing recommendation badge */}
-                <div className="bg-[#FAFAFA] border border-gray-200 px-3 py-2 text-[11px] text-gray-600 flex items-center gap-2">
+                <div className="bg-[#F5EFE6] border border-gray-200 px-3 py-2 text-[11px] text-gray-600 flex items-center gap-2">
                   <Info className="w-4 h-4 text-[#7A0B2E] shrink-0" />
                   <span>
                     Recommended Size: <strong>{config.recommendedResolution}</strong>

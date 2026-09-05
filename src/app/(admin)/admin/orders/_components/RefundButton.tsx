@@ -38,7 +38,7 @@ export default function RefundButton({ orderId, totalAmount, refundedAmount }: R
 
   if (maxRefundable <= 0) {
     return (
-      <span className="text-[10px] font-bold px-2.5 py-1 bg-[#FAFAFA] text-gray-500 rounded-none uppercase tracking-widest border border-[#7A0B2E]/20">
+      <span className="text-[10px] font-bold px-2.5 py-1 bg-[#F5EFE6] text-gray-500 rounded-none uppercase tracking-widest border border-[#7A0B2E]/20">
         Fully Refunded
       </span>
     );

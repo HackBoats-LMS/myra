@@ -50,7 +50,7 @@ export default function CollectionBestSellers({
       ) : (
         <div className="divide-y divide-[#7A0B2E]/10">
           {products.map((p) => (
-            <div key={p.id} className="flex items-center gap-4 p-4 hover:bg-[#FAFAFA] transition-colors">
+            <div key={p.id} className="flex items-center gap-4 p-4 hover:bg-[#F5EFE6] transition-colors">
               <label className="inline-flex items-center gap-3 cursor-pointer flex-1 min-w-0">
                 <input
                   type="checkbox"
@@ -59,7 +59,7 @@ export default function CollectionBestSellers({
                   onChange={(e) => toggle(p.id, e.target.checked)}
                   className="w-4 h-4 accent-[#7A0B2E]"
                 />
-                <span className="relative w-10 h-14 bg-[#FAFAFA] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
+                <span className="relative w-10 h-14 bg-[#F5EFE6] border border-[#7A0B2E]/20 overflow-hidden flex-shrink-0">
                   {p.images[0] && <Image src={p.images[0]} alt={p.name} fill className="object-cover" />}
                 </span>
                 <span className="text-sm font-bold text-[#2D1F2F] truncate">{p.name}</span>
