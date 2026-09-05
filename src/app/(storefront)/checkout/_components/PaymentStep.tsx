@@ -3,9 +3,16 @@
 interface PaymentStepProps {
   paymentMethod: "COD" | "RAZORPAY";
   setPaymentMethod: (m: "COD" | "RAZORPAY") => void;
+  isCodAvailable?: boolean;
+  isCheckingCod?: boolean;
 }
 
-export default function PaymentStep({ paymentMethod, setPaymentMethod }: PaymentStepProps) {
+export default function PaymentStep({
+  paymentMethod,
+  setPaymentMethod,
+  isCodAvailable = true,
+  isCheckingCod = false,
+}: PaymentStepProps) {
   const optionCls = (selected: boolean) =>
     `flex items-center justify-between gap-3 px-3 py-2.5 border cursor-pointer transition-colors rounded-none ${
       selected ? "border-[#7A0B2E] bg-[#7A0B2E]/5" : "border-[#7A0B2E]/30 bg-white"
@@ -18,19 +25,34 @@ export default function PaymentStep({ paymentMethod, setPaymentMethod }: Payment
       </h3>
 
       <div className="space-y-2">
-        <label className={optionCls(paymentMethod === "COD")}>
+        <label
+          className={`flex items-center justify-between gap-3 px-3 py-2.5 border transition-colors rounded-none ${
+            !isCodAvailable
+              ? "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
+              : paymentMethod === "COD"
+              ? "border-[#7A0B2E] bg-[#7A0B2E]/5 cursor-pointer"
+              : "border-[#7A0B2E]/30 bg-white cursor-pointer"
+          }`}
+        >
           <span className="flex items-center gap-2">
             <input
               type="radio"
               name="payment-method"
               value="COD"
-              checked={paymentMethod === "COD"}
-              onChange={() => setPaymentMethod("COD")}
+              disabled={!isCodAvailable}
+              checked={paymentMethod === "COD" && isCodAvailable}
+              onChange={() => isCodAvailable && setPaymentMethod("COD")}
               className="accent-[#7A0B2E]"
             />
             <span className="text-xs font-bold text-[#2D1F2F] uppercase tracking-wider">Cash on Delivery</span>
           </span>
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pay at doorstep</span>
+          {isCheckingCod ? (
+            <span className="text-[10px] text-gray-400 uppercase tracking-wider animate-pulse">Checking courier...</span>
+          ) : !isCodAvailable ? (
+            <span className="text-[10px] text-[#7A0B2E] font-bold uppercase tracking-wider">Unavailable for pincode</span>
+          ) : (
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pay at doorstep</span>
+          )}
         </label>
 
         <label className={optionCls(paymentMethod === "RAZORPAY")}>

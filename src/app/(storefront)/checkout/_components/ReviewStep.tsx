@@ -73,11 +73,16 @@ export default function ReviewStep({
       </section>
 
       {/* Payment */}
-      <section className="bg-white border border-[#7A0B2E]/20 p-6 text-left">
+      <section className="bg-white border border-[#7A0B2E]/20 p-6 text-left space-y-1">
         <h3 className="text-base font-serif font-bold text-[#2D1F2F] border-b border-[#7A0B2E]/20 pb-3">Payment</h3>
         <p className="text-sm text-[#2D1F2F] font-bold uppercase tracking-wider">
           {paymentMethod === "RAZORPAY" ? "UPI & Online Payment (Razorpay)" : "Cash on Delivery"}
         </p>
+        {paymentMethod === "COD" && pricing.codHandlingFee > 0 && (
+          <p className="text-xs text-gray-500">
+            Includes ₹{pricing.codHandlingFee} COD handling fee
+          </p>
+        )}
       </section>
 
       {/* Place order */}

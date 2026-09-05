@@ -64,3 +64,17 @@ export async function isPincodeDeliverable(code: string): Promise<boolean> {
   const pincode = await prisma.pincode.findUnique({ where: { code: trimmed } });
   return Boolean(pincode && pincode.isActive);
 }
+
+export async function isPincodeCodDeliverable(code: string): Promise<boolean> {
+  const trimmed = code.trim();
+  if (!/^\d{6}$/.test(trimmed)) return false;
+
+  if (shiprocketConfigured()) {
+    const serviceability = await checkServiceability(trimmed, true);
+    return serviceability.available;
+  }
+
+  const pincode = await prisma.pincode.findUnique({ where: { code: trimmed } });
+  return Boolean(pincode && pincode.isActive);
+}
+

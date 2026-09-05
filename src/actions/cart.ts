@@ -38,8 +38,24 @@ function flashUnitPrice(
 const AUTO_APPLY_TYPES: $Enums.CouponType[] = ["FIRST_ORDER", "SINGLE_USE", "FESTIVAL"];
 
 async function loadShippingConfig(tx: Prisma.TransactionClient) {
-  const config = await tx.shippingConfig.findUnique({ where: { id: "global" } });
-  return config || { flatRate: 49, freeShippingThreshold: 999 };
+  const [config, settings] = await Promise.all([
+    tx.shippingConfig.findUnique({ where: { id: "global" } }),
+    tx.storeSetting.findMany({
+      where: { key: { in: ["codFlatRate", "codFreeShippingThreshold", "codHandlingFee"] } },
+    }),
+  ]);
+  const map = new Map(settings.map((s) => [s.key, s.value]));
+  const defaultOnlineRate = config?.flatRate ?? 49;
+  const defaultOnlineThreshold = config?.freeShippingThreshold ?? 999;
+  return {
+    flatRate: defaultOnlineRate,
+    freeShippingThreshold: defaultOnlineThreshold,
+    codFlatRate: map.has("codFlatRate") ? parseFloat(map.get("codFlatRate")!) : defaultOnlineRate,
+    codFreeShippingThreshold: map.has("codFreeShippingThreshold")
+      ? parseFloat(map.get("codFreeShippingThreshold")!)
+      : defaultOnlineThreshold,
+    codHandlingFee: parseFloat(map.get("codHandlingFee") || "0") || 0,
+  };
 }
 
 async function isCouponAllowedForUser(
@@ -532,11 +548,12 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
           }
         : null,
       shippingConfig,
-      settings.taxPercent
+      settings.taxPercent,
+      opts.paymentMethod
     );
 
     const discountAmount = pricing.discountAmount;
-    const shippingAmount = pricing.shippingAmount;
+    const shippingAmount = pricing.shippingAmount + pricing.codHandlingFee;
     const finalAmount = pricing.finalAmount;
     const appliedCouponCode = dbCoupon ? dbCoupon.code : null;
 
@@ -689,6 +706,15 @@ export async function checkoutCart(
   const userId = session.user.id;
   const userEmail = session.user.email;
   const userName = session.user.name || "Customer";
+
+  const postalCode = gift?.postalCode || (addressId ? (await prisma.address.findUnique({ where: { id: addressId }, select: { postalCode: true } }))?.postalCode : undefined);
+  if (postalCode) {
+    const { isPincodeCodDeliverable } = await import("@/actions/pincode");
+    const codAllowed = await isPincodeCodDeliverable(postalCode);
+    if (!codAllowed) {
+      throw new Error("Cash on Delivery is not available for this delivery pincode. Please select UPI / Online Payment.");
+    }
+  }
 
   const result = await createOrderTransaction({
     addressId,

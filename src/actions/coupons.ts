@@ -181,12 +181,24 @@ export async function updateShippingConfig(formData: FormData) {
 
   const flatRate = parseFloat(formData.get("flatRate") as string);
   const freeShippingThreshold = parseFloat(formData.get("freeShippingThreshold") as string);
+  const codFlatRate = parseFloat(formData.get("codFlatRate") as string);
+  const codFreeShippingThreshold = parseFloat(formData.get("codFreeShippingThreshold") as string);
+  const codHandlingFee = parseFloat(formData.get("codHandlingFee") as string);
 
   if (isNaN(flatRate) || flatRate < 0) {
-    throw new Error("Flat shipping rate must be a non-negative number.");
+    throw new Error("Online flat shipping rate must be a non-negative number.");
   }
   if (isNaN(freeShippingThreshold) || freeShippingThreshold < 0) {
-    throw new Error("Free shipping threshold must be a non-negative number.");
+    throw new Error("Online free shipping threshold must be a non-negative number.");
+  }
+  if (isNaN(codFlatRate) || codFlatRate < 0) {
+    throw new Error("COD flat shipping rate must be a non-negative number.");
+  }
+  if (isNaN(codFreeShippingThreshold) || codFreeShippingThreshold < 0) {
+    throw new Error("COD free shipping threshold must be a non-negative number.");
+  }
+  if (isNaN(codHandlingFee) || codHandlingFee < 0) {
+    throw new Error("COD handling fee must be a non-negative number.");
   }
 
   await prisma.shippingConfig.upsert({
@@ -195,9 +207,34 @@ export async function updateShippingConfig(formData: FormData) {
     update: { flatRate, freeShippingThreshold },
   });
 
-  await logAudit("shipping.update", "ShippingConfig", "global", { flatRate, freeShippingThreshold });
+  await Promise.all([
+    prisma.storeSetting.upsert({
+      where: { key: "codFlatRate" },
+      create: { key: "codFlatRate", value: String(codFlatRate) },
+      update: { value: String(codFlatRate) },
+    }),
+    prisma.storeSetting.upsert({
+      where: { key: "codFreeShippingThreshold" },
+      create: { key: "codFreeShippingThreshold", value: String(codFreeShippingThreshold) },
+      update: { value: String(codFreeShippingThreshold) },
+    }),
+    prisma.storeSetting.upsert({
+      where: { key: "codHandlingFee" },
+      create: { key: "codHandlingFee", value: String(codHandlingFee) },
+      update: { value: String(codHandlingFee) },
+    }),
+  ]);
+
+  await logAudit("shipping.update", "ShippingConfig", "global", {
+    flatRate,
+    freeShippingThreshold,
+    codFlatRate,
+    codFreeShippingThreshold,
+    codHandlingFee,
+  });
 
   revalidatePath("/admin/shipping");
+  revalidatePath("/checkout");
 }
 
 export async function toggleCouponStatus(id: string, isActive: boolean) {

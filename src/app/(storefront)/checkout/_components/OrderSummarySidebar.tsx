@@ -93,6 +93,12 @@ export default function OrderSummarySidebar({
             <span>Rs. {shippingAmount.toLocaleString("en-IN")}</span>
           )}
         </div>
+        {pricing.codHandlingFee > 0 && (
+          <div className="flex justify-between text-gray-700">
+            <span>COD Handling Fee</span>
+            <span>Rs. {pricing.codHandlingFee.toLocaleString("en-IN")}</span>
+          </div>
+        )}
         {pricing.discountAmount > 0 && (
           <div className="flex justify-between text-green-700 font-medium">
             <span>Discount{appliedCoupon ? ` (${appliedCoupon})` : ""}</span>

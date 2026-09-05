@@ -9,11 +9,25 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminShippingPage() {
-  const config = await prisma.shippingConfig.findUnique({ where: { id: "global" } });
+  const [config, settings] = await Promise.all([
+    prisma.shippingConfig.findUnique({ where: { id: "global" } }),
+    prisma.storeSetting.findMany({
+      where: { key: { in: ["codFlatRate", "codFreeShippingThreshold", "codHandlingFee"] } },
+    }),
+  ]);
+
+  const map = new Map(settings.map((s) => [s.key, s.value]));
+  const defaultOnlineRate = config?.flatRate ?? 49;
+  const defaultOnlineThreshold = config?.freeShippingThreshold ?? 999;
 
   const initial = {
-    flatRate: config?.flatRate ?? 49,
-    freeShippingThreshold: config?.freeShippingThreshold ?? 999,
+    flatRate: defaultOnlineRate,
+    freeShippingThreshold: defaultOnlineThreshold,
+    codFlatRate: map.has("codFlatRate") ? parseFloat(map.get("codFlatRate")!) : defaultOnlineRate,
+    codFreeShippingThreshold: map.has("codFreeShippingThreshold")
+      ? parseFloat(map.get("codFreeShippingThreshold")!)
+      : defaultOnlineThreshold,
+    codHandlingFee: parseFloat(map.get("codHandlingFee") || "0") || 0,
   };
 
   return (
