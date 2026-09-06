@@ -92,9 +92,9 @@ export default function CategoryButtons() {
     const imgSrc = getImgSrc(cat);
 
     return (
-      <div className="absolute bottom-0 left-0 right-0 h-[56px] sm:h-[72px] md:h-[98px] lg:h-[115px] pointer-events-none z-10 flex justify-center items-end origin-bottom">
+      <div className="absolute bottom-0 left-0 right-0 h-[66px] sm:h-[82px] md:h-[100px] lg:h-[115px] pointer-events-none z-10 flex justify-center items-end origin-bottom">
         <div
-          className="relative w-[50px] sm:w-[65px] md:w-[90px] lg:w-[105px] h-full"
+          className="relative w-[74px] sm:w-[94px] md:w-[115px] lg:w-[125px] h-full"
           style={{
             width: m?.width,
             height: m?.height,
@@ -107,7 +107,7 @@ export default function CategoryButtons() {
             alt={cat.name}
             fill
             quality={100}
-            sizes="(max-width: 640px) 70px, 150px"
+            sizes="(max-width: 640px) 110px, 160px"
             className="object-contain object-bottom drop-shadow-sm"
           />
         </div>
@@ -118,24 +118,24 @@ export default function CategoryButtons() {
   return (
     <>
       {/* Mobile, Tablet & iPad Pro Layout (< 1280px): Scaled Oval Capsules with Labels Below (at top of page) */}
-      <section className="xl:hidden w-full px-2.5 sm:px-6 md:px-8 lg:px-12 pt-12 sm:pt-16 md:pt-24 lg:pt-28 pb-2.5 sm:pb-3 md:pb-4 lg:pb-5 bg-transparent border-b border-[#7A0B2E]/15">
-        <div className="flex flex-nowrap items-start justify-center gap-6 sm:gap-9 md:gap-12 lg:gap-14 max-w-[960px] mx-auto">
+      <section className="xl:hidden w-full px-3 sm:px-6 md:px-8 lg:px-12 pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-3 sm:pb-4 md:pb-5 bg-transparent border-b border-[#7A0B2E]/15">
+        <div className="flex flex-nowrap items-start justify-center gap-6 sm:gap-10 md:gap-14 max-w-[420px] sm:max-w-[960px] mx-auto">
           {categories.map((cat) => (
             <Link
               href={cat.href}
               key={cat.name}
-              className="flex flex-col items-center gap-1.5 sm:gap-2.5 md:gap-3 w-auto max-w-[95px] sm:max-w-[125px] md:max-w-[160px] lg:max-w-[190px] group cursor-pointer"
+              className="flex flex-col items-center gap-2 sm:gap-2.5 md:gap-3 group cursor-pointer shrink-0"
             >
-              {/* Oval Capsule Background Bar */}
-              <div className="relative w-[84px] sm:w-[112px] md:w-[148px] lg:w-[175px] h-[40px] sm:h-[50px] md:h-[66px] lg:h-[78px] rounded-full bg-[#C3A29B] shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:bg-[#BA9790]">
+              {/* Oval Capsule Background Bar (Wide 102px pill) */}
+              <div className="relative w-[102px] sm:w-[130px] md:w-[160px] lg:w-[180px] h-[44px] sm:h-[56px] md:h-[68px] lg:h-[80px] rounded-full bg-[#C3A29B] shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:bg-[#BA9790]">
                 {/* Popout Image Layer */}
-                <div className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-80px_0px_-80px)]">
+                <div className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-6px_0px_-6px)]">
                   {renderMobileImages(cat)}
                 </div>
               </div>
 
               {/* Label Below */}
-              <span className="font-serif font-bold text-[10px] sm:text-xs md:text-sm lg:text-base tracking-wider text-[#111111] uppercase text-center leading-tight">
+              <span className="font-serif font-bold text-xs sm:text-sm md:text-base tracking-wider text-[#111111] uppercase text-center leading-tight">
                 {cat.name}
               </span>
             </Link>
