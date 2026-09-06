@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import SafeImage from '@/components/shared/SafeImage';
 import { getCachedBanners } from '@/lib/cache';
 
 export default async function HeroGrid() {
@@ -14,15 +14,18 @@ export default async function HeroGrid() {
   const heroRightTop = banners.find((b) => b.slot === "hero_right_top");
   const heroRightBottom = banners.find((b) => b.slot === "hero_right_bottom");
 
-  const mainSrc = heroMain?.imageUrl || "/displaypics/hero-main.png";
+  const defaultMainSrc = "/displaypics/hero-main.png";
+  const mainSrc = heroMain?.imageUrl || defaultMainSrc;
   const mainAlt = heroMain?.altText || heroMain?.title || "Sale up to 50% off";
   const mainHref = heroMain?.linkUrl || "/collections";
 
-  const topSrc = heroRightTop?.imageUrl || "/displaypics/landingpage2.png";
+  const defaultTopSrc = "/displaypics/landingpage2.png";
+  const topSrc = heroRightTop?.imageUrl || defaultTopSrc;
   const topAlt = heroRightTop?.altText || heroRightTop?.title || "Dresses collection";
   const topHref = heroRightTop?.linkUrl || "/collections/women";
 
-  const bottomSrc = heroRightBottom?.imageUrl || "/displaypics/landingpage3.png";
+  const defaultBottomSrc = "/displaypics/landingpage3.png";
+  const bottomSrc = heroRightBottom?.imageUrl || defaultBottomSrc;
   const bottomAlt = heroRightBottom?.altText || heroRightBottom?.title || "Kids collection";
   const bottomHref = heroRightBottom?.linkUrl || "/collections/kids";
 
@@ -31,8 +34,9 @@ export default async function HeroGrid() {
       {/* Main Banner (Full width on iPads/mobile, 60% on desktop) */}
       <div className="w-full xl:w-[60%] relative cursor-pointer aspect-[3/2]">
         <Link href={mainHref} className="block w-full h-full relative">
-          <Image
+          <SafeImage
             src={mainSrc}
+            fallbackSrc={defaultMainSrc}
             alt={mainAlt}
             fill
             priority
@@ -48,8 +52,9 @@ export default async function HeroGrid() {
       <div className="flex w-full xl:w-[40%] flex-row xl:flex-col">
         <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
           <Link href={topHref} className="block w-full h-full relative">
-            <Image
+            <SafeImage
               src={topSrc}
+              fallbackSrc={defaultTopSrc}
               alt={topAlt}
               fill
               priority
@@ -62,8 +67,9 @@ export default async function HeroGrid() {
         </div>
         <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
           <Link href={bottomHref} className="block w-full h-full relative">
-            <Image
+            <SafeImage
               src={bottomSrc}
+              fallbackSrc={defaultBottomSrc}
               alt={bottomAlt}
               fill
               priority
