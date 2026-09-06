@@ -44,9 +44,9 @@ export default async function HeroGrid() {
         </Link>
       </div>
 
-      {/* Sub-Banners (Side-by-side 50% each on iPads/mobile, stacked vertically on desktop) */}
+      {/* Sub-Banners: Decreased container height (aspect-[699/374]) so full width fits with no side cropping */}
       <div className="flex w-full xl:w-[40%] flex-row xl:flex-col">
-        <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[16/10] xl:aspect-auto xl:flex-1">
+        <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
           <Link href={topHref} className="block w-full h-full relative">
             <Image
               src={topSrc}
@@ -56,11 +56,11 @@ export default async function HeroGrid() {
               quality={90}
               sizes="(max-width: 1280px) 50vw, 40vw"
               unoptimized={topSrc.startsWith("http")}
-              className="object-cover object-center"
+              className="object-cover object-left"
             />
           </Link>
         </div>
-        <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[16/10] xl:aspect-auto xl:flex-1">
+        <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
           <Link href={bottomHref} className="block w-full h-full relative">
             <Image
               src={bottomSrc}
@@ -70,7 +70,7 @@ export default async function HeroGrid() {
               quality={90}
               sizes="(max-width: 1280px) 50vw, 40vw"
               unoptimized={bottomSrc.startsWith("http")}
-              className="object-cover object-center"
+              className="object-cover object-left"
             />
           </Link>
         </div>

@@ -32,7 +32,7 @@ const categories: CategoryButton[] = [
     image: '/displaypics/home/bridal/image3.png',
     style: {
       desktop: { width: '43%', height: '115%', left: '16px', bottom: '0px', scale: 1.15 },
-      mobile: { width: '80%', height: '130%', bottom: '0px', scale: 1.15 },
+      mobile: { width: '75%', height: '130%', bottom: '0px', scale: 1.15 },
     },
   },
   {
@@ -41,7 +41,7 @@ const categories: CategoryButton[] = [
     image: '/displaypics/home/sarees/image.png',
     style: {
       desktop: { width: '46%', height: '180%', left: '16px', bottom: '0px', scale: 1.0 },
-      mobile: { width: '80%', height: '140%', bottom: '0px', scale: 1.1 },
+      mobile: { width: '75%', height: '140%', bottom: '0px', scale: 1.1 },
     },
   },
   {
@@ -50,16 +50,7 @@ const categories: CategoryButton[] = [
     image: '/displaypics/home/women/image.png',
     style: {
       desktop: { width: '46%', height: '150%', left: '16px', bottom: '0px', scale: 1.0 },
-      mobile: { width: '80%', height: '130%', bottom: '0px', scale: 1.1 },
-    },
-  },
-  {
-    name: 'KIDS',
-    href: '/collections/kids',
-    image: '/displaypics/home/kids/image.png',
-    style: {
-      desktop: { width: '46%', height: '180%', left: '16px', bottom: '0px', scale: 1.0 },
-      mobile: { width: '80%', height: '140%', bottom: '0px', scale: 1.1 },
+      mobile: { width: '75%', height: '130%', bottom: '0px', scale: 1.1 },
     },
   },
 ];
@@ -127,18 +118,18 @@ export default function CategoryButtons() {
   return (
     <>
       {/* Mobile, Tablet & iPad Pro Layout (< 1280px): Scaled Oval Capsules with Labels Below (at top of page) */}
-      <section className="xl:hidden w-full px-2 sm:px-4 md:px-8 lg:px-12 pt-12 sm:pt-16 md:pt-24 lg:pt-28 pb-2.5 sm:pb-3 md:pb-4 lg:pb-5 bg-transparent border-b border-[#7A0B2E]/15">
-        <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-6 lg:gap-8 items-start justify-items-center max-w-[960px] mx-auto">
+      <section className="xl:hidden w-full px-2.5 sm:px-6 md:px-8 lg:px-12 pt-12 sm:pt-16 md:pt-24 lg:pt-28 pb-2.5 sm:pb-3 md:pb-4 lg:pb-5 bg-transparent border-b border-[#7A0B2E]/15">
+        <div className="flex flex-nowrap items-start justify-center gap-6 sm:gap-9 md:gap-12 lg:gap-14 max-w-[960px] mx-auto">
           {categories.map((cat) => (
             <Link
               href={cat.href}
               key={cat.name}
-              className="flex flex-col items-center gap-1.5 sm:gap-2.5 md:gap-3 w-full max-w-[85px] sm:max-w-[110px] md:max-w-[145px] lg:max-w-[170px] group cursor-pointer"
+              className="flex flex-col items-center gap-1.5 sm:gap-2.5 md:gap-3 w-auto max-w-[95px] sm:max-w-[125px] md:max-w-[160px] lg:max-w-[190px] group cursor-pointer"
             >
-              {/* Oval Capsule */}
-              <div className="relative w-[74px] sm:w-[96px] md:w-[130px] lg:w-[155px] h-[40px] sm:h-[52px] md:h-[68px] lg:h-[80px] rounded-full bg-[#C3A29B] shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:bg-[#BA9790]">
+              {/* Oval Capsule Background Bar */}
+              <div className="relative w-[84px] sm:w-[112px] md:w-[148px] lg:w-[175px] h-[40px] sm:h-[50px] md:h-[66px] lg:h-[78px] rounded-full bg-[#C3A29B] shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:bg-[#BA9790]">
                 {/* Popout Image Layer */}
-                <div className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-50px_0px_-50px)]">
+                <div className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-80px_0px_-80px)]">
                   {renderMobileImages(cat)}
                 </div>
               </div>
@@ -154,18 +145,18 @@ export default function CategoryButtons() {
 
       {/* 15-inch Laptop & Desktop Layout (1280px+): Horizontal Pills with Embedded Text */}
       <section className="hidden xl:block w-full max-w-[1500px] mx-auto px-6 xl:px-8 py-16 bg-transparent">
-        <div className="grid grid-cols-4 gap-12 xl:gap-18 items-center justify-items-center">
+        <div className="flex flex-wrap items-center justify-center gap-10 xl:gap-16">
           {categories.map((cat) => (
             <Link
               href={cat.href}
               key={cat.name}
-              className="relative group block w-full max-w-[325px] h-[112px] xl:h-[125px] cursor-pointer transition-transform duration-300 hover:scale-[1.03]"
+              className="relative group block w-[300px] xl:w-[325px] h-[112px] xl:h-[125px] cursor-pointer transition-transform duration-300 hover:scale-[1.03]"
             >
               {/* Base Pill Capsule Layer */}
               <div className="absolute inset-0 bg-[#C3A29B] rounded-full overflow-hidden shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:bg-[#BA9790]">
                 {renderDesktopImages(cat)}
               </div>
-              
+
               {/* Top Layer: Allows overflow on top for heads/bodies to pop out */}
               <div className="absolute inset-0 pointer-events-none [clip-path:inset(-200px_-100px_50%_-100px)]">
                 {renderDesktopImages(cat)}
