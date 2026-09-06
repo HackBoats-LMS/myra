@@ -39,18 +39,18 @@ export interface BrandTheme {
 }
 
 export const theme: BrandTheme = {
-  name: "Warm Raw Silk Ivory & Maroon",
+  name: "Warm Blush Silk & Maroon",
   colors: {
     primary: "#7A0B2E",
     primaryDark: "#5C0820",
     primaryDeep: "#470618",
     primaryLight: "#F7EFF0",
-    primaryCapsule: "#EBDCD9",
+    primaryCapsule: "#C3A29B",
     gold: "#CE9222",
     goldWarm: "#BF9351",
     dark: "#2D1F2F",
-    surface: "#F5EFE6",
-    background: "#F5EFE6",
+    surface: "#EBDCD9",
+    background: "#EBDCD9",
   },
 };
 

@@ -9,8 +9,32 @@ import { z } from "zod";
 
 const bannerSchema = z.object({
   slot: z.string().min(1).max(50),
-  imageUrl: z.string().url("Image URL must be a valid URL").min(1, "Image is required"),
-  linkUrl: z.string().url("Link URL must be a valid URL").max(300).nullable().optional(),
+  imageUrl: z
+    .string()
+    .min(1, "Image is required")
+    .max(1000)
+    .refine(
+      (val) => val.startsWith("/") || val.startsWith("http://") || val.startsWith("https://") || val.startsWith("blob:"),
+      { message: "Image URL must be a valid path or URL" }
+    ),
+  linkUrl: z
+    .string()
+    .max(500)
+    .refine(
+      (val) =>
+        !val ||
+        val.trim() === "" ||
+        val.startsWith("/") ||
+        val.startsWith("http://") ||
+        val.startsWith("https://") ||
+        val.startsWith("#") ||
+        val.startsWith("mailto:") ||
+        val.startsWith("tel:"),
+      { message: "Link URL must be a valid URL (https://...) or relative path (e.g. /collections/sarees)" }
+    )
+    .transform((val) => (val && val.trim() !== "" ? val.trim() : null))
+    .nullable()
+    .optional(),
   title: z.string().max(200).nullable().optional(),
   subtitle: z.string().max(300).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
@@ -36,7 +60,12 @@ export async function upsertBanner(data: {
   isActive?: boolean;
 }) {
   await verifyAdmin();
-  const validated = bannerSchema.parse(data);
+  const parsed = bannerSchema.safeParse(data);
+  if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0];
+    throw new Error(firstIssue?.message || "Invalid banner data");
+  }
+  const validated = parsed.data;
 
   const banner = await prisma.banner.upsert({
     where: { slot: validated.slot },
@@ -77,6 +106,11 @@ export async function deleteBanner(slot: string) {
   if (existing) {
     await prisma.banner.delete({ where: { slot } });
     await logAudit("banner.delete", "Banner", existing.id, { slot });
+    
+    if (existing.imageUrl) {
+      const { deleteMediaFromStorage } = await import("@/actions/admin");
+      await deleteMediaFromStorage([existing.imageUrl]);
+    }
   }
 
   updateTag(CACHE_TAGS.banners);

@@ -19,6 +19,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Password must not exceed 128 characters" }, { status: 400 });
     }
 
+    // Require at least one letter and one number for password complexity
+    if (!/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+      return NextResponse.json({ error: "Password must contain at least one letter and one number" }, { status: 400 });
+    }
+
+    // Reject common weak passwords
+    const commonPasswords = ["12345678", "password", "qwerty123", "11111111", "abcdefgh"];
+    if (commonPasswords.includes(password.toLowerCase())) {
+      return NextResponse.json({ error: "Password is too common. Please choose a stronger password" }, { status: 400 });
+    }
+
     // Validate phone number format (exactly 10 digits)
     if (!/^\d{10}$/.test(String(phoneNumber).trim())) {
       return NextResponse.json({ error: "Phone number must be exactly 10 digits" }, { status: 400 });

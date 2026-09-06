@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth";
 import { sendPushToAll, isPushConfigured } from "@/lib/push";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -10,6 +11,12 @@ export async function POST(req: Request) {
   }
   if (!isPushConfigured()) {
     return NextResponse.json({ error: "Push notifications are not configured." }, { status: 400 });
+  }
+
+  try {
+    await checkRateLimit({ bucket: "push:send", key: session.user.id, limit: 10, windowSeconds: 60 });
+  } catch {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   }
 
   let body: { title?: string; body?: string; url?: string };

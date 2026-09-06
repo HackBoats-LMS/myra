@@ -25,13 +25,13 @@ function parseConfig() {
     primary: getVal("primary") || "#7A0B2E",
     primaryDark: getVal("primaryDark") || "#5C0820",
     primaryDeep: getVal("primaryDeep") || "#470618",
-    primaryLight: getVal("primaryLight") || "#FAF0F2",
-    primaryCapsule: getVal("primaryCapsule") || "#F0D5D5",
+    primaryLight: getVal("primaryLight") || "#F7EFF0",
+    primaryCapsule: getVal("primaryCapsule") || "#C3A29B",
     gold: getVal("gold") || "#CE9222",
     goldWarm: getVal("goldWarm") || "#BF9351",
     dark: getVal("dark") || "#2D1F2F",
-    surface: getVal("surface") || "#FAFAFA",
-    background: getVal("background") || "#FFFFFF",
+    surface: getVal("surface") || "#EBDCD9",
+    background: getVal("background") || "#EBDCD9",
   };
 }
 

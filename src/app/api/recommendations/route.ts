@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { getRecentlyViewedProductIds } from "@/lib/recently-viewed";
 import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const ip = getClientIp(req);
+    await checkRateLimit({ bucket: "api:recommendations", key: ip, limit: 30, windowSeconds: 60 });
+
     const recentIds = await getRecentlyViewedProductIds();
     if (recentIds.length === 0) {
       return NextResponse.json({ products: [] });

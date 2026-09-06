@@ -207,6 +207,23 @@ export const getCachedAllCollections = createCachedQuery(
   { tags: [CACHE_TAGS.collections], revalidate: 31536000 }
 );
 
+// Main Top-Level Collections for Navigation & Footer
+export const getCachedMainCollections = createCachedQuery(
+  ["collections", "main"],
+  async () => {
+    try {
+      return await prisma.collection.findMany({
+        where: { parentId: null },
+        select: { id: true, name: true, slug: true },
+        orderBy: [{ order: "asc" }, { name: "asc" }]
+      });
+    } catch {
+      return [];
+    }
+  },
+  { tags: [CACHE_TAGS.collections], revalidate: 31536000 }
+);
+
 // Navigation Tree for Storefront Header
 export const getCachedNavigationTree = createCachedQuery(
   ["navigation", "tree"],

@@ -77,7 +77,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!user.password) {
-          throw new Error("This account was created with Google. Please sign in with Google.");
+          throw new Error("Invalid credentials");
         }
 
         if (user.isDisabled) {
@@ -235,7 +235,7 @@ export const authOptions: NextAuthOptions = {
         : "next-auth.session-token",
       options: {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "strict",
         path: "/",
         secure: process.env.NODE_ENV === "production",
       },

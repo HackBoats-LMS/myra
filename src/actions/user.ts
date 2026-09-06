@@ -133,7 +133,7 @@ export async function changePassword(formData: FormData) {
   const hashedPassword = await bcrypt.hash(newPassword, 12);
   await prisma.user.update({
     where: { id: userId },
-    data: { password: hashedPassword }
+    data: { password: hashedPassword, tokenVersion: { increment: 1 } }
   });
 }
 
@@ -374,16 +374,16 @@ export async function cancelOrder(orderId: string, reason?: string, itemIds?: st
       console.error("Automatic refund failed for order", orderId, err);
       // Revert the REFUNDED status if full, or decrement if partial
       if (isPartial) {
-        await prisma.order.update({
-          where: { id: orderId },
+        await prisma.order.updateMany({
+          where: { id: orderId, refundedAmount: { gte: refundAmount } },
           data: { 
-            paymentStatus: "PAID", // We just set it to PAID for admin to review
+            paymentStatus: "PAID",
             refundedAmount: { decrement: refundAmount } 
           }
         });
       } else {
-        await prisma.order.update({
-          where: { id: orderId },
+        await prisma.order.updateMany({
+          where: { id: orderId, refundedAmount: { gte: refundAmount } },
           data: { paymentStatus: "PAID", refundedAmount: 0 }
         });
       }

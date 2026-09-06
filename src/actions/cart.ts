@@ -880,15 +880,15 @@ export async function validateCouponAction(code: string, cartTotal: number) {
   const dbCoupon = await prisma.coupon.findUnique({ where: { code: codeUpper } });
   
   if (!dbCoupon || !dbCoupon.isActive) {
-    throw new Error("Invalid or inactive coupon code.");
+    throw new Error("Invalid coupon code.");
   }
   
   if (dbCoupon.expiresAt && new Date(dbCoupon.expiresAt) < new Date()) {
-    throw new Error("This coupon code has expired.");
+    throw new Error("Invalid coupon code.");
   }
 
   if (dbCoupon.maxUses && dbCoupon.timesUsed >= dbCoupon.maxUses) {
-    throw new Error("This coupon code has reached its usage limit.");
+    throw new Error("Invalid coupon code.");
   }
 
   if (cartTotal < dbCoupon.minOrderAmount) {

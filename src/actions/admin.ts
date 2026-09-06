@@ -672,6 +672,14 @@ const refundSchema = z.object({
 export async function processRefund(orderId: string, formData: FormData) {
   await verifyAdmin();
 
+  // Rate-limit refund attempts to prevent abuse
+  const { checkRateLimit } = await import("@/lib/rate-limit");
+  try {
+    await checkRateLimit({ bucket: "refund:admin", key: orderId, limit: 5, windowSeconds: 300 });
+  } catch {
+    throw new Error("Too many refund attempts. Please try again later.");
+  }
+
   const amountStr = formData.get("amount");
   const amount = amountStr ? parseFloat(amountStr as string) : 0;
 
@@ -751,7 +759,9 @@ export async function processRefund(orderId: string, formData: FormData) {
   revalidatePath(`/admin/orders/${orderId}`);
 }
 
-export async function uploadImage(formData: FormData) {
+const BANNER_BUCKET = process.env.SUPABASE_BANNER_BUCKET || "banners";
+
+export async function uploadImage(formData: FormData, targetBucket?: string) {
   await verifyWorkerCapability("inventory");
 
   const file = formData.get("file") as File;
@@ -776,10 +786,11 @@ export async function uploadImage(formData: FormData) {
     throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY in .env");
   }
 
+  const bucket = targetBucket || (formData.get("bucket") as string) || BANNER_BUCKET;
   // Use crypto.randomUUID() — cryptographically strong, no Math.random()
   const fileName = `${crypto.randomUUID()}.${detected.ext}`;
 
-  const res = await fetch(`${supabaseUrl}/storage/v1/object/product-images/${fileName}`, {
+  const res = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}/${fileName}`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${serviceRoleKey}`,
@@ -790,10 +801,14 @@ export async function uploadImage(formData: FormData) {
 
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Failed to upload: ${err}`);
+    throw new Error(`Failed to upload to '${bucket}': ${err}`);
   }
 
-  return `${supabaseUrl}/storage/v1/object/public/product-images/${fileName}`;
+  return `${supabaseUrl}/storage/v1/object/public/${bucket}/${fileName}`;
+}
+
+export async function uploadBanner(formData: FormData, targetBucket?: string) {
+  return uploadImage(formData, targetBucket);
 }
 
 export async function uploadMedia(formData: FormData) {
@@ -845,39 +860,54 @@ export async function uploadMedia(formData: FormData) {
 }
 
 export async function deleteMediaFromStorage(urls: (string | null | undefined)[]) {
+  await verifyWorkerCapability("inventory");
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceRoleKey) return;
 
-  const fileNames: string[] = [];
+  const productFileNames: string[] = [];
+  const bannerFileNames: string[] = [];
+
   for (const u of urls) {
     if (!u || typeof u !== "string") continue;
     if (u.includes("/storage/v1/object/public/product-images/")) {
       const parts = u.split("/storage/v1/object/public/product-images/");
       if (parts[1]) {
-        fileNames.push(decodeURIComponent(parts[1]));
+        productFileNames.push(decodeURIComponent(parts[1]));
+      }
+    } else if (u.includes(`/storage/v1/object/public/${BANNER_BUCKET}/`)) {
+      const parts = u.split(`/storage/v1/object/public/${BANNER_BUCKET}/`);
+      if (parts[1]) {
+        bannerFileNames.push(decodeURIComponent(parts[1]));
       }
     }
   }
 
-  if (fileNames.length === 0) return;
+  const deleteFromBucket = async (bucket: string, fileNames: string[]) => {
+    if (fileNames.length === 0) return;
+    try {
+      const res = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prefixes: fileNames }),
+      });
 
-  try {
-    const res = await fetch(`${supabaseUrl}/storage/v1/object/product-images`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${serviceRoleKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ prefixes: fileNames }),
-    });
-
-    if (!res.ok) {
-      console.warn("[Supabase Storage] Bulk delete returned non-200 status:", await res.text());
+      if (!res.ok) {
+        console.warn(`[Supabase Storage] Bulk delete from '${bucket}' returned non-200 status:`, await res.text());
+      }
+    } catch (err) {
+      console.error(`[Supabase Storage] Failed to delete old files from '${bucket}':`, err);
     }
-  } catch (err) {
-    console.error("[Supabase Storage] Failed to delete old media files:", err);
-  }
+  };
+
+  await Promise.all([
+    deleteFromBucket("product-images", productFileNames),
+    deleteFromBucket(BANNER_BUCKET, bannerFileNames),
+  ]);
 }
 
 export async function toggleUserDisabled(userId: string, isDisabled: boolean) {
@@ -992,6 +1022,7 @@ export async function updateWorkerCapabilities(
     data: {
       canManageInventory: capabilities.inventory,
       canManageShipping: capabilities.shipping,
+      tokenVersion: { increment: 1 },
     },
   });
 
@@ -1063,6 +1094,9 @@ export async function shipOrder(orderId: string) {
   }
   if (order.status === "CANCELLED" || order.status === "DELIVERED") {
     throw new Error("Cannot ship a cancelled or delivered order.");
+  }
+  if (order.status !== "READY_TO_SHIP" && order.status !== "PENDING") {
+    throw new Error("Order must be in PENDING or READY_TO_SHIP status to ship.");
   }
   if (order.shipmentId) {
     throw new Error("This order has already been shipped to Shiprocket.");

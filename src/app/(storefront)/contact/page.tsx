@@ -42,15 +42,15 @@ export default function ContactPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4 text-sm text-[#2D1F2F]">
                 <i className="ri-mail-line text-[#7A0B2E] text-lg" />
-                <span>support@myra.com</span>
+                <a href="mailto:official@myrashoppingmall.com" className="hover:text-[#7A0B2E] transition-colors">official@myrashoppingmall.com</a>
               </div>
               <div className="flex items-center gap-4 text-sm text-[#2D1F2F]">
                 <i className="ri-phone-line text-[#7A0B2E] text-lg" />
-                <span>+91 1800 123 4567</span>
+                <a href="tel:+919492151481" className="hover:text-[#7A0B2E] transition-colors">+91 94921 51481</a>
               </div>
               <div className="flex items-center gap-4 text-sm text-[#2D1F2F]">
-                <i className="ri-map-pin-line text-[#7A0B2E] text-lg" />
-                <span>Myra Shopping Mall, MG Road, Bangalore, India</span>
+                <i className="ri-map-pin-line text-[#7A0B2E] text-lg shrink-0" />
+                <span>5-155, G Plus 3 Floors, 4, Koritepadu Rd, Vinayak Nagar, Guntur, Andhra Pradesh 522007</span>
               </div>
             </div>
           </div>

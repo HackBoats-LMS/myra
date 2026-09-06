@@ -23,8 +23,8 @@ export async function sendEmail({ to, subject, react }: SendEmailOptions) {
     if (process.env.NODE_ENV === "development") {
       console.log("=========================================");
       console.log("📧 MOCK EMAIL SENT");
-      console.log(`To: ${to}`);
-      console.log(`Subject: ${subject}`);
+      console.log("To: [redacted]");
+      console.log("Subject: [redacted]");
       console.log("=========================================");
     }
     return;
@@ -64,8 +64,8 @@ export async function sendVerificationEmail(email: string, token: string) {
     if (process.env.NODE_ENV === "development") {
       console.log("=========================================");
       console.log("📧 MOCK EMAIL SENT");
-      console.log(`To: ${email}`);
-      console.log(`Subject: Verify your email address - Myra Shopping Mall`);
+      console.log("To: [redacted]");
+      console.log("Subject: Verify your email address - Myra Shopping Mall");
       console.log("=========================================");
     }
     return;

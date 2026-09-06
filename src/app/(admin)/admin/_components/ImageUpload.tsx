@@ -9,9 +9,10 @@ interface ImageUploadProps {
   value: string;
   onChange: (url: string) => void;
   disabled?: boolean;
+  bucket?: string;
 }
 
-export default function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
+export default function ImageUpload({ value, onChange, disabled, bucket }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const toast = useToast();
@@ -21,6 +22,9 @@ export default function ImageUpload({ value, onChange, disabled }: ImageUploadPr
       setIsUploading(true);
       const formData = new FormData();
       formData.append("file", file);
+      if (bucket) {
+        formData.append("bucket", bucket);
+      }
       const url = await uploadImage(formData);
       onChange(url);
     } catch (error) {

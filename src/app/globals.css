@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F5EFE6;
+  --background: #EBDCD9;
   --foreground: #171717;
 
   /* Brand Theme Tokens (configured via src/config/theme.ts) */
@@ -9,11 +9,11 @@
   --brand-primary-dark: #5C0820;
   --brand-primary-deep: #470618;
   --brand-primary-light: #F7EFF0;
-  --brand-primary-capsule: #EBDCD9;
+  --brand-primary-capsule: #C3A29B;
   --brand-gold: #CE9222;
   --brand-gold-warm: #BF9351;
   --brand-dark: #2D1F2F;
-  --brand-surface: #F5EFE6;
+  --brand-surface: #EBDCD9;
 }
 
 @theme inline {

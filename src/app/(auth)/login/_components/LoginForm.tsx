@@ -8,7 +8,7 @@ function LoginFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
-  const safeCallbackUrl = callbackUrl.startsWith("/") && !callbackUrl.includes("://") ? callbackUrl : "/";
+  const safeCallbackUrl = callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") && !callbackUrl.includes("://") ? callbackUrl : "/";
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

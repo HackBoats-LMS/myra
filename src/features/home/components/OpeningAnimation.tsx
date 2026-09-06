@@ -41,21 +41,42 @@ const OpeningAnimation = () => {
         <>
             <div 
                 id="myra-opening-anim"
-                className='fixed inset-0 z-[9999] overflow-hidden items-center justify-center pointer-events-auto'
+                suppressHydrationWarning
+                className={`fixed inset-0 z-[9999] overflow-hidden items-center justify-center ${
+                    phase >= 2 ? 'pointer-events-none' : 'pointer-events-auto'
+                }`}
             >
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: "(function(){try{if(sessionStorage.getItem('myra_animation_played')){var e=document.getElementById('myra-opening-anim');if(e)e.style.display='none';}}catch(t){}})();"
+                    }}
+                />
                 {/* The Logo and Background (fades out as doors slide away) */}
-                <div className={`absolute inset-0 bg-[#f0f0f0] flex items-center justify-center z-0 transition-opacity duration-700 ease-in-out ${
-                    phase >= 2 ? 'opacity-0' : 'opacity-100'
-                }`}>
-                    <MyraLogo className="h-16 md:h-24 lg:h-32 w-auto object-contain" />
+                <div 
+                    suppressHydrationWarning
+                    className={`absolute inset-0 bg-[#f0f0f0] flex items-center justify-center z-0 transition-opacity duration-700 ease-in-out ${
+                        phase >= 2 ? 'opacity-0' : 'opacity-100'
+                    }`}
+                >
+                    <MyraLogo className="h-16 md:h-24 lg:h-32 w-auto object-contain pointer-events-none select-none" />
                 </div>
 
                 {/* The Doors Container */}
-                <div className="absolute inset-0 flex w-full h-full z-10 items-center justify-center">
-                    <div className="flex h-full flex-nowrap items-center justify-center">
+                <div 
+                    suppressHydrationWarning
+                    className="absolute inset-0 flex w-full h-full z-10 items-center justify-center pointer-events-none select-none"
+                >
+                    <div 
+                        suppressHydrationWarning
+                        className="flex h-full flex-nowrap items-center justify-center pointer-events-none"
+                    >
                         {/* --- LEFT SIDE DOORS --- */}
                         <img 
-                            className={`shrink-0 h-full w-auto relative z-10 transition-transform duration-700 ease-in-out ${
+                            suppressHydrationWarning
+                            draggable={false}
+                            data-pin-nopin="true"
+                            data-pin-no-hover="true"
+                            className={`shrink-0 h-full w-auto relative z-10 pointer-events-none select-none transition-transform duration-700 ease-in-out ${
                                 phase >= 2 ? 'translate-x-[-100%]' : 'translate-x-0'
                             }`} 
                             src="/animation/opening/design.png" 
@@ -63,7 +84,11 @@ const OpeningAnimation = () => {
                         />
                         
                         <img 
-                            className={`shrink-0 h-full w-auto relative z-20 transition-transform duration-700 ease-in-out ${
+                            suppressHydrationWarning
+                            draggable={false}
+                            data-pin-nopin="true"
+                            data-pin-no-hover="true"
+                            className={`shrink-0 h-full w-auto relative z-20 pointer-events-none select-none transition-transform duration-700 ease-in-out ${
                                 phase >= 2 ? 'translate-x-[-200%]' : 'translate-x-0'
                             }`} 
                             src="/animation/opening/design.png" 
@@ -71,7 +96,11 @@ const OpeningAnimation = () => {
                         />
                         
                         <img 
-                            className={`shrink-0 h-full w-auto relative z-30 transition-transform duration-700 ease-in-out ${
+                            suppressHydrationWarning
+                            draggable={false}
+                            data-pin-nopin="true"
+                            data-pin-no-hover="true"
+                            className={`shrink-0 h-full w-auto relative z-30 pointer-events-none select-none transition-transform duration-700 ease-in-out ${
                                 phase >= 2 ? 'translate-x-[-300%]' : phase >= 1 ? 'translate-x-[-100%]' : 'translate-x-0'
                             }`} 
                             src="/animation/opening/design1.png" 
@@ -80,7 +109,11 @@ const OpeningAnimation = () => {
 
                         {/* --- RIGHT SIDE DOORS --- */}
                         <img 
-                            className={`shrink-0 h-full w-auto relative z-30 -scale-x-100 transition-transform duration-700 ease-in-out ${
+                            suppressHydrationWarning
+                            draggable={false}
+                            data-pin-nopin="true"
+                            data-pin-no-hover="true"
+                            className={`shrink-0 h-full w-auto relative z-30 pointer-events-none select-none -scale-x-100 transition-transform duration-700 ease-in-out ${
                                 phase >= 2 ? 'translate-x-[300%]' : phase >= 1 ? 'translate-x-[100%]' : 'translate-x-0'
                             }`} 
                             src="/animation/opening/design1.png" 
@@ -88,7 +121,11 @@ const OpeningAnimation = () => {
                         />
                         
                         <img 
-                            className={`shrink-0 h-full w-auto relative z-20 -scale-x-100 transition-transform duration-700 ease-in-out ${
+                            suppressHydrationWarning
+                            draggable={false}
+                            data-pin-nopin="true"
+                            data-pin-no-hover="true"
+                            className={`shrink-0 h-full w-auto relative z-20 pointer-events-none select-none -scale-x-100 transition-transform duration-700 ease-in-out ${
                                 phase >= 2 ? 'translate-x-[200%]' : 'translate-x-0'
                             }`} 
                             src="/animation/opening/design.png" 
@@ -96,7 +133,11 @@ const OpeningAnimation = () => {
                         />
                         
                         <img 
-                            className={`shrink-0 h-full w-auto relative z-10 -scale-x-100 transition-transform duration-700 ease-in-out ${
+                            suppressHydrationWarning
+                            draggable={false}
+                            data-pin-nopin="true"
+                            data-pin-no-hover="true"
+                            className={`shrink-0 h-full w-auto relative z-10 pointer-events-none select-none -scale-x-100 transition-transform duration-700 ease-in-out ${
                                 phase >= 2 ? 'translate-x-[100%]' : 'translate-x-0'
                             }`} 
                             src="/animation/opening/design.png" 

@@ -16,21 +16,35 @@ interface NavbarProps {
 
 export default function Navbar({ cartCount, wishlistCount, isLoggedIn, navLinks = NAV_LINKS }: NavbarProps) {
   return (
-    <nav className="w-full bg-[#FDFAF7] border-b border-[#7A0B2E]/15 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 lg:py-3 relative z-50">
-      {/* Logo (left) */}
-      <div className="flex-1 flex items-center justify-start">
+    <nav className="w-full bg-[#F7F0EE] border-b border-[#7A0B2E]/15 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 lg:py-3 xl:min-h-[88px] 2xl:min-h-[92px] relative z-50">
+      {/* Left side: Logo on smaller screens (< xl), Desktop NavMenu on larger screens (xl+) */}
+      <div className="flex items-center justify-start">
+        {/* Mobile/Tablet Logo (left) */}
+        <div className="xl:hidden flex items-center">
+          <Link href="/" className="flex items-center">
+            <MyraLogo
+              className="py-1 px-1 sm:px-2 md:py-2 md:px-4 h-10 sm:h-12 md:h-14 lg:h-16 w-auto transition-all"
+            />
+          </Link>
+        </div>
+
+        {/* Desktop Navigation Links */}
+        <div className="hidden xl:flex items-center">
+          <NavMenu links={navLinks} />
+        </div>
+      </div>
+
+      {/* Center Logo on larger screens (xl+) - absolute 50% dead center */}
+      <div className="hidden xl:flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
         <Link href="/" className="flex items-center">
           <MyraLogo
-            className="py-1 px-2 md:py-2 md:px-4 h-10 sm:h-12 md:h-14 lg:h-16 xl:h-[72px] 2xl:h-[76px] w-auto transition-all"
+            className="py-1 px-2 md:py-2 md:px-4 xl:h-[72px] 2xl:h-[76px] w-auto transition-all"
           />
         </Link>
       </div>
 
-      {/* Desktop Navigation with Dropdowns (centered) */}
-      <NavMenu links={navLinks} />
-
-      {/* Action Icons (Account, Cart, Wishlist) */}
-      <div className="flex-1 flex items-center justify-end gap-3.5 sm:gap-5 md:gap-6 lg:gap-8">
+      {/* Right side: Action Icons (Account, Cart, Wishlist) */}
+      <div className="flex items-center justify-end gap-3.5 sm:gap-5 md:gap-6 lg:gap-8">
         <Link
           href={isLoggedIn ? "/account" : "/login"}
           className="flex flex-col items-center justify-center gap-0.5 text-[#171717] hover:text-[#7A0B2E] transition-colors group"

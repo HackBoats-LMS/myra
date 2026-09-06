@@ -7,7 +7,7 @@ export default function NavMenu({ links }: { links: NavLink[] }) {
   const [open, setOpen] = useState<string | null>(null);
 
   return (
-    <nav className="hidden xl:flex items-center gap-6 lg:gap-8">
+    <nav className="flex items-center gap-6 lg:gap-8 whitespace-nowrap">
       {links.map((item) => {
         const isOpen = open === item.label;
         const hasChildren = item.children && item.children.length > 0;

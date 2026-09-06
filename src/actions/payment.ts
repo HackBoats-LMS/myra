@@ -239,8 +239,9 @@ export async function confirmRazorpayPayment(input: ConfirmPaymentInput): Promis
     if (error instanceof Error && error.message.includes("cart total has changed")) {
       throw error;
     }
-    // If we can't verify (e.g. Razorpay API error), proceed — the webhook
-    // amount check provides a secondary safety net.
+    // Fail closed: if we can't verify the amount (e.g. Razorpay API error),
+    // do not proceed with order creation to prevent potential price manipulation.
+    throw new Error("Unable to verify payment amount. Please try again.");
   }
 
   const result = await createOrderTransaction({

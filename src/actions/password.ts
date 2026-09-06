@@ -95,11 +95,11 @@ export async function resetPassword(token: string, newPassword: string) {
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-  // Update user password and invalidate token in one transaction
+  // Update user password, invalidate token, and invalidate all existing sessions
   await prisma.$transaction([
     prisma.user.update({
       where: { email: resetRecord.email },
-      data: { password: hashedPassword }
+      data: { password: hashedPassword, tokenVersion: { increment: 1 } }
     }),
     prisma.passwordResetToken.delete({
       where: { id: resetRecord.id }
