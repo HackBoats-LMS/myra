@@ -253,6 +253,7 @@ export default function BannerManager({ initialBanners }: { initialBanners: Bann
                     Upload New Image
                   </label>
                   <ImageUpload
+                    bucket="banners"
                     value={bannerData?.imageUrl || ""}
                     onChange={(url) => handleFieldChange(config.slot, "imageUrl", url)}
                   />

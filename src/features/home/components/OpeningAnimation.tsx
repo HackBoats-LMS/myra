@@ -46,11 +46,6 @@ const OpeningAnimation = () => {
                     phase >= 2 ? 'pointer-events-none' : 'pointer-events-auto'
                 }`}
             >
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: "(function(){try{if(sessionStorage.getItem('myra_animation_played')){var e=document.getElementById('myra-opening-anim');if(e)e.style.display='none';}}catch(t){}})();"
-                    }}
-                />
                 {/* The Logo and Background (fades out as doors slide away) */}
                 <div 
                     suppressHydrationWarning
