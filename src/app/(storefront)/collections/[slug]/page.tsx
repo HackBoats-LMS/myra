@@ -31,7 +31,19 @@ export async function generateMetadata(
   };
 }
 
-export const revalidate = 3600;
+export const revalidate = 60; // 1 minute ISR
+
+export async function generateStaticParams() {
+  try {
+    const collections = await prisma.collection.findMany({
+      select: { slug: true },
+      take: 20,
+    });
+    return collections.map((c) => ({ slug: c.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export default async function CollectionPage({
   params,

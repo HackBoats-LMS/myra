@@ -29,6 +29,18 @@ function parseGuestWishlistCount(raw: string | undefined): number {
   }
 }
 
+function parseCompareIds(raw: string | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const data = verifyCookieValue(raw) ?? raw;
+    const parsed: unknown = JSON.parse(data);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === "string").slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -51,9 +63,13 @@ export async function GET() {
       wishlistCount = parseGuestWishlistCount(cookieStore.get("guest_wishlist")?.value);
     }
 
-    return NextResponse.json({ isLoggedIn, cartCount, wishlistCount });
+    const cookieStore = await cookies();
+    const compareIds = parseCompareIds(cookieStore.get("compare")?.value);
+
+    return NextResponse.json({ isLoggedIn, cartCount, wishlistCount, compareIds });
   } catch (error) {
     console.error("Failed to fetch user state:", error);
-    return NextResponse.json({ isLoggedIn: false, cartCount: 0, wishlistCount: 0 }, { status: 500 });
+    return NextResponse.json({ isLoggedIn: false, cartCount: 0, wishlistCount: 0, compareIds: [] }, { status: 500 });
   }
 }
+

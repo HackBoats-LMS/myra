@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "About Us | Myra Shopping Mall",
   description: "Learn more about the heritage and values of Myra Shopping Mall.",
 };
+
 
 export default function AboutPage() {
   return (

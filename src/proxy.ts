@@ -45,7 +45,7 @@ async function verifyAuth(req: NextRequest) {
   return token;
 }
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const isProduction = process.env.NODE_ENV === "production";
   const nonce = generateNonce();
   const { pathname } = req.nextUrl;

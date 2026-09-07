@@ -45,22 +45,22 @@ export default async function StorefrontLayout({ children }: { children: React.R
   validateEnv();
 
   let navLinks: NavLink[] = NAV_LINKS;
-  let compareIds: string[] = [];
 
   try {
     const cachedNav = await getCachedNavigationTree();
     if (cachedNav && cachedNav.length > 0) {
       navLinks = cachedNav;
     }
-    compareIds = await getCompareIds();
   } catch (error) {
     console.warn("Database unreachable in storefront layout header:", error instanceof Error ? error.message : "unknown error");
   }
 
-  // Initial dummy state for static rendering. HeaderController will hydrate on client mount.
+  // Initial dummy state for static rendering. HeaderController and drawers hydrate on client mount.
   const cartCount = 0;
   const wishlistCount = 0;
   const isLoggedIn = false;
+  const compareIds: string[] = [];
+
 
   return (
     <CartProvider initialCartCount={cartCount}>

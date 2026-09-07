@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Shipping & Delivery | Myra Shopping Mall",
   description: "Learn about shipping times, complimentary delivery options, and tracking updates for your orders.",
 };
+
 
 export default function ShippingPage() {
   return (

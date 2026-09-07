@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Privacy Policy | Myra Shopping Mall",
   description:
     "Comprehensive Privacy Policy of Myra Shopping Mall detailing how we collect, use, protect, and handle your personal, transaction, and shipping data.",
 };
+
 
 export default function PrivacyPage() {
   return (
