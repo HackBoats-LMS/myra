@@ -15,7 +15,21 @@ function safeJsonLd(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c").replace(/\>/g, "\\u003e").replace(/<\//g, "\\u003c/");
 }
 
-export const revalidate = 3600; // 1 hour ISR
+export const revalidate = 60; // 1 minute ISR
+
+export async function generateStaticParams() {
+  try {
+    const products = await prisma.product.findMany({
+      where: { deletedAt: null },
+      select: { slug: true },
+      take: 50,
+      orderBy: { createdAt: "desc" },
+    });
+    return products.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -39,6 +53,7 @@ export async function generateMetadata(
 }
 
 import ProductBackButton from "@/app/(storefront)/products/[slug]/_components/ProductBackButton";
+
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

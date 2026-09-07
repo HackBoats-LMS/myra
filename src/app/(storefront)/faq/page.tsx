@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Frequently Asked Questions | Myra Shopping Mall",
   description: "Find quick answers to common queries regarding ordering, shipping, and returns.",
 };
+
 
 const FAQS = [
   {

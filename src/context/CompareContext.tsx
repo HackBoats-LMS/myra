@@ -27,8 +27,19 @@ function compareReducer(_state: CompareState, action: CompareAction): CompareSta
   }
 }
 
-export function CompareProvider({ children, initialIds }: { children: React.ReactNode; initialIds: string[] }) {
+export function CompareProvider({ children, initialIds = [] }: { children: React.ReactNode; initialIds?: string[] }) {
   const [compareIds, dispatch] = useReducer(compareReducer, initialIds);
+
+  React.useEffect(() => {
+    fetch("/api/user/state")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.compareIds && Array.isArray(data.compareIds)) {
+          dispatch({ type: "SET", ids: data.compareIds });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const toggleCompare = useCallback(async (productId: string) => {
     const next = await toggleCompareAction(productId);
@@ -49,6 +60,7 @@ export function CompareProvider({ children, initialIds }: { children: React.Reac
     </CompareContext.Provider>
   );
 }
+
 
 export function useCompare() {
   const context = useContext(CompareContext);

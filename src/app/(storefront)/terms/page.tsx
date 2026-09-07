@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Terms of Service | Myra Shopping Mall",
   description: "Read the terms, rules, and guidelines governing the use of the Myra Shopping Mall storefront.",
 };
+
 
 export default function TermsPage() {
   return (

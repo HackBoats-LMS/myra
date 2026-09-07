@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Fabrics Care Guide | Myra Shopping Mall",
   description:
     "Expert care and maintenance guide for pure silk sarees, Banarasi weaves, Kanjeevaram silks, cottons, and designer ethnic wear.",
 };
+
 
 const FABRIC_GUIDES = [
   {

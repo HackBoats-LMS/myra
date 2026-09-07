@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Return Policy | Myra Shopping Mall",
   description: "Read details about our complimentary 30-day return policy and instructions on how to return items.",
 };
+
 
 export default function ReturnsPage() {
   return (
