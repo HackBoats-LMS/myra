@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import OrderItemReview from "./OrderItemReview";
 import OrderItemReturn from "./OrderItemReturn";
+import OrderItemCancelButton from "./OrderItemCancelButton";
 import type { Prisma } from "@/generated/prisma";
 import { Package } from "lucide-react";
 
@@ -15,15 +16,31 @@ interface ReviewEntry {
 }
 
 interface OrderItemsListProps {
+  orderId: string;
   orderItems: OrderItemWithProduct[];
   status: string;
   canReview: boolean;
   reviewByProduct: Map<string, ReviewEntry>;
   totalAmount: number;
+  discountAmount?: number;
+  shippingAmount?: number;
+  couponCode?: string | null;
 }
 
-export default function OrderItemsList({ orderItems, status, canReview, reviewByProduct, totalAmount }: OrderItemsListProps) {
-  const totalItemCount = orderItems.reduce((sum, item) => sum + item.quantity, 0);
+export default function OrderItemsList({
+  orderId,
+  orderItems,
+  status,
+  canReview,
+  reviewByProduct,
+  totalAmount,
+  discountAmount = 0,
+  shippingAmount = 0,
+  couponCode,
+}: OrderItemsListProps) {
+  const activeItems = orderItems.filter((i) => !i.isCancelled);
+  const totalItemCount = activeItems.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = orderItems.reduce((sum, item) => sum + (item.isCancelled ? 0 : item.price * item.quantity), 0);
 
   return (
     <div className="bg-white border border-[#7A0B2E]/20 overflow-hidden shadow-sm h-fit">
@@ -41,7 +58,7 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
 
       <div className="divide-y divide-[#7A0B2E]/10">
         {orderItems.map((item) => (
-          <div key={item.id} className="p-4 sm:p-6 space-y-4">
+          <div key={item.id} className={`p-4 sm:p-6 space-y-4 ${item.isCancelled ? "opacity-60 bg-gray-50/50" : ""}`}>
             <div className="flex items-start sm:items-center gap-4">
               <Link
                 href={`/products/${item.product.slug}`}
@@ -55,11 +72,19 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
               </Link>
 
               <div className="flex-1 min-w-0">
-                <Link href={`/products/${item.product.slug}`} className="hover:text-[#7A0B2E] transition-colors">
-                  <h4 className="font-serif font-bold text-[#2D1F2F] text-sm sm:text-base leading-snug line-clamp-2">
-                    {item.product.name}
-                  </h4>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href={`/products/${item.product.slug}`} className="hover:text-[#7A0B2E] transition-colors">
+                    <h4 className={`font-serif font-bold text-sm sm:text-base leading-snug line-clamp-2 ${item.isCancelled ? "line-through text-gray-500" : "text-[#2D1F2F]"}`}>
+                      {item.product.name}
+                    </h4>
+                  </Link>
+                  {item.isCancelled && (
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5">
+                      Cancelled
+                    </span>
+                  )}
+                </div>
+
                 <div className="flex flex-wrap items-center gap-3 mt-1.5">
                   <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
                     Qty: <span className="text-[#2D1F2F]">{item.quantity}</span>
@@ -69,15 +94,24 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
                       {item.product.sku}
                     </span>
                   )}
+                  {status === "PENDING" && !item.isCancelled && (
+                    <OrderItemCancelButton
+                      orderId={orderId}
+                      orderItemId={item.id}
+                      productName={item.product.name}
+                      itemPrice={item.price}
+                      itemQuantity={item.quantity}
+                    />
+                  )}
                 </div>
               </div>
 
-              <div className="text-sm sm:text-base font-bold text-[#2D1F2F] flex-shrink-0 text-right">
+              <div className={`text-sm sm:text-base font-bold flex-shrink-0 text-right ${item.isCancelled ? "line-through text-gray-400" : "text-[#2D1F2F]"}`}>
                 ₹{(item.price * item.quantity).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
               </div>
             </div>
 
-            {canReview && (
+            {canReview && !item.isCancelled && (
               <OrderItemReview
                 productId={item.productId}
                 productName={item.product.name}
@@ -85,16 +119,49 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
               />
             )}
 
-            <OrderItemReturn
-              orderItemId={item.id}
-              productName={item.product.name}
-              orderStatus={status}
-              existingRequests={item.returnRequests}
-            />
+            {!item.isCancelled && (
+              <OrderItemReturn
+                orderItemId={item.id}
+                productName={item.product.name}
+                orderStatus={status}
+                existingRequests={item.returnRequests}
+              />
+            )}
           </div>
         ))}
       </div>
 
+      {/* Cost Summary Breakdown */}
+      <div className="bg-[#FAF6F0] p-4 sm:p-6 border-t border-[#7A0B2E]/20 space-y-2.5 text-xs text-gray-600">
+        <div className="flex justify-between items-center">
+          <span className="uppercase tracking-wider text-[11px] font-medium text-gray-500">Items Subtotal</span>
+          <span className="font-semibold text-[#2D1F2F]">
+            ₹{subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          </span>
+        </div>
+
+        {discountAmount > 0 && (
+          <div className="flex justify-between items-center text-green-700">
+            <span className="uppercase tracking-wider text-[11px] font-medium">
+              Discount {couponCode ? `(${couponCode})` : ""}
+            </span>
+            <span className="font-semibold">
+              -₹{discountAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center">
+          <span className="uppercase tracking-wider text-[11px] font-medium text-gray-500">Delivery / Shipping</span>
+          <span className="font-semibold text-[#2D1F2F]">
+            {shippingAmount > 0
+              ? `₹${shippingAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`
+              : "Free"}
+          </span>
+        </div>
+      </div>
+
+      {/* Total Paid */}
       <div className="bg-[#F5EFE6] p-4 sm:p-6 flex justify-between items-center border-t border-[#7A0B2E]/20">
         <div>
           <span className="block font-bold text-[#2D1F2F] text-[10px] sm:text-xs uppercase tracking-widest">
@@ -109,4 +176,3 @@ export default function OrderItemsList({ orderItems, status, canReview, reviewBy
     </div>
   );
 }
-

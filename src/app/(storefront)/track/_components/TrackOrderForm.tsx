@@ -12,34 +12,39 @@ export default function TrackOrderForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const id = orderId.trim();
+    const id = orderId.trim().replace(/^#/, "");
     if (!id) {
-      toast.error("Please enter your order ID.");
+      toast.error("Please enter your Order ID, reference code, or AWB tracking number.");
       return;
     }
     setLoading(true);
-    router.push(`/track/${encodeURIComponent(id)}?email=${encodeURIComponent(email.trim())}`);
+    const emailParam = email.trim() ? `?email=${encodeURIComponent(email.trim())}` : "";
+    router.push(`/track/${encodeURIComponent(id)}${emailParam}`);
   };
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-[#7A0B2E]/20 p-6 space-y-4 shadow-sm">
       <div>
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Order ID</label>
+        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
+          Order ID / Tracking Number
+        </label>
         <input
           value={orderId}
           onChange={(e) => setOrderId(e.target.value)}
           required
-          placeholder="e.g. 9f3c... or your order number"
+          placeholder="e.g. 2db7d90e, full Order ID, or AWB code"
           className="w-full border border-[#7A0B2E]/30 px-3 py-2.5 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
         />
       </div>
       <div>
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">Email (used at checkout)</label>
+        <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-1">
+          Email <span className="text-gray-400 font-normal lowercase">(optional)</span>
+        </label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
+          placeholder="you@example.com (optional)"
           className="w-full border border-[#7A0B2E]/30 px-3 py-2.5 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] rounded-none"
         />
       </div>

@@ -1,4 +1,4 @@
-import { Check, XCircle } from "lucide-react";
+import { Check, XCircle, ExternalLink, Truck, Clock } from "lucide-react";
 
 interface TimelineStep {
   key: string;
@@ -7,18 +7,61 @@ interface TimelineStep {
 }
 
 export default function OrderTrackingTimeline({ status, order }: { status: string; order: Record<string, unknown> }) {
+  const awbNumber = (order.awbNumber as string) || null;
+  const courierName = (order.courierName as string) || null;
+  const trackingUrl =
+    (order.trackingUrl as string) ||
+    (awbNumber ? `https://shiprocket.co/tracking/${encodeURIComponent(awbNumber)}` : null);
+
   if (status === "CANCELLED") {
     return (
-      <div className="bg-red-50/70 border border-red-200 p-5 space-y-1 shadow-sm">
-        <span className="inline-flex items-center gap-2 text-red-700 text-xs font-bold uppercase tracking-widest">
-          <XCircle className="w-4 h-4" />
-          Order Cancelled
-        </span>
-        {(order.cancelledAt as string) && (
-          <p className="text-xs text-red-600 pl-6">
-            Cancelled on {new Date(order.cancelledAt as string).toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short" })}
-          </p>
-        )}
+      <div className="bg-red-50/80 border border-red-200 p-5 sm:p-6 space-y-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-red-200/60 pb-3">
+          <div className="space-y-1">
+            <span className="inline-flex items-center gap-2 text-red-700 text-xs font-bold uppercase tracking-widest">
+              <XCircle className="w-4 h-4" />
+              Order Cancelled
+            </span>
+            {(order.cancelledAt as string) && (
+              <p className="text-xs text-red-600">
+                Cancelled on {new Date(order.cancelledAt as string).toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short" })}
+              </p>
+            )}
+          </div>
+          <span className="inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-red-100 text-red-800 border border-red-200">
+            CANCELLED
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white/80 p-3.5 border border-red-200/80">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-700 shrink-0">
+              <Truck className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-[#2D1F2F]">
+                {courierName ? `Courier: ${courierName}` : "Shipment Status"}
+                {awbNumber && <span className="ml-2 font-mono text-[11px] font-semibold text-gray-600">AWB: {awbNumber}</span>}
+              </p>
+              <p className="text-[11px] text-gray-500">
+                {awbNumber
+                  ? "Shipment was cancelled with courier."
+                  : "Order was cancelled prior to courier dispatch (no courier AWB generated)."}
+              </p>
+            </div>
+          </div>
+          {trackingUrl && (
+            <a
+              href={trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#7A0B2E] hover:bg-[#5C0820] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors shadow-sm"
+            >
+              <span>Click here to see full detailed tracking via Shiprocket</span>
+              <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+            </a>
+          )}
+        </div>
       </div>
     );
   }
@@ -34,7 +77,7 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
   const currentIndex = steps.findIndex((s) => s.key === status);
 
   return (
-    <div className="bg-white p-5 sm:p-6 border border-[#7A0B2E]/20 shadow-sm">
+    <div className="bg-white p-5 sm:p-6 border border-[#7A0B2E]/20 shadow-sm space-y-6">
       <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 pb-3">
         <h3 className="font-serif text-[#2D1F2F] text-base sm:text-lg tracking-wide">
           Order Tracking
@@ -44,7 +87,7 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
         </span>
       </div>
 
-      <div className="mt-6 overflow-x-auto pb-2 -mx-2 px-2">
+      <div className="overflow-x-auto pb-2 -mx-2 px-2">
         <div className="min-w-[480px] grid grid-cols-5 relative">
           {steps.map((step, i) => {
             const reached = i <= currentIndex;
@@ -86,7 +129,45 @@ export default function OrderTrackingTimeline({ status, order }: { status: strin
           })}
         </div>
       </div>
+
+      {/* Prominent Shiprocket Live Tracking Callout */}
+      <div className="pt-2 border-t border-[#7A0B2E]/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[#FDFBF7] p-3.5 sm:p-4 border border-[#7A0B2E]/15">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-[#7A0B2E]/10 flex items-center justify-center text-[#7A0B2E] shrink-0">
+            <Truck className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-[#2D1F2F]">
+              {courierName ? `Courier: ${courierName}` : "Courier Tracking"}
+              {awbNumber && <span className="ml-2 font-mono text-[11px] font-semibold text-gray-600">AWB: {awbNumber}</span>}
+            </p>
+            <p className="text-[11px] text-gray-500">
+              {awbNumber
+                ? "Live real-time checkpoint scans verified by Shiprocket"
+                : "Tracking number (AWB) will be assigned once the package is dispatched."}
+            </p>
+          </div>
+        </div>
+        {trackingUrl ? (
+          <a
+            href={trackingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#7A0B2E] hover:bg-[#5C0820] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors shadow-sm"
+          >
+            <span>Click here to see full detailed tracking via Shiprocket</span>
+            <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+          </a>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F5EFE6] border border-[#7A0B2E]/20 text-[#7A0B2E] text-[10px] font-bold uppercase tracking-wider">
+            <Clock className="w-3.5 h-3.5" />
+            <span>AWB Pending Dispatch</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+
 

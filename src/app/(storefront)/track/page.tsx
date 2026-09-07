@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import TrackOrderForm from "@/app/(storefront)/track/_components/TrackOrderForm";
 
 export const metadata: Metadata = {
   title: "Track Your Order | Myra Shopping Mall",
 };
 
-export default function TrackOrderPage() {
+export default async function TrackOrderPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ id?: string; orderId?: string; awb?: string; email?: string }>;
+}) {
+  const params = await searchParams;
+  const targetId = params?.orderId || params?.id || params?.awb;
+
+  if (targetId && targetId.trim()) {
+    const emailParam = params?.email ? `?email=${encodeURIComponent(params.email.trim())}` : "";
+    redirect(`/track/${encodeURIComponent(targetId.trim())}${emailParam}`);
+  }
+
   return (
     <div className="max-w-xl mx-auto px-4 py-16">
       <div className="text-center mb-8">
@@ -14,10 +27,11 @@ export default function TrackOrderPage() {
           Track Your Order
         </h1>
         <p className="text-gray-500 text-sm mt-2">
-          Enter your order ID and the email you used at checkout to see live status.
+          Enter your Order ID, reference number, or AWB tracking number to see live status.
         </p>
       </div>
       <TrackOrderForm />
     </div>
   );
 }
+

@@ -473,27 +473,222 @@ export async function assignAwbAndScheduleReturnPickup(shipmentId: string) {
   };
 }
 
-export function mapShiprocketStatus(status: string | null | undefined): {
+export async function getShiprocketOrder(shiprocketOrderId: string | number) {
+  return api<{
+    data?: {
+      id?: number;
+      status?: string;
+      status_code?: number;
+      awb_code?: string;
+      courier_name?: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  }>(`/v1/external/orders/show/${shiprocketOrderId}`);
+}
+
+export function mapShiprocketStatus(status: string | number | null | undefined): {
   status: string;
   timestampField: string;
 } | null {
-  const s = (status || "").toUpperCase();
+  if (status === null || status === undefined) return null;
+
+  // Numeric status codes from Shiprocket
+  if (typeof status === "number") {
+    switch (status) {
+      case 5: // CANCELED
+      case 8: // RTO INITIATED
+      case 9: // RTO DELIVERED
+      case 11: // PENDING CANCELLATION
+      case 12: // LOST
+      case 13: // PICKUP ERROR / FAILED
+      case 14: // RTO ACKNOWLEDGED
+      case 15: // PICKUP RESCHEDULED
+      case 16: // CANCELLATION REQUESTED
+      case 38: // RESCHEDULED
+      case 40: // UNDELIVERED
+      case 50: // CANCELLED
+      case 51: // CANCELLED
+        return { status: "CANCELLED", timestampField: "cancelledAt" };
+      case 7: // DELIVERED
+        return { status: "DELIVERED", timestampField: "deliveredAt" };
+      case 2: // AWAITING PICKUP / REACHED DESTINATION
+      case 3: // OUT FOR PICKUP
+      case 4: // PICKUP COMPLETE
+      case 17: // OUT FOR DELIVERY
+        return { status: "OUT_FOR_DELIVERY", timestampField: "outForDeliveryAt" };
+      case 6: // SHIPPED
+      case 18: // IN TRANSIT
+      case 42: // PICKED UP
+        return { status: "SHIPPED", timestampField: "shippedAt" };
+      case 1: // NEW
+      case 19: // PICKUP SCHEDULED
+      case 45: // READY TO SHIP / MANIFEST GENERATED
+      case 52: // MANIFESTED
+        return { status: "READY_TO_SHIP", timestampField: "readyToShipAt" };
+      default:
+        return null;
+    }
+  }
+
+  const s = String(status).toUpperCase().trim();
+
+  // Numeric string checks (e.g. "5" or "50")
+  if (s === "5" || s === "8" || s === "9" || s === "11" || s === "16" || s === "50" || s === "51") {
+    return { status: "CANCELLED", timestampField: "cancelledAt" };
+  }
+  if (s === "7") {
+    return { status: "DELIVERED", timestampField: "deliveredAt" };
+  }
+  if (s === "17" || s === "2" || s === "3") {
+    return { status: "OUT_FOR_DELIVERY", timestampField: "outForDeliveryAt" };
+  }
+  if (s === "6" || s === "18" || s === "42") {
+    return { status: "SHIPPED", timestampField: "shippedAt" };
+  }
+  if (s === "1" || s === "19" || s === "45" || s === "52") {
+    return { status: "READY_TO_SHIP", timestampField: "readyToShipAt" };
+  }
+
+  // Text matching
+  if (
+    s.includes("CANCEL") ||
+    s.includes("RTO") ||
+    s.includes("FAILED") ||
+    s.includes("NOT DELIVERED") ||
+    s.includes("UNDELIVERED") ||
+    s.includes("REJECT") ||
+    s.includes("LOST") ||
+    s.includes("DAMAGED") ||
+    s.includes("DESTROYED")
+  ) {
+    return { status: "CANCELLED", timestampField: "cancelledAt" };
+  }
+
   if (s.includes("DELIVERED")) {
     return { status: "DELIVERED", timestampField: "deliveredAt" };
   }
-  if (s.includes("OUT FOR DELIVERY")) {
+
+  if (s.includes("OUT FOR DELIVERY") || s.includes("REACHED DESTINATION")) {
     return { status: "OUT_FOR_DELIVERY", timestampField: "outForDeliveryAt" };
   }
-  if (s.includes("IN TRANSIT") || s.includes("PICKED UP")) {
+
+  if (s.includes("IN TRANSIT") || s.includes("PICKED UP") || s.includes("SHIPPED") || s.includes("DISPATCHED")) {
     return { status: "SHIPPED", timestampField: "shippedAt" };
   }
-  if (s.includes("MANIFEST") || s.includes("READY")) {
+
+  if (s.includes("MANIFEST") || s.includes("READY") || s.includes("PICKUP SCHEDULED") || s.includes("NEW")) {
     return { status: "READY_TO_SHIP", timestampField: "readyToShipAt" };
   }
-  if (s.includes("CANCEL") || s.includes("RTO") || s.includes("FAILED") || s.includes("NOT DELIVERED")) {
-    return { status: "CANCELLED", timestampField: "cancelledAt" };
-  }
+
   return null;
+}
+
+export async function syncShiprocketStatus(order: {
+  id: string;
+  status?: string;
+  awbNumber?: string | null;
+  shiprocketOrderId?: string | null;
+  trackingUrl?: string | null;
+}): Promise<{
+  newStatus: string | null;
+  timestampField: string;
+  awbCode?: string;
+  courierName?: string;
+  trackingUrl?: string;
+  rawStatus?: string | number;
+} | null> {
+  if (!shiprocketConfigured()) return null;
+
+  let rawStatus: string | number | undefined;
+  let awbCode: string | undefined = order.awbNumber || undefined;
+  let courierName: string | undefined;
+  let trackingUrl: string | undefined = order.trackingUrl || undefined;
+
+  // 1. If AWB exists, check live courier tracking
+  if (order.awbNumber) {
+    try {
+      const trackRes = await trackShipment(order.awbNumber);
+      const trackData = trackRes?.tracking_data;
+      const trackObj = trackData?.shipment_track?.[0];
+
+      rawStatus =
+        trackObj?.current_status ||
+        trackData?.shipment_status ||
+        (trackData as Record<string, unknown>)?.current_status as string | undefined;
+
+      if (trackObj?.courier_name) {
+        courierName = trackObj.courier_name;
+      }
+      if (trackObj?.tracking_url) {
+        trackingUrl = trackObj.tracking_url;
+      } else if (!trackingUrl && order.awbNumber) {
+        trackingUrl = `https://shiprocket.co/tracking/${order.awbNumber}`;
+      }
+    } catch (err) {
+      console.warn("Shiprocket AWB tracking query error:", err);
+    }
+  }
+
+  // 2. If status was not resolved or order has shiprocketOrderId / order.id, check order details
+  const lookupId = order.shiprocketOrderId || order.id;
+  if (lookupId && (!rawStatus || rawStatus === "UNKNOWN")) {
+    try {
+      const orderRes = await getShiprocketOrder(lookupId);
+      const orderData = orderRes?.data || (orderRes as Record<string, unknown>);
+
+      if (orderData) {
+        rawStatus = (orderData.status as string) || (orderData.status_code as number) || rawStatus;
+        if (!awbCode && orderData.awb_code) {
+          awbCode = String(orderData.awb_code);
+          trackingUrl = `https://shiprocket.co/tracking/${awbCode}`;
+        }
+        if (!courierName && orderData.courier_name) {
+          courierName = String(orderData.courier_name);
+        }
+      }
+    } catch (err) {
+      console.warn("Shiprocket order details query error:", err);
+    }
+  } else if (lookupId) {
+    // If order was cancelled in Shiprocket dashboard before courier pickup, the order status in Shiprocket is CANCELED
+    try {
+      const mappedAwb = mapShiprocketStatus(rawStatus);
+      if (!mappedAwb || mappedAwb.status !== "CANCELLED") {
+        const orderRes = await getShiprocketOrder(lookupId);
+        const orderData = orderRes?.data || (orderRes as Record<string, unknown>);
+        const orderStatus = (orderData?.status as string) || (orderData?.status_code as number);
+        const mappedOrder = mapShiprocketStatus(orderStatus);
+        if (mappedOrder && mappedOrder.status === "CANCELLED") {
+          rawStatus = orderStatus;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Ensure trackingUrl always includes the specific AWB or Order ID
+  if (!trackingUrl) {
+    const specificCode = awbCode || order.awbNumber || order.shiprocketOrderId || order.id;
+    if (specificCode) {
+      trackingUrl = `https://shiprocket.co/tracking/${encodeURIComponent(specificCode)}`;
+    }
+  }
+
+  if (!rawStatus) return null;
+
+  const mapped = mapShiprocketStatus(rawStatus);
+  if (!mapped) return null;
+
+  return {
+    newStatus: mapped.status,
+    timestampField: mapped.timestampField,
+    awbCode,
+    courierName,
+    trackingUrl,
+    rawStatus,
+  };
 }
 
 export async function checkServiceability(deliveryPincode: string, cod: boolean = false): Promise<{ available: boolean; city?: string; state?: string; estimatedDeliveryDays?: number }> {

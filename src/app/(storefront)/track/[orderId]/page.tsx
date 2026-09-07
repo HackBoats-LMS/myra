@@ -14,19 +14,28 @@ export default async function PublicTrackOrderPage({
   searchParams,
 }: {
   params: Promise<{ orderId: string }>;
-  searchParams: Promise<{ email?: string }>;
+  searchParams?: Promise<{ email?: string }>;
 }) {
-  const { orderId } = await params;
-  const { email } = await searchParams;
+  const { orderId: rawOrderId } = await params;
+  const search = await searchParams;
+  const email = search?.email?.trim().toLowerCase();
 
-  if (!email || !email.trim()) {
-    notFound();
-  }
+  const cleanId = decodeURIComponent(rawOrderId).trim().replace(/^#/, "");
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
+  // Lookup order by exact ID, prefix (short code), AWB number, or shiprocketOrderId
+  let order = await prisma.order.findFirst({
+    where: {
+      OR: [
+        { id: cleanId },
+        { id: cleanId.toLowerCase() },
+        { awbNumber: cleanId },
+        { shiprocketOrderId: cleanId },
+        { id: { startsWith: cleanId } },
+        { id: { startsWith: cleanId.toLowerCase() } },
+      ],
+    },
     include: {
-      user: { select: { email: true } },
+      user: { select: { email: true, name: true } },
       address: true,
       orderItems: { include: { product: true } },
     },
@@ -36,8 +45,51 @@ export default async function PublicTrackOrderPage({
     notFound();
   }
 
-  if (email.trim().toLowerCase() !== (order.user?.email || "").toLowerCase()) {
-    notFound();
+  // --- Live Shiprocket Tracking Sync ---
+  if ((order.awbNumber || order.shiprocketOrderId) && order.status !== "DELIVERED") {
+    try {
+      const { syncShiprocketStatus } = await import("@/lib/integrations/shiprocket");
+      const syncResult = await syncShiprocketStatus(order);
+
+      if (syncResult && syncResult.newStatus) {
+        const mappedStatus = syncResult.newStatus;
+        if (mappedStatus === "CANCELLED" && order.status !== "CANCELLED") {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              status: "CANCELLED",
+              cancelledAt: new Date(),
+              ...(syncResult.awbCode && !order.awbNumber ? { awbNumber: syncResult.awbCode } : {}),
+            },
+          });
+          order.status = "CANCELLED";
+          order.cancelledAt = new Date();
+          if (syncResult.awbCode) order.awbNumber = syncResult.awbCode;
+          if (syncResult.trackingUrl) order.trackingUrl = syncResult.trackingUrl;
+        } else if (mappedStatus !== "CANCELLED" && mappedStatus !== order.status) {
+          const statusOrder = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
+          const currentRank = statusOrder.indexOf(order.status);
+          const incomingRank = statusOrder.indexOf(mappedStatus);
+
+          if (incomingRank > currentRank) {
+            await prisma.order.update({
+              where: { id: order.id },
+              data: {
+                status: mappedStatus as any,
+                [syncResult.timestampField || "updatedAt"]: new Date(),
+                ...(syncResult.awbCode && !order.awbNumber ? { awbNumber: syncResult.awbCode } : {}),
+                ...(syncResult.trackingUrl && !order.trackingUrl ? { trackingUrl: syncResult.trackingUrl } : {}),
+              },
+            });
+            order.status = mappedStatus as any;
+            if (syncResult.awbCode) order.awbNumber = syncResult.awbCode;
+            if (syncResult.trackingUrl) order.trackingUrl = syncResult.trackingUrl;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Live tracking sync failed on public page:", err);
+    }
   }
 
   const total = order.totalAmount;
@@ -65,17 +117,14 @@ export default async function PublicTrackOrderPage({
             <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Tracking / AWB Number</p>
             <p className="font-mono text-sm text-[#2D1F2F] font-bold">{order.awbNumber}</p>
           </div>
-          {order.trackingUrl && (
-            <a
-              href={order.trackingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors"
-            >
-              <i className="ri-truck-line text-sm" />
-              Track with Carrier
-            </a>
-          )}
+          <a
+            href={order.trackingUrl || `https://shiprocket.co/tracking/${encodeURIComponent(order.awbNumber)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-none transition-colors"
+          >
+            <span>Click here to see full detailed tracking via Shiprocket</span>
+          </a>
         </div>
       )}
 
