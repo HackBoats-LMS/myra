@@ -254,8 +254,8 @@ export default function PrivacyPage() {
               </p>
               <p className="text-gray-700">
                 <strong>Store Customer Helpline:</strong>{" "}
-                <a href="tel:+919492151481" className="text-[#7A0B2E] underline font-medium">
-                  +91 94921 51481
+                <a href="tel:+919177751481" className="text-[#7A0B2E] underline font-medium">
+                  +91 91777 51481
                 </a>
               </p>
               <p className="text-gray-700">

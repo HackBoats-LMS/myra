@@ -19,7 +19,7 @@ export default function WishlistButton({ wishlistCount }: { wishlistCount: numbe
           </span>
         )}
       </div>
-      <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[11px] font-serif lowercase tracking-normal text-[#171717] group-hover:text-[#7A0B2E] leading-none mt-0.5 lg:mt-0">wishlist</span>
+      <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[11px] font-serif tracking-normal text-[#171717] group-hover:text-[#7A0B2E] leading-none mt-0.5 lg:mt-0">Wishlist</span>
     </button>
   );
 }

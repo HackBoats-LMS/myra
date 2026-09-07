@@ -38,9 +38,9 @@ export default function StoreLocationSection() {
             Located in the heart of Guntur, Myra Shopping Mall offers an exceptional shopping experience with an extensive collection of premium sarees and women&apos;s fashion. Visit our showroom to explore the latest styles and enjoy personalized service in a welcoming atmosphere.
           </p>
 
-          {/* Address with Gold Location Pin */}
+          {/* Address with Location Pin */}
           <div className="flex items-center justify-center gap-2 mt-3.5 md:mt-4 lg:mt-6 max-w-[420px]">
-            <span className="shrink-0 flex items-center justify-center self-center">
+            <span className="shrink-0 flex items-center justify-center self-center text-[#7A0B2E]">
               <svg
                 width="21"
                 height="26"
@@ -51,11 +51,11 @@ export default function StoreLocationSection() {
               >
                 <path
                   d="M10.5 22.0494L16.2746 16.2747C19.464 13.0855 19.464 7.91457 16.2746 4.72529C13.0854 1.53601 7.91457 1.53601 4.72529 4.72529C1.53601 7.91457 1.53601 13.0855 4.72529 16.2747L10.5 22.0494ZM10.5 25.3492L3.07538 17.9247C-1.02513 13.8241 -1.02513 7.17589 3.07538 3.07538C7.17589 -1.02513 13.8241 -1.02513 17.9247 3.07538C22.0252 7.17589 22.0252 13.8241 17.9247 17.9247L10.5 25.3492ZM10.5 12.8333C11.7887 12.8333 12.8333 11.7887 12.8333 10.5C12.8333 9.21133 11.7887 8.16667 10.5 8.16667C9.2113 8.16667 8.16667 9.21133 8.16667 10.5C8.16667 11.7887 9.2113 12.8333 10.5 12.8333ZM10.5 15.1667C7.92267 15.1667 5.83333 13.0773 5.83333 10.5C5.83333 7.92267 7.92267 5.83333 10.5 5.83333C13.0773 5.83333 15.1667 7.92267 15.1667 10.5C15.1667 13.0773 13.0773 15.1667 10.5 15.1667Z"
-                  fill="#7A0B2E"
+                  fill="currentColor"
                 />
               </svg>
             </span>
-            <p className="font-serif text-[10px] sm:text-xs md:text-[11px] lg:text-[12.5px] text-[#7A0B2E] leading-snug">
+            <p className="font-serif text-[10px] sm:text-xs md:text-[11px] lg:text-[12.5px] text-[#2D1F2F] font-semibold leading-snug">
               5-155, G Plus 3 Floors, 4, Koritepadu Rd, Vinayak Nagar, Guntur, Andhra Pradesh 522007
             </p>
           </div>

@@ -1,7 +1,6 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
-import { updateTag } from "next/cache";
 import { verifyAdmin } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
 import { CACHE_TAGS, revalidateTag } from "@/lib/cache";
@@ -99,7 +98,12 @@ export async function createBrandStory(data: {
 
   await logAudit("brandStory.create", "BrandStory", story.id, { title: story.title });
 
-  updateTag(CACHE_TAGS.brandStories);
+  try {
+    revalidateTag(CACHE_TAGS.brandStories);
+    revalidateTag(CACHE_TAGS.banners);
+  } catch (e) {
+    console.warn("[brandStories] revalidateTag error:", e);
+  }
   revalidatePath("/", "layout");
   revalidatePath("/admin/brand-stories", "layout");
 
@@ -138,7 +142,12 @@ export async function updateBrandStory(
 
   await logAudit("brandStory.update", "BrandStory", story.id, { title: story.title });
 
-  updateTag(CACHE_TAGS.brandStories);
+  try {
+    revalidateTag(CACHE_TAGS.brandStories);
+    revalidateTag(CACHE_TAGS.banners);
+  } catch (e) {
+    console.warn("[brandStories] revalidateTag error:", e);
+  }
   revalidatePath("/", "layout");
   revalidatePath("/admin/brand-stories", "layout");
 

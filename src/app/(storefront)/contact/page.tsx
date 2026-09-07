@@ -46,7 +46,7 @@ export default function ContactPage() {
               </div>
               <div className="flex items-center gap-4 text-sm text-[#2D1F2F]">
                 <i className="ri-phone-line text-[#7A0B2E] text-lg" />
-                <a href="tel:+919492151481" className="hover:text-[#7A0B2E] transition-colors">+91 94921 51481</a>
+                <a href="tel:+919177751481" className="hover:text-[#7A0B2E] transition-colors">+91 91777 51481</a>
               </div>
               <div className="flex items-center gap-4 text-sm text-[#2D1F2F]">
                 <i className="ri-map-pin-line text-[#7A0B2E] text-lg shrink-0" />

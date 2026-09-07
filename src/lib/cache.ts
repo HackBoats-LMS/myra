@@ -245,11 +245,11 @@ export const getCachedNavigationTree = createCachedQuery(
       }
 
       return topLevel.map((cat) => ({
-        label: cat.name,
+        label: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
         href: `/collections/${cat.slug}`,
         children: cat.children.map((sub) => ({
-          label: sub.name,
-          href: `/collections/${sub.slug}`
+          label: sub.name.charAt(0).toUpperCase() + sub.name.slice(1),
+          href: `/collections/${sub.slug}`,
         }))
       }));
     } catch {
@@ -359,7 +359,7 @@ export const getCachedBanners = createCachedQuery(
       where: { isActive: true },
     });
   },
-  { tags: [CACHE_TAGS.banners], revalidate: CACHE_TTL.veryLong }
+  { tags: [CACHE_TAGS.banners], revalidate: CACHE_TTL.short }
 );
 
 // Brand Stories (SSR cached for maximum performance with on-demand invalidation)
@@ -371,7 +371,7 @@ export const getCachedBrandStories = createCachedQuery(
       orderBy: { sortOrder: "asc" },
     });
   },
-  { tags: [CACHE_TAGS.brandStories], revalidate: CACHE_TTL.veryLong }
+  { tags: [CACHE_TAGS.brandStories], revalidate: CACHE_TTL.short }
 );
 
 // Revalidation helpers - use revalidateTag from next/cache at call site

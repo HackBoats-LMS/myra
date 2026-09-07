@@ -4,7 +4,7 @@ import CartButton from "./CartButton";
 import WishlistButton from "./WishlistIconButton";
 import NavMenu from "./NavMenu";
 import { NAV_LINKS, type NavLink } from "@/lib/navigation";
-import { ProfileIcon } from "@/components/icons/NavIcons";
+import { ProfileIcon, WhatsAppIcon } from "@/components/icons/NavIcons";
 import MyraLogo from "@/components/shared/MyraLogo";
 
 interface NavbarProps {
@@ -43,8 +43,21 @@ export default function Navbar({ cartCount, wishlistCount, isLoggedIn, navLinks 
         </Link>
       </div>
 
-      {/* Right side: Action Icons (Account, Cart, Wishlist) */}
+      {/* Right side: Action Icons (WhatsApp, Account, Cart, Wishlist) */}
       <div className="flex items-center justify-end gap-3.5 sm:gap-5 md:gap-6 lg:gap-8">
+        <a
+          href="https://wa.me/919177751481"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-col items-center justify-center gap-0.5 text-[#171717] hover:text-[#25D366] transition-colors group cursor-pointer"
+          aria-label="WhatsApp"
+        >
+          <div className="relative flex items-center justify-center h-[24px] sm:h-[26px] md:h-[28px] lg:h-[22px]">
+            <WhatsAppIcon className="w-[19px] h-[21px] sm:w-[21px] sm:h-[23px] md:w-[23px] md:h-[25px] lg:w-[18px] lg:h-[20px] group-hover:scale-105 transition-transform" />
+          </div>
+          <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[11px] font-serif tracking-normal text-[#171717] group-hover:text-[#25D366] leading-none mt-0.5 lg:mt-0">WhatsApp</span>
+        </a>
+
         <Link
           href={isLoggedIn ? "/account" : "/login"}
           className="flex flex-col items-center justify-center gap-0.5 text-[#171717] hover:text-[#7A0B2E] transition-colors group"
@@ -52,7 +65,7 @@ export default function Navbar({ cartCount, wishlistCount, isLoggedIn, navLinks 
           <div className="relative flex items-center justify-center h-[24px] sm:h-[26px] md:h-[28px] lg:h-[22px]">
             <ProfileIcon className="w-[20px] h-[22px] sm:w-[22px] sm:h-[24px] md:w-[24px] md:h-[26px] lg:w-[19px] lg:h-[21px] group-hover:scale-105 transition-transform" />
           </div>
-          <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[11px] font-serif lowercase tracking-normal text-[#171717] group-hover:text-[#7A0B2E] leading-none mt-0.5 lg:mt-0">account</span>
+          <span className="text-[11px] sm:text-[12px] md:text-[13px] lg:text-[11px] font-serif tracking-normal text-[#171717] group-hover:text-[#7A0B2E] leading-none mt-0.5 lg:mt-0">Account</span>
         </Link>
 
         <CartButton cartCount={cartCount} />

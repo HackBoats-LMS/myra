@@ -158,11 +158,21 @@ export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount
               setIsOpen(false);
               openWishlist();
             }}
-            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] hover:text-[#7A0B2E] py-3 transition-colors w-full text-left"
+            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] hover:text-[#7A0B2E] py-3 border-b border-[#7A0B2E]/10 transition-colors w-full text-left"
           >
             <i className="ri-heart-line text-[#7A0B2E] text-base leading-none" />
             Wishlist{wishlistCount > 0 && ` (${wishlistCount})`}
           </button>
+          <a
+            href="https://wa.me/919177751481"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-[#25D366] hover:text-[#1EBE5D] py-3 transition-colors w-full text-left"
+          >
+            <i className="ri-whatsapp-line text-[#25D366] text-base leading-none" />
+            WhatsApp Chat
+          </a>
         </nav>
       </div>
 

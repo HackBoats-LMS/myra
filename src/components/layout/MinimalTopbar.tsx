@@ -2,7 +2,7 @@
 import Link from "next/link";
 import CartButton from "./CartButton";
 import WishlistButton from "./WishlistIconButton";
-import { ProfileIcon } from "@/components/icons/NavIcons";
+import { ProfileIcon, WhatsAppIcon } from "@/components/icons/NavIcons";
 import MyraLogo from "@/components/shared/MyraLogo";
 
 interface MinimalTopbarProps {
@@ -23,8 +23,21 @@ export default function MinimalTopbar({ cartCount, wishlistCount, isLoggedIn }: 
         </Link>
       </div>
 
-      {/* Action Icons (Account, Cart, Wishlist) */}
+      {/* Action Icons (WhatsApp, Account, Cart, Wishlist) */}
       <div className="flex items-center gap-3.5 sm:gap-5 md:gap-6 lg:gap-8">
+        <a
+          href="https://wa.me/919177751481"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-col items-center justify-center gap-0.5 text-[#171717] hover:text-[#25D366] transition-colors group cursor-pointer"
+          aria-label="WhatsApp"
+        >
+          <div className="relative flex items-center justify-center h-[20px] sm:h-[22px]">
+            <WhatsAppIcon className="w-[17px] h-[19px] sm:w-[19px] sm:h-[21px] group-hover:scale-105 transition-transform" />
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-serif tracking-normal text-[#171717] group-hover:text-[#25D366] leading-none">WhatsApp</span>
+        </a>
+
         <Link
           href={isLoggedIn ? "/account" : "/login"}
           className="flex flex-col items-center justify-center gap-0.5 text-[#171717] hover:text-[#7A0B2E] transition-colors group"
@@ -32,7 +45,7 @@ export default function MinimalTopbar({ cartCount, wishlistCount, isLoggedIn }: 
           <div className="relative flex items-center justify-center h-[20px] sm:h-[22px]">
             <ProfileIcon className="w-[17px] h-[19px] sm:w-[19px] sm:h-[21px] group-hover:scale-105 transition-transform" />
           </div>
-          <span className="text-[10px] sm:text-[11px] font-serif lowercase tracking-normal text-[#171717] group-hover:text-[#7A0B2E] leading-none">account</span>
+          <span className="text-[10px] sm:text-[11px] font-serif tracking-normal text-[#171717] group-hover:text-[#7A0B2E] leading-none">Account</span>
         </Link>
 
         <CartButton cartCount={cartCount} />

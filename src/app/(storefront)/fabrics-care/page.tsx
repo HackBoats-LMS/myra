@@ -120,7 +120,7 @@ export default function FabricsCarePage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <a
-              href="https://wa.me/919492151481?text=Hi%2C%20I%20have%20a%20question%20regarding%20fabric%20care%20for%20my%20saree"
+              href="https://wa.me/919177751481?text=Hi%2C%20I%20have%20a%20question%20regarding%20fabric%20care%20for%20my%20saree"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white text-xs font-bold uppercase tracking-wider rounded shadow-sm hover:bg-[#1EBE5D] transition-colors"

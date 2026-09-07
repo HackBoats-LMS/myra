@@ -30,10 +30,10 @@ export default async function HeroGrid() {
   const bottomHref = heroRightBottom?.linkUrl || "/collections/kids";
 
   return (
-    <section className="w-full max-w-[1920px] mx-auto bg-transparent flex flex-col xl:flex-row">
+    <section suppressHydrationWarning className="w-full max-w-[1920px] mx-auto bg-transparent flex flex-col xl:flex-row">
       {/* Main Banner (Full width on iPads/mobile, 60% on desktop) */}
-      <div className="w-full xl:w-[60%] relative cursor-pointer aspect-[3/2]">
-        <Link href={mainHref} className="block w-full h-full relative">
+      <div suppressHydrationWarning className="w-full xl:w-[60%] relative cursor-pointer aspect-[3/2]">
+        <Link suppressHydrationWarning href={mainHref} className="block w-full h-full relative">
           <SafeImage
             src={mainSrc}
             fallbackSrc={defaultMainSrc}
@@ -49,9 +49,9 @@ export default async function HeroGrid() {
       </div>
 
       {/* Sub-Banners: Decreased container height (aspect-[699/374]) so full width fits with no side cropping */}
-      <div className="flex w-full xl:w-[40%] flex-row xl:flex-col">
-        <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
-          <Link href={topHref} className="block w-full h-full relative">
+      <div suppressHydrationWarning className="flex w-full xl:w-[40%] flex-row xl:flex-col">
+        <div suppressHydrationWarning className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
+          <Link suppressHydrationWarning href={topHref} className="block w-full h-full relative">
             <SafeImage
               src={topSrc}
               fallbackSrc={defaultTopSrc}
@@ -65,8 +65,8 @@ export default async function HeroGrid() {
             />
           </Link>
         </div>
-        <div className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
-          <Link href={bottomHref} className="block w-full h-full relative">
+        <div suppressHydrationWarning className="w-1/2 xl:w-full relative cursor-pointer aspect-[699/374] xl:aspect-auto xl:flex-1 overflow-hidden">
+          <Link suppressHydrationWarning href={bottomHref} className="block w-full h-full relative">
             <SafeImage
               src={bottomSrc}
               fallbackSrc={defaultBottomSrc}

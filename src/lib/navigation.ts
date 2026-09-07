@@ -11,6 +11,16 @@ export interface NavLink {
 
 export const NAV_LINKS: NavLink[] = [
   {
+    label: "Bridal",
+    href: "/collections/bridal",
+    children: [
+      { label: "Bridal Sarees", href: "/collections/bridal-sarees" },
+      { label: "Silk Sarees", href: "/collections/silk-sarees" },
+      { label: "Designer Sarees", href: "/collections/designer-sarees" },
+      { label: "All Bridal", href: "/collections/bridal" },
+    ],
+  },
+  {
     label: "Sarees",
     href: "/collections/sarees",
     children: [

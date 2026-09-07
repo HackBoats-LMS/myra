@@ -14,7 +14,7 @@ export interface StoreSettings {
 const DEFAULT_SETTINGS: StoreSettings = {
   storeName: "Myra Shopping Mall",
   supportEmail: "support@myra.com",
-  supportPhone: "+91 00000 00000",
+  supportPhone: "+91 91777 51481",
   footerAbout: "Curated sarees and ethnic wear crafted for every celebration.",
   taxPercent: 0,
   promoEnabled: false,

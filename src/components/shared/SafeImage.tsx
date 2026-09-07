@@ -22,6 +22,7 @@ export default function SafeImage({
 
   return (
     <Image
+      suppressHydrationWarning
       {...props}
       src={imgSrc || fallbackSrc}
       alt={alt}

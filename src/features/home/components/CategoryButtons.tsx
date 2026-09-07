@@ -103,6 +103,7 @@ export default function CategoryButtons() {
           }}
         >
           <Image
+            suppressHydrationWarning
             src={imgSrc}
             alt={cat.name}
             fill
@@ -118,18 +119,19 @@ export default function CategoryButtons() {
   return (
     <>
       {/* Mobile, Tablet & iPad Pro Layout (< 1280px): Scaled Oval Capsules with Labels Below (at top of page) */}
-      <section className="xl:hidden w-full px-3 sm:px-6 md:px-8 lg:px-12 pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-3 sm:pb-4 md:pb-5 bg-transparent border-b border-[#7A0B2E]/15">
-        <div className="flex flex-nowrap items-start justify-center gap-6 sm:gap-10 md:gap-14 max-w-[420px] sm:max-w-[960px] mx-auto">
+      <section suppressHydrationWarning className="xl:hidden w-full px-3 sm:px-6 md:px-8 lg:px-12 pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-3 sm:pb-4 md:pb-5 bg-transparent border-b border-[#7A0B2E]/15">
+        <div suppressHydrationWarning className="flex flex-nowrap items-start justify-center gap-6 sm:gap-10 md:gap-14 max-w-[420px] sm:max-w-[960px] mx-auto">
           {categories.map((cat) => (
             <Link
+              suppressHydrationWarning
               href={cat.href}
               key={cat.name}
               className="flex flex-col items-center gap-2 sm:gap-2.5 md:gap-3 group cursor-pointer shrink-0"
             >
               {/* Oval Capsule Background Bar (Wide 102px pill) */}
-              <div className="relative w-[102px] sm:w-[130px] md:w-[160px] lg:w-[180px] h-[44px] sm:h-[56px] md:h-[68px] lg:h-[80px] rounded-full bg-[#C3A29B] shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:bg-[#BA9790]">
+              <div suppressHydrationWarning className="relative w-[102px] sm:w-[130px] md:w-[160px] lg:w-[180px] h-[44px] sm:h-[56px] md:h-[68px] lg:h-[80px] rounded-full bg-[#C3A29B] shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:bg-[#BA9790]">
                 {/* Popout Image Layer */}
-                <div className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-6px_0px_-6px)]">
+                <div suppressHydrationWarning className="absolute inset-0 pointer-events-none [clip-path:inset(-150px_-6px_0px_-6px)]">
                   {renderMobileImages(cat)}
                 </div>
               </div>

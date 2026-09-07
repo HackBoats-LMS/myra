@@ -50,7 +50,10 @@ export default async function StorefrontHome() {
     name: "Myra Shopping Mall",
     url: appUrl,
     logo: `${appUrl}/displaypics/malllogo.png`,
-    sameAs: ["https://www.facebook.com/myrashoppingmall"]
+    sameAs: [
+      "https://www.facebook.com/people/MYRA-Shopping-Mall/61576471768505/",
+      "https://instagram.com/myrashoppingmall"
+    ]
   };
   const safeJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c").replace(/\>/g, "\\u003e").replace(/<\//g, "\\u003c/");
 

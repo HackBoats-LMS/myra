@@ -1,10 +1,9 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
-import { updateTag } from "next/cache";
 import { verifyAdmin } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
-import { CACHE_TAGS } from "@/lib/cache";
+import { CACHE_TAGS, revalidateTag } from "@/lib/cache";
 import { z } from "zod";
 
 const bannerSchema = z.object({
@@ -92,7 +91,12 @@ export async function upsertBanner(data: {
 
   await logAudit("banner.upsert", "Banner", banner.id, { slot: validated.slot });
 
-  updateTag(CACHE_TAGS.banners);
+  try {
+    revalidateTag(CACHE_TAGS.banners);
+    revalidateTag(CACHE_TAGS.brandStories);
+  } catch (e) {
+    console.warn("[banners] revalidateTag error:", e);
+  }
   revalidatePath("/", "layout");
   revalidatePath("/admin/banners", "layout");
 
@@ -113,7 +117,12 @@ export async function deleteBanner(slot: string) {
     }
   }
 
-  updateTag(CACHE_TAGS.banners);
+  try {
+    revalidateTag(CACHE_TAGS.banners);
+    revalidateTag(CACHE_TAGS.brandStories);
+  } catch (e) {
+    console.warn("[banners] revalidateTag error:", e);
+  }
   revalidatePath("/", "layout");
   revalidatePath("/admin/banners", "layout");
 

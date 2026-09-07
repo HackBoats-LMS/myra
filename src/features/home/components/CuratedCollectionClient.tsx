@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import SafeImage from "@/components/shared/SafeImage";
 
 export interface StoryItem {
   id: string;
@@ -9,6 +9,7 @@ export interface StoryItem {
   title: string;
   description: string;
   image: string;
+  fallbackImage?: string;
   alt: string;
 }
 
@@ -63,12 +64,13 @@ export default function CuratedCollectionClient({ stories }: { stories: StoryIte
                       : "opacity-0 scale-[0.98] pointer-events-none"
                   }`}
                 >
-                  <Image
+                  <SafeImage
                     src={story.image}
+                    fallbackSrc={story.fallbackImage || "/displaypics/brandIdentity/1.png"}
                     alt={story.alt}
                     fill
-                    sizes="500px"
-                    quality={100}
+                    sizes="(max-width: 768px) 90vw, 650px"
+                    quality={95}
                     priority={idx === 0}
                     unoptimized={story.image.startsWith("http")}
                     className="object-contain object-center"

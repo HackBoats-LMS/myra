@@ -170,7 +170,7 @@ export default async function Footer() {
             <div className="flex items-center gap-2.5 flex-wrap">
               {/* Facebook */}
               <a
-                href="https://facebook.com/myrashoppingmall"
+                href="https://www.facebook.com/people/MYRA-Shopping-Mall/61576471768505/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -178,19 +178,6 @@ export default async function Footer() {
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-              </a>
-
-              {/* X / Twitter */}
-              <a
-                href="https://x.com/myrashoppingmall"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="X"
-                className="w-8 h-8 rounded-full bg-[#14171A] text-white flex items-center justify-center hover:opacity-90 hover:scale-105 transition-all shadow-sm"
-              >
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </a>
 
@@ -204,19 +191,6 @@ export default async function Footer() {
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4 4 1.791 4 4 4 4 0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                </svg>
-              </a>
-
-              {/* Pinterest */}
-              <a
-                href="https://pinterest.com/myrashoppingmall"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Pinterest"
-                className="w-8 h-8 rounded-full bg-[#BD081C] text-white flex items-center justify-center hover:opacity-90 hover:scale-105 transition-all shadow-sm"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146 1.124.347 2.317.535 3.554.535 6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
                 </svg>
               </a>
 
@@ -235,7 +209,7 @@ export default async function Footer() {
 
               {/* WhatsApp */}
               <a
-                href="https://wa.me/919492151481"
+                href="https://wa.me/919177751481"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
@@ -248,24 +222,26 @@ export default async function Footer() {
             </div>
 
             {/* Address & Store Info */}
-            <div className="text-[13px] sm:text-sm text-[#E2D2D5] space-y-1.5 leading-relaxed">
+            <div className="text-[13px] sm:text-sm space-y-1.5 leading-relaxed">
               <p className="text-white font-medium text-sm sm:text-base">
                 Myra Shopping Mall
               </p>
-              <p className="text-[#E2D2D5]">
-                No. 5-155, G Plus 3 Floors,
-              </p>
-              <p className="text-[#E2D2D5]">
-                4, Koritepadu Rd, Vinayak Nagar,
-              </p>
-              <p className="text-[#E2D2D5]">
-                Guntur, Andhra Pradesh – 522007, India
-              </p>
-              
-              <div className="pt-2 space-y-1">
+              <div className="text-[#E8C59A] font-medium space-y-0.5">
                 <p>
-                  <a href="tel:+919492151481" className="hover:text-white transition-colors underline underline-offset-2">
-                    +91 94921 51481 (STORE)
+                  No. 5-155, G Plus 3 Floors,
+                </p>
+                <p>
+                  4, Koritepadu Rd, Vinayak Nagar,
+                </p>
+                <p>
+                  Guntur, Andhra Pradesh – 522007, India
+                </p>
+              </div>
+              
+              <div className="pt-2 space-y-1 text-[#E2D2D5]">
+                <p>
+                  <a href="tel:+919177751481" className="hover:text-white transition-colors underline underline-offset-2">
+                    +91 91777 51481 (STORE)
                   </a>
                 </p>
                 <p className="text-emerald-400 font-medium">
@@ -306,42 +282,60 @@ export default async function Footer() {
               <h4 className="text-white text-xs sm:text-sm font-medium tracking-wide">
                 We Accept
               </h4>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {/* Visa */}
-                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-6">
-                  <span className="font-sans font-extrabold italic text-[11px] text-[#1A1F71] tracking-tighter">
-                    VISA
-                  </span>
+                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-7" title="Visa">
+                  <Image
+                    src="/icons/visa.svg"
+                    alt="Visa"
+                    width={40}
+                    height={14}
+                    className="h-3.5 w-auto object-contain"
+                  />
                 </div>
 
                 {/* Mastercard */}
-                <div className="bg-white rounded px-2 py-1 flex items-center justify-center gap-0.5 shadow-sm h-6">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#EB001B] opacity-95" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#F79E1B] opacity-95 -ml-1.5" />
+                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-7" title="Mastercard">
+                  <Image
+                    src="/icons/mastercard.svg"
+                    alt="Mastercard"
+                    width={32}
+                    height={20}
+                    className="h-4 w-auto object-contain"
+                  />
                 </div>
 
                 {/* RuPay */}
-                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-6">
-                  <span className="font-sans font-bold text-[10px] text-[#097939] tracking-tight">
-                    Ru<span className="text-[#092F60]">Pay</span>
-                  </span>
+                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-7" title="RuPay">
+                  <Image
+                    src="/icons/rupay.svg"
+                    alt="RuPay"
+                    width={52}
+                    height={14}
+                    className="h-3.5 w-auto object-contain"
+                  />
                 </div>
 
                 {/* UPI */}
-                <div className="bg-white rounded px-2 py-1 flex items-center justify-center gap-1 shadow-sm h-6">
-                  <svg className="w-2.5 h-2.5 text-[#006633]" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 22h20L12 2z" />
-                  </svg>
-                  <span className="font-sans font-black text-[10px] text-[#002D62] tracking-tighter">
-                    UPI
-                  </span>
+                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-7" title="UPI">
+                  <Image
+                    src="/icons/upi.svg"
+                    alt="UPI"
+                    width={50}
+                    height={14}
+                    className="h-3.5 w-auto object-contain"
+                  />
                 </div>
 
                 {/* Cash on Delivery */}
-                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-6">
-                  <span className="font-sans font-bold text-[9px] uppercase tracking-wider text-gray-800">
-                    COD
-                  </span>
+                <div className="bg-white rounded px-2 py-1 flex items-center justify-center shadow-sm h-7" title="Cash on Delivery">
+                  <Image
+                    src="/icons/cod.svg"
+                    alt="Cash on Delivery"
+                    width={42}
+                    height={15}
+                    className="h-3.5 w-auto object-contain"
+                  />
                 </div>
               </div>
             </div>
