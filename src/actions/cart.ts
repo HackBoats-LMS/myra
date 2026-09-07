@@ -473,8 +473,8 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
         throw new Error("Invalid delivery address selected.");
       }
 
-      const contactPhone = normalizeIndianPhone(phone);
-      if (!/^\d{10}$/.test(contactPhone)) {
+      const contactPhone = normalizeIndianPhone(phone) || (address?.phone ? normalizeIndianPhone(address.phone) : "");
+      if (!contactPhone || !/^\d{10}$/.test(contactPhone)) {
         throw new Error("A valid 10-digit phone number is required to place your order.");
       }
 
@@ -491,13 +491,12 @@ export async function createOrderTransaction(opts: CreateOrderOptions): Promise<
             id: { not: userId },
           },
         });
-        if (phoneConflict) {
-          throw new Error("This phone number is already linked to another account.");
+        if (!phoneConflict) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { phoneNumber: contactPhone },
+          });
         }
-        await tx.user.update({
-          where: { id: userId },
-          data: { phoneNumber: contactPhone },
-        });
       }
 
       await tx.address.update({

@@ -66,7 +66,7 @@ export default function OrderHeader({ orderId, orderItems, createdAt, status, ca
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 md:pt-0">
-          <PrintInvoiceButton orderId={orderId} />
+          <PrintInvoiceButton orderId={orderId} isDelivered={status === "DELIVERED"} />
           {status !== "CANCELLED" && (
             <ReorderButton orderId={orderId} />
           )}

@@ -68,23 +68,29 @@ export default function OrderStatus({ orderId, status, paymentMethod, paymentSta
           </div>
         </div>
 
-        {awbNumber && (
-          <div className="pt-3">
-            <span className="block text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest mb-1">
-              Courier AWB
-            </span>
-            <p className="text-sm font-mono font-bold text-[#2D1F2F]">{awbNumber}</p>
-            <a
-              href={trackingUrl || `https://shiprocket.co/tracking/${awbNumber}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 mt-2 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] underline underline-offset-2 transition-colors"
-            >
-              <span>Track on Shiprocket</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        )}
+        <div className="pt-3">
+          <span className="block text-[10px] font-bold text-[#7A0B2E] uppercase tracking-widest mb-1">
+            Tracking Details
+          </span>
+          {awbNumber ? (
+            <>
+              <p className="text-xs font-mono font-bold text-[#2D1F2F] mb-2">AWB: {awbNumber}</p>
+              <a
+                href={trackingUrl || `https://shiprocket.co/tracking/${encodeURIComponent(awbNumber)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-2 bg-[#F5EFE6] hover:bg-[#7A0B2E] text-[#7A0B2E] hover:text-white border border-[#7A0B2E]/30 text-[10px] font-bold uppercase tracking-wider transition-colors"
+              >
+                <span>Click here to see full detailed tracking via Shiprocket</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </>
+          ) : (
+            <p className="text-xs text-gray-500 italic">
+              AWB tracking number will be assigned once dispatched with courier partner.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -104,14 +104,21 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/account/orders"
+            href={`/track/${order.id}`}
+            className="px-8 py-3 bg-[#7A0B2E] border border-[#7A0B2E] hover:bg-[#5C0820] text-white text-xs font-bold uppercase tracking-widest transition-colors inline-flex items-center gap-2"
+          >
+            <span>Track Order Live</span>
+            <i className="ri-truck-line text-sm" />
+          </Link>
+          <Link
+            href={`/account/orders/${order.id}`}
             className="px-8 py-3 bg-white border border-[#7A0B2E] text-[#7A0B2E] hover:bg-[#FAF0F2] text-xs font-bold uppercase tracking-widest transition-colors"
           >
-            View My Orders
+            View Order Details
           </Link>
           <Link
             href="/collections"
-            className="px-8 py-3 bg-[#7A0B2E] border border-[#7A0B2E] hover:bg-[#5C0820] text-white text-xs font-bold uppercase tracking-widest transition-colors"
+            className="px-8 py-3 bg-transparent border border-gray-400 text-gray-700 hover:bg-gray-100 text-xs font-bold uppercase tracking-widest transition-colors"
           >
             Continue Shopping
           </Link>

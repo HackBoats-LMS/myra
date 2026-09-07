@@ -34,8 +34,15 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
       paymentMethod: true,
       paymentStatus: true,
       awbNumber: true,
+      courierName: true,
+      shiprocketOrderId: true,
       trackingUrl: true,
       createdAt: true,
+      readyToShipAt: true,
+      shippedAt: true,
+      outForDeliveryAt: true,
+      deliveredAt: true,
+      cancelledAt: true,
       couponCode: true,
       discountAmount: true,
       shippingAmount: true,
@@ -71,34 +78,57 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
   });
 
   // --- Live Shiprocket Sync ---
-  if (order.awbNumber && order.status !== "DELIVERED" && order.status !== "CANCELLED") {
+  if ((order.awbNumber || order.shiprocketOrderId) && order.status !== "DELIVERED") {
     try {
-      const { trackShipment, mapShiprocketStatus } = await import("@/lib/integrations/shiprocket");
-      const trackRes = await trackShipment(order.awbNumber);
-      // Shiprocket can return status in shipment_track array or directly
-      const rawStatus = 
-        trackRes.tracking_data?.shipment_track?.[0]?.current_status || 
-        (trackRes.tracking_data as Record<string, unknown>)?.current_status;
-      const shiprocketStatus = typeof rawStatus === "string" ? rawStatus : undefined;
-        
-      if (shiprocketStatus) {
-        const mapped = mapShiprocketStatus(shiprocketStatus);
-        if (mapped) {
-          const statusOrder = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"];
+      const { syncShiprocketStatus } = await import("@/lib/integrations/shiprocket");
+      const syncResult = await syncShiprocketStatus(order);
+
+      if (syncResult && syncResult.newStatus) {
+        const mappedStatus = syncResult.newStatus;
+
+        if (mappedStatus === "CANCELLED" && order.status !== "CANCELLED") {
+          const updateData: Record<string, unknown> = {
+            status: "CANCELLED",
+            cancelledAt: new Date(),
+          };
+          if (syncResult.awbCode && !order.awbNumber) updateData.awbNumber = syncResult.awbCode;
+          if (syncResult.courierName && !order.courierName) updateData.courierName = syncResult.courierName;
+          if (syncResult.trackingUrl && !order.trackingUrl) updateData.trackingUrl = syncResult.trackingUrl;
+
+          await prisma.order.update({
+            where: { id: order.id },
+            data: updateData as any,
+          });
+
+          order.status = "CANCELLED";
+          order.cancelledAt = new Date();
+          if (syncResult.awbCode) order.awbNumber = syncResult.awbCode;
+          if (syncResult.courierName) order.courierName = syncResult.courierName;
+          if (syncResult.trackingUrl) order.trackingUrl = syncResult.trackingUrl;
+        } else if (mappedStatus !== "CANCELLED" && mappedStatus !== order.status) {
+          const statusOrder = ["PENDING", "READY_TO_SHIP", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
           const currentRank = statusOrder.indexOf(order.status);
-          const incomingRank = statusOrder.indexOf(mapped.status);
-          
+          const incomingRank = statusOrder.indexOf(mappedStatus);
+
           if (incomingRank > currentRank) {
+            const updateData: Record<string, unknown> = {
+              status: mappedStatus as any,
+              [syncResult.timestampField || "updatedAt"]: new Date(),
+            };
+            if (syncResult.awbCode && !order.awbNumber) updateData.awbNumber = syncResult.awbCode;
+            if (syncResult.courierName && !order.courierName) updateData.courierName = syncResult.courierName;
+            if (syncResult.trackingUrl && !order.trackingUrl) updateData.trackingUrl = syncResult.trackingUrl;
+
             await prisma.order.update({
               where: { id: order.id },
-              data: { 
-                status: mapped.status as any, 
-                [mapped.timestampField]: new Date() 
-              }
+              data: updateData as any,
             });
-            // Update local object so UI reflects the new status instantly
-            (order as { status: string }).status = mapped.status;
-            (order as Record<string, unknown>)[mapped.timestampField] = new Date();
+
+            order.status = mappedStatus as any;
+            (order as Record<string, unknown>)[syncResult.timestampField || "updatedAt"] = new Date();
+            if (syncResult.awbCode) order.awbNumber = syncResult.awbCode;
+            if (syncResult.courierName) order.courierName = syncResult.courierName;
+            if (syncResult.trackingUrl) order.trackingUrl = syncResult.trackingUrl;
           }
         }
       }
@@ -163,11 +193,15 @@ export default async function CustomerOrderDetailPage({ params }: { params: Prom
           {/* Left Column: Items */}
           <div className="lg:col-span-2">
             <OrderItemsList 
+              orderId={order.id}
               orderItems={order.orderItems} 
               status={order.status} 
               canReview={canReview} 
               reviewByProduct={reviewByProduct} 
               totalAmount={order.totalAmount} 
+              discountAmount={order.discountAmount}
+              shippingAmount={order.shippingAmount}
+              couponCode={order.couponCode}
             />
           </div>
 

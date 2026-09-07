@@ -280,7 +280,7 @@ export default async function Footer() {
             {/* We Accept / Payment Methods Section */}
             <div className="pt-2 space-y-2">
               <h4 className="text-white text-xs sm:text-sm font-medium tracking-wide">
-                We Accept
+                We Accept <span className="text-[11px] text-[#E2D2D5] font-normal">(via Razorpay)</span>
               </h4>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {/* Visa */}

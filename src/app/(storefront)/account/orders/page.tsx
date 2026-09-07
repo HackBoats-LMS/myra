@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { Prisma } from "@/generated/prisma";
-import ExportOrdersButton from "@/app/(storefront)/account/orders/_components/ExportOrdersButton";
 
 type OrderWithItems = Prisma.OrderGetPayload<{
   include: {
@@ -60,14 +59,8 @@ export default async function OrdersPage({
     <div className="w-full bg-[#F5EFE6] min-h-screen">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-16">
         <div className="mb-8">
-
           <h1 className="text-3xl md:text-4xl font-serif text-[#2D1F2F] tracking-wide">My Orders</h1>
           <p className="text-sm text-gray-500 mt-2 uppercase tracking-widest">{orders.length} order{orders.length !== 1 ? "s" : ""}</p>
-          {orders.length > 0 && (
-            <div className="mt-4">
-              <ExportOrdersButton />
-            </div>
-          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 mb-8">
@@ -121,12 +114,22 @@ export default async function OrdersPage({
                       {order.status}
                     </span>
                   </div>
-                  <Link
-                    href={`/account/orders/${order.id}`}
-                    className="flex items-center justify-end text-xs font-bold text-[#7A0B2E] hover:text-[#5C0820] uppercase tracking-widest transition-colors"
-                  >
-                    View Details <i className="ri-arrow-right-s-line" />
-                  </Link>
+                  <div className="flex items-center justify-end gap-3">
+                    <Link
+                      href={`/track/${order.id}`}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#7A0B2E] hover:text-[#5C0820] bg-[#F5EFE6] hover:bg-[#FAF0F2] border border-[#7A0B2E]/20 px-2.5 py-1 uppercase tracking-wider transition-colors"
+                    >
+                      <i className="ri-truck-line text-xs" />
+                      <span>Track</span>
+                    </Link>
+                    <Link
+                      href={`/account/orders/${order.id}`}
+                      className="flex items-center text-xs font-bold text-[#2D1F2F] hover:text-[#7A0B2E] uppercase tracking-widest transition-colors"
+                    >
+                      <span>Details</span>
+                      <i className="ri-arrow-right-s-line" />
+                    </Link>
+                  </div>
                 </div>
 
                 <div className="p-6 divide-y divide-[#7A0B2E]/10">
