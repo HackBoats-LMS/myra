@@ -30,14 +30,19 @@ export async function sendEmail({ to, subject, react }: SendEmailOptions) {
     return;
   }
 
-  await retry(() =>
-    resend.emails.send({
-      from: "Myra Shopping Mall <noreply@myra.com>",
-      to,
-      subject,
-      react,
-    })
-  );
+  try {
+    const from = process.env.RESEND_FROM_EMAIL || "Myra Shopping Mall <onboarding@resend.dev>";
+    await retry(() =>
+      resend.emails.send({
+        from,
+        to,
+        subject,
+        react,
+      })
+    );
+  } catch (err) {
+    console.error("Failed to send email via Resend:", err);
+  }
 }
 
 // Retry transient (network/5xx) failures up to 3 times with small backoff.

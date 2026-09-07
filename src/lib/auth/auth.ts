@@ -4,10 +4,9 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db/prisma";
 import { cookies } from "next/headers";
-import { mergeGuestCart } from "@/actions/cart";
-import { mergeGuestWishlist } from "@/actions/wishlist";
+import { mergeGuestCartItems, parseGuestCartCookie } from "@/features/cart/service";
+import { mergeGuestWishlistItems, parseGuestWishlistCookie } from "@/actions/wishlist";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { verifyCookieValue } from "@/lib/cookie-signing";
 import { CACHE_TAGS } from "@/lib/cache";
 import { revalidateTag } from "next/cache";
 
@@ -138,27 +137,31 @@ export const authOptions: NextAuthOptions = {
       try {
         const cookieStore = await cookies();
         const guestCart = cookieStore.get("guest_cart");
-        const rawCartData = guestCart?.value ? verifyCookieValue(guestCart.value) : undefined;
-        if (rawCartData) {
-          await mergeGuestCart(rawCartData);
+        if (guestCart?.value && user.id) {
+          const guestItems = parseGuestCartCookie(guestCart.value);
+          if (guestItems.length > 0) {
+            await mergeGuestCartItems(user.id, guestItems);
+          }
           // Clear the guest cookie after merge
           cookieStore.delete("guest_cart");
         }
-      } catch {
-        // Non-fatal: don't block sign-in if merge fails
+      } catch (err) {
+        console.error("Failed to merge guest cart on sign in:", err);
       }
 
       // Merge guest cookie wishlist into DB wishlist on login
       try {
         const cookieStore = await cookies();
         const guestWishlist = cookieStore.get("guest_wishlist");
-        const rawWishlistData = guestWishlist?.value ? verifyCookieValue(guestWishlist.value) : undefined;
-        if (rawWishlistData) {
-          await mergeGuestWishlist(rawWishlistData);
+        if (guestWishlist?.value && user.id) {
+          const productIds = await parseGuestWishlistCookie(guestWishlist.value);
+          if (productIds.length > 0) {
+            await mergeGuestWishlistItems(user.id, productIds);
+          }
           cookieStore.delete("guest_wishlist");
         }
-      } catch {
-        // Non-fatal: don't block sign-in if merge fails
+      } catch (err) {
+        console.error("Failed to merge guest wishlist on sign in:", err);
       }
 
       // Refresh the header badge counts so they reflect the merged guest data

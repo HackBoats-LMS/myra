@@ -198,7 +198,17 @@ export function parseGuestCartCookie(cookieValue: string | undefined): CartItemD
   if (!cookieValue) return [];
   
   try {
-    const parsed = JSON.parse(cookieValue);
+    let clean = cookieValue;
+    try {
+      clean = decodeURIComponent(clean);
+    } catch {
+      // ignore
+    }
+    const lastDot = clean.lastIndexOf(".");
+    if (lastDot !== -1 && (clean.startsWith("[") || clean.startsWith("{"))) {
+      clean = clean.substring(0, lastDot);
+    }
+    const parsed = JSON.parse(clean);
     if (!Array.isArray(parsed)) return [];
     
     return parsed

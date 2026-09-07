@@ -9,10 +9,20 @@ import { signCookieValue, verifyCookieValue } from "@/lib/cookie-signing";
 const GUEST_WISHLIST_COOKIE = "guest_wishlist";
 const MAX_GUEST_ITEMS = 100;
 
-function parseGuestWishlistCookie(value: string | undefined): string[] {
+export async function parseGuestWishlistCookie(value: string | undefined): Promise<string[]> {
   if (!value) return [];
   try {
-    const parsed: unknown = JSON.parse(value);
+    let clean = value;
+    try {
+      clean = decodeURIComponent(clean);
+    } catch {
+      // ignore
+    }
+    const lastDot = clean.lastIndexOf(".");
+    if (lastDot !== -1 && (clean.startsWith("[") || clean.startsWith("{"))) {
+      clean = clean.substring(0, lastDot);
+    }
+    const parsed: unknown = JSON.parse(clean);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((id): id is string => typeof id === "string").slice(0, MAX_GUEST_ITEMS);
   } catch {
@@ -56,7 +66,7 @@ export async function toggleWishlist(productId: string) {
   // Guest wishlist (cookie-based)
   const cookieStore = await cookies();
   const rawWishlistData = verifyCookieValue(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
-  const productIds = parseGuestWishlistCookie(rawWishlistData ?? cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
+  const productIds = await parseGuestWishlistCookie(rawWishlistData ?? cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
   const index = productIds.indexOf(productId);
 
   let added: boolean;
@@ -79,14 +89,7 @@ export async function toggleWishlist(productId: string) {
   return added;
 }
 
-export async function mergeGuestWishlist(cookieValue: string | undefined) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new Error("You must be logged in to merge wishlist.");
-  }
-  const userId = session.user.id;
-
-  const productIds = parseGuestWishlistCookie(cookieValue);
+export async function mergeGuestWishlistItems(userId: string, productIds: string[]) {
   if (productIds.length === 0) return;
 
   let wishlist = await prisma.wishlist.findUnique({ where: { userId } });
@@ -111,6 +114,18 @@ export async function mergeGuestWishlist(cookieValue: string | undefined) {
   }
 
   revalidateTag(CACHE_TAGS.wishlist(userId));
+}
+
+export async function mergeGuestWishlist(cookieValue: string | undefined, explicitUserId?: string) {
+  const userId = explicitUserId ?? (await getServerSession(authOptions))?.user?.id;
+  if (!userId) {
+    throw new Error("You must be logged in to merge wishlist.");
+  }
+
+  const productIds = await parseGuestWishlistCookie(cookieValue);
+  if (productIds.length === 0) return;
+
+  await mergeGuestWishlistItems(userId, productIds);
 }
 
 export type WishlistDrawerItem = {
@@ -158,7 +173,7 @@ export async function getWishlist(): Promise<WishlistDrawerItem[]> {
 
   // Guest wishlist (cookie-based)
   const cookieStore = await cookies();
-  const productIds = parseGuestWishlistCookie(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
+  const productIds = await parseGuestWishlistCookie(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
   if (productIds.length === 0) return [];
   const products = await prisma.product.findMany({
     where: { id: { in: productIds }, deletedAt: null },
@@ -190,5 +205,5 @@ export async function getWishlistCount(): Promise<number> {
   }
 
   const cookieStore = await cookies();
-  return parseGuestWishlistCookie(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value).length;
+  return (await parseGuestWishlistCookie(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value)).length;
 }

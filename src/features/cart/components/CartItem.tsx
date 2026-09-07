@@ -40,7 +40,7 @@ export default function CartItem({ item }: { item: CartLineItem }) {
       : item.product.price) + (item.variant?.priceOffset || 0);
 
   const handleUpdate = async (newQty: number) => {
-    if (newQty > maxQty) return;
+    if (newQty > item.quantity && newQty > maxQty) return;
     setIsUpdating(true);
     await updateCartQuantity(item.product.id, newQty, item.variantId ?? undefined);
     router.refresh();
