@@ -62,7 +62,11 @@ export async function isPincodeDeliverable(code: string): Promise<boolean> {
   }
   
   const pincode = await prisma.pincode.findUnique({ where: { code: trimmed } });
-  return Boolean(pincode && pincode.isActive);
+  if (pincode) return Boolean(pincode.isActive);
+
+  // If no pincode restrictions seeded in database, allow all by default
+  const count = await prisma.pincode.count();
+  return count === 0;
 }
 
 export async function isPincodeCodDeliverable(code: string): Promise<boolean> {
@@ -75,6 +79,10 @@ export async function isPincodeCodDeliverable(code: string): Promise<boolean> {
   }
 
   const pincode = await prisma.pincode.findUnique({ where: { code: trimmed } });
-  return Boolean(pincode && pincode.isActive);
+  if (pincode) return Boolean(pincode.isActive);
+
+  // If no pincode restrictions seeded in database, allow all by default
+  const count = await prisma.pincode.count();
+  return count === 0;
 }
 

@@ -9,6 +9,8 @@ import { estimateCheckoutTotal } from "@/actions/cart";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Checkout | Myra Shopping Mall",
   description: "Complete your purchase securely.",

@@ -213,6 +213,7 @@ export async function addToCart(
   });
 
   revalidatePath("/", "layout");
+  revalidatePath("/cart");
   return { added: true };
 }
 
@@ -259,6 +260,7 @@ export async function updateCartQuantity(productId: string, quantity: number, va
     }
   }
   revalidatePath("/", "layout");
+  revalidatePath("/cart");
 }
 
 export interface GiftDetails {
@@ -727,16 +729,20 @@ export async function checkoutCart(
   });
 
   if (userEmail) {
-    await sendEmail({
-      to: userEmail,
-      subject: `Your Myra Order Receipt #${result.orderId.substring(0, 8)}`,
-      react: OrderConfirmationEmail({
-        orderId: result.orderId,
-        customerName: userName,
-        totalAmount: result.finalAmount,
-        items: result.items
-      })
-    });
+    try {
+      await sendEmail({
+        to: userEmail,
+        subject: `Your Myra Order Receipt #${result.orderId.substring(0, 8)}`,
+        react: OrderConfirmationEmail({
+          orderId: result.orderId,
+          customerName: userName,
+          totalAmount: result.finalAmount,
+          items: result.items
+        })
+      });
+    } catch (err) {
+      console.error("Order confirmation email failed to send:", err);
+    }
   }
 
   // Notify admin of the new order.
@@ -772,15 +778,15 @@ export async function checkoutCart(
   return result;
 }
 
-export async function mergeGuestCart(cookieValue: string | undefined) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return;
+export async function mergeGuestCart(cookieValue: string | undefined, explicitUserId?: string) {
+  const userId = explicitUserId ?? (await getServerSession(authOptions))?.user?.id;
+  if (!userId) return;
 
   const guestItems = parseGuestCartCookie(cookieValue);
   if (guestItems.length === 0) return;
 
-  await mergeGuestCartItems(session.user.id, guestItems);
-  revalidateTag(CACHE_TAGS.cart(session.user.id));
+  await mergeGuestCartItems(userId, guestItems);
+  revalidateTag(CACHE_TAGS.cart(userId));
 }
 
 export async function getCart() {

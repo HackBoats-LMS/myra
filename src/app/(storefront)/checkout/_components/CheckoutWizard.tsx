@@ -73,6 +73,17 @@ export default function CheckoutWizard({
   const [isCodAvailable, setIsCodAvailable] = useState(true);
   const [isCheckingCod, setIsCheckingCod] = useState(false);
 
+  // Auto pre-fill phone from selected address if currently empty
+  useEffect(() => {
+    if (!selectedPhone) {
+      const activeAddr = addressList.find((a) => a.id === selectedAddressId);
+      const phoneCandidate = activeAddr?.phone ? activeAddr.phone.replace(/\D/g, "").slice(0, 10) : "";
+      if (phoneCandidate) {
+        setSelectedPhone(phoneCandidate);
+      }
+    }
+  }, [selectedPhone, selectedAddressId, addressList]);
+
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(autoAppliedCoupon || null);
   const [appliedCouponType, setAppliedCouponType] = useState<string | null>(autoAppliedCoupon ? "STANDARD" : null);
   const [appliedCouponValue, setAppliedCouponValue] = useState(0);

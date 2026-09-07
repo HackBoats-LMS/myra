@@ -123,8 +123,8 @@ export default function DeliveryStep({
                         type="button"
                         onClick={() => {
                           setSelectedAddressId(a.id);
-                          if (phones.length === 0) {
-                            const p = normalizeIndianPhone(a.phone);
+                          const p = a.phone ? a.phone.replace(/\D/g, "").slice(0, 10) : "";
+                          if (p && (!selectedPhone || phones.length === 0)) {
                             setSelectedPhone(p);
                             saveDeliveryPhone(p);
                           }
@@ -190,9 +190,9 @@ export default function DeliveryStep({
             maxLength={10}
             value={selectedPhone}
             onChange={(e) => {
-              const v = normalizeIndianPhone(e.target.value);
-              setSelectedPhone(v);
-              saveDeliveryPhone(v);
+              const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setSelectedPhone(digits);
+              saveDeliveryPhone(digits);
               setPhoneError("");
             }}
             placeholder="e.g. 9876543210"
