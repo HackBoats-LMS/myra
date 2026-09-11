@@ -1,41 +1,18 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import ProductCard from "@/components/shared/ProductCard";
 import type { Prisma } from "@/generated/prisma";
 
-type RecentlyViewedProduct = Prisma.ProductGetPayload<{}> & {
-  reviewCount: number;
-  averageRating: number;
+type RecentlyViewedProduct = Prisma.ProductGetPayload<{ include: { collection: true } }> & {
+  reviewCount?: number;
+  averageRating?: number;
+  flashPercent?: number;
 };
 
-export default function RecentlyViewedRail({ currentProductId }: { currentProductId: string }) {
-  const [products, setProducts] = useState<RecentlyViewedProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+interface RecentlyViewedRailProps {
+  products: RecentlyViewedProduct[];
+}
 
-  useEffect(() => {
-    async function fetchRecentlyViewed() {
-      try {
-        const res = await fetch("/api/recently-viewed");
-        if (res.ok) {
-          const data = await res.json();
-          // Filter out the current product and take top 4
-          const filtered = (data.products || [])
-            .filter((p: { id: string }) => p.id !== currentProductId)
-            .slice(0, 4);
-          setProducts(filtered);
-        }
-      } catch (error) {
-        console.error("Failed to fetch recently viewed products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    fetchRecentlyViewed();
-  }, [currentProductId]);
-
-  if (loading || products.length === 0) return null;
+export default function RecentlyViewedRail({ products }: RecentlyViewedRailProps) {
+  if (!products || products.length === 0) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 md:px-8 py-16">

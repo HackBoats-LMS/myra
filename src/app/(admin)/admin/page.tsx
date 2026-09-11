@@ -1,7 +1,17 @@
 import { prisma } from "@/lib/db/prisma";
 import DashboardWidgets from "@/app/(admin)/admin/_components/DashboardWidgets";
 import { Prisma } from "@/generated/prisma";
-import { ShoppingCart, TrendingUp, Package, Users, AlertTriangle, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import {
+  ShoppingCart,
+  TrendingUp,
+  Package,
+  Users,
+  AlertTriangle,
+  Plus,
+  LineChart,
+  type LucideIcon,
+} from "lucide-react";
 
 type OrderAggregate = {
   _sum: { totalAmount: number | null; refundedAmount: number | null } | null;
@@ -41,30 +51,30 @@ export default async function AdminDashboard() {
       prisma.product.count({ where: { deletedAt: null } }),
       prisma.user.count({ where: { role: "CUSTOMER" } }),
       prisma.product.count({ where: { deletedAt: null, stockQuantity: { lt: 5 } } }),
-      prisma.order.findMany({ 
-        take: 5, 
-        orderBy: { createdAt: 'desc' },
-        include: { user: { select: { name: true, email: true } } }
+      prisma.order.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: { user: { select: { name: true, email: true } } },
       }),
       prisma.product.findMany({
         where: { deletedAt: null, stockQuantity: { lt: 5 } },
         take: 5,
-        orderBy: { stockQuantity: 'asc' },
-        select: { id: true, name: true, stockQuantity: true, slug: true, images: true }
+        orderBy: { stockQuantity: "asc" },
+        select: { id: true, name: true, stockQuantity: true, slug: true, images: true },
       }),
       prisma.order.findMany({
         where: {
           createdAt: { gte: sevenDaysAgo },
-          status: { not: "CANCELLED" }
+          status: { not: "CANCELLED" },
         },
-        select: { totalAmount: true, createdAt: true }
+        select: { totalAmount: true, createdAt: true },
       }),
       prisma.orderItem.groupBy({
-        by: ['productId'],
+        by: ["productId"],
         _sum: { quantity: true },
-        orderBy: { _sum: { quantity: 'desc' } },
-        take: 5
-      })
+        orderBy: { _sum: { quantity: "desc" } },
+        take: 5,
+      }),
     ]);
 
     totalOrders = results[0];
@@ -80,20 +90,21 @@ export default async function AdminDashboard() {
     const topProductIds = topItems.map((item) => item.productId);
     const topProductsRaw = await prisma.product.findMany({
       where: { id: { in: topProductIds } },
-      select: { id: true, name: true, price: true, slug: true, images: true }
+      select: { id: true, name: true, price: true, slug: true, images: true },
     });
 
-    topProducts = topItems.map((item) => {
-      const p = topProductsRaw.find((prod) => prod.id === item.productId);
-      return {
-        id: p?.id ?? "",
-        name: p?.name ?? "",
-        totalSold: item._sum?.quantity || 0
-      };
-    }).filter((p) => p.id);
+    topProducts = topItems
+      .map((item) => {
+        const p = topProductsRaw.find((prod) => prod.id === item.productId);
+        return {
+          id: p?.id ?? "",
+          name: p?.name ?? "",
+          totalSold: item._sum?.quantity || 0,
+        };
+      })
+      .filter((p) => p.id);
   } catch (error) {
     console.warn("Database unreachable in AdminDashboard:", error instanceof Error ? error.message : "unknown error");
-    // Silent fail to empty state
   }
 
   const grossRevenue = revenueData._sum?.totalAmount ?? 0;
@@ -105,72 +116,125 @@ export default async function AdminDashboard() {
     value: string;
     icon: LucideIcon;
     color: string;
-    bg: string;
+    href: string;
+    badge?: string;
   }[] = [
     {
       label: "Total Orders",
       value: totalOrders.toLocaleString("en-IN"),
       icon: ShoppingCart,
       color: "text-[#7A0B2E]",
-      bg: "bg-[#7A0B2E]/10",
+      href: "/admin/orders",
     },
     {
-      label: "Total Revenue",
-      value: `Rs. ${totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      label: "Net Revenue",
+      value: `₹${totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
       icon: TrendingUp,
-      color: "text-[#7A0B2E]",
-      bg: "bg-[#7A0B2E]/10",
+      color: "text-emerald-700",
+      href: "/admin/analytics",
     },
     {
-      label: "Total Products",
+      label: "Active Products",
       value: totalProducts.toLocaleString("en-IN"),
       icon: Package,
       color: "text-[#7A0B2E]",
-      bg: "bg-[#7A0B2E]/10",
+      href: "/admin/products",
     },
     {
-      label: "Customers",
+      label: "Total Customers",
       value: totalCustomers.toLocaleString("en-IN"),
       icon: Users,
       color: "text-[#7A0B2E]",
-      bg: "bg-[#7A0B2E]/10",
+      href: "/admin/customers",
     },
     {
-      label: "Low Stock",
+      label: "Low Stock Alert",
       value: lowStockCount.toLocaleString("en-IN"),
       icon: AlertTriangle,
-      color: lowStockCount > 0 ? "text-red-700" : "text-[#7A0B2E]",
-      bg: lowStockCount > 0 ? "bg-red-50" : "bg-[#7A0B2E]/10",
+      color: lowStockCount > 0 ? "text-amber-700" : "text-[#7A0B2E]",
+      href: "/admin/products",
+      badge: lowStockCount > 0 ? "Attention" : undefined,
     },
   ];
 
+  const currentDateStr = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
-    <main>
-      <div className="mb-8 border-b border-[#7A0B2E]/20 pb-4">
-        <h1 className="text-3xl font-serif text-[#2D1F2F] tracking-wide">Dashboard</h1>
-        <p className="text-xs text-[#7A0B2E] mt-2 font-bold uppercase tracking-widest">Live overview of your store</p>
+    <div className="space-y-8">
+      {/* Top Banner with date & quick actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#7A0B2E]/15 pb-6">
+        <div>
+          <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#7A0B2E]">
+            Store Performance & Overview
+          </span>
+          <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide mt-1">
+            Admin Dashboard
+          </h1>
+          <p className="text-xs text-gray-500 mt-1 font-medium">{currentDateStr}</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/analytics"
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#7A0B2E]/30 hover:border-[#7A0B2E] text-[#2D1F2F] text-xs font-bold uppercase tracking-widest transition-colors shadow-2xs"
+          >
+            <LineChart className="w-4 h-4 text-[#7A0B2E]" />
+            <span>Analytics</span>
+          </Link>
+
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#7A0B2E] hover:bg-[#5C0820] text-white text-xs font-bold uppercase tracking-widest transition-colors shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Product</span>
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
-        {stats.map(({ label, value, icon: IconComponent, color, bg }) => (
-          <div key={label} className="bg-white border border-[#7A0B2E]/20 p-6 flex items-start gap-4 shadow-sm rounded-none">
-            <div className={`${bg} ${color} w-11 h-11 flex-shrink-0 border border-[#7A0B2E]/20 flex items-center justify-center rounded-none`}>
-              <IconComponent className="w-5 h-5" />
+      {/* Primary KPI Metrics Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {stats.map(({ label, value, icon: IconComponent, color, href, badge }) => (
+          <Link
+            key={label}
+            href={href}
+            className="bg-white border border-[#7A0B2E]/15 p-5 shadow-2xs hover:border-[#7A0B2E]/40 hover:shadow-xs transition-all group relative"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest truncate">
+                {label}
+              </span>
+              <div className="w-8 h-8 bg-[#FDFBF7] border border-[#7A0B2E]/15 flex items-center justify-center text-[#7A0B2E] group-hover:scale-105 transition-transform">
+                <IconComponent className="w-4 h-4" />
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</p>
-              <p className="text-xl font-bold text-[#2D1F2F] mt-1 break-words leading-tight">{value}</p>
+
+            <div className="flex items-baseline justify-between">
+              <span className={`text-xl sm:text-2xl font-serif font-bold ${color}`}>
+                {value}
+              </span>
+              {badge && (
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200">
+                  {badge}
+                </span>
+              )}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
-      <DashboardWidgets 
-        recentOrders={recentOrders} 
-        lowStockProducts={lowStockProducts} 
-        sevenDayOrders={sevenDayOrders} 
-        topProducts={topProducts} 
+      {/* Detailed Activity & Analytics Widgets */}
+      <DashboardWidgets
+        recentOrders={recentOrders}
+        lowStockProducts={lowStockProducts}
+        sevenDayOrders={sevenDayOrders}
+        topProducts={topProducts}
       />
-    </main>
+    </div>
   );
 }

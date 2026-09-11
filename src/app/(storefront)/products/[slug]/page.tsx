@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ImageGallery from "@/app/(storefront)/products/[slug]/_components/ImageGallery";
@@ -9,16 +8,23 @@ import ProductReviews from "@/app/(storefront)/products/[slug]/_components/Produ
 import SimilarProducts from "@/app/(storefront)/products/[slug]/_components/SimilarProducts";
 import ProductVideoEmbed from "@/app/(storefront)/products/[slug]/_components/ProductVideoEmbed";
 import { getActiveFlashSales, applyFlashDiscount, applyFlashToProductList } from "@/lib/flash-sale";
-import { getCachedReviews, getCachedRelatedProducts } from "@/lib/cache";
+import {
+  getCachedReviews,
+  getCachedRelatedProducts,
+  getCachedProductBySlug,
+  getCachedRecentlyViewedProducts,
+} from "@/lib/cache";
+import { getRecentlyViewedProductIds } from "@/lib/recently-viewed";
 
 function safeJsonLd(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c").replace(/\>/g, "\\u003e").replace(/<\//g, "\\u003c/");
 }
 
-export const revalidate = 60; // 1 minute ISR
+export const revalidate = 3600; // 1 hour ISR — revalidateTag handles immediate admin updates
 
 export async function generateStaticParams() {
   try {
+    const { prisma } = await import("@/lib/db/prisma");
     const products = await prisma.product.findMany({
       where: { deletedAt: null },
       select: { slug: true },
@@ -35,17 +41,22 @@ export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({
-    where: { slug, deletedAt: null },
-    select: { name: true, description: true, images: true },
-  });
+  // Reuse same cached query as page body — zero extra DB hit
+  const product = await getCachedProductBySlug(slug);
   if (!product) return {};
+  
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://myrashoppingmall.com";
+  const cleanDescription = product.description?.replace(/<[^>]*>?/gm, '').slice(0, 160) || `Shop ${product.name} at Myra Shopping Mall.`;
+  
   return {
     title: `${product.name} | Myra Shopping Mall`,
-    description: product.description?.slice(0, 160) || `Shop ${product.name} at Myra Shopping Mall.`,
+    description: cleanDescription,
+    alternates: {
+      canonical: `${appUrl}/products/${product.slug}`,
+    },
     openGraph: {
       title: `${product.name} | Myra Shopping Mall`,
-      description: product.description?.slice(0, 160) || `Shop ${product.name} at Myra Shopping Mall.`,
+      description: cleanDescription,
       images: product.images[0] ? [product.images[0]] : [],
       type: "website",
     },
@@ -58,20 +69,27 @@ import ProductBackButton from "@/app/(storefront)/products/[slug]/_components/Pr
 export default async function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  // Fetch product with collection and variants
-  const product = await prisma.product.findUnique({
-    where: { slug, deletedAt: null },
-    include: { collection: true, variants: true },
-  });
-
+  // Cached product fetch — same key as generateMetadata, so it's a cache hit
+  const product = await getCachedProductBySlug(slug);
   if (!product) notFound();
 
-  // Parallel fetch: reviews, related products, and active flash sales
-  const [reviews, related, flashSales] = await Promise.all([
+  // Parallel fetch: reviews, related products, flash sales, and recently viewed IDs
+  const [reviews, related, flashSales, recentIds] = await Promise.all([
     getCachedReviews(product.id),
     getCachedRelatedProducts(product.id, product.collectionId),
     getActiveFlashSales(),
+    getRecentlyViewedProductIds(),
   ]);
+
+  // Recently viewed — server-side, cached, excludes current product
+  const recentlyViewedSortedIds = [...recentIds]
+    .filter((id) => id !== product.id)
+    .slice(0, 4)
+    .sort();
+  const recentlyViewedProducts = recentlyViewedSortedIds.length > 0
+    ? await getCachedRecentlyViewedProducts(recentlyViewedSortedIds)
+    : [];
+  const flashedRecentlyViewed = applyFlashToProductList(recentlyViewedProducts, flashSales);
 
   const flashPricing = applyFlashDiscount(product.price, product.originalPrice, flashSales, product.collectionId);
   const displayPrice = flashPricing.price;
@@ -190,8 +208,8 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         {/* Similar Products */}
         <SimilarProducts products={relatedWithPricing} />
 
-        {/* Recently Viewed */}
-        <RecentlyViewedRail currentProductId={product.id} />
+        {/* Recently Viewed — SSR, no client fetch */}
+        <RecentlyViewedRail products={flashedRecentlyViewed as any} />
       </div>
 
       <RecentlyViewedTracker productId={product.id} />

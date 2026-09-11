@@ -1,15 +1,14 @@
 import Link from 'next/link';
 import SafeImage from '@/components/shared/SafeImage';
-import { getCachedBanners } from '@/lib/cache';
+import type { Prisma } from '@/generated/prisma';
 
-export default async function HeroGrid() {
-  let banners: Awaited<ReturnType<typeof getCachedBanners>> = [];
-  try {
-    banners = await getCachedBanners();
-  } catch (err) {
-    console.warn("Failed to load cached banners in HeroGrid, falling back to defaults:", err);
-  }
+type Banner = Prisma.BannerGetPayload<Record<string, unknown>>;
 
+interface HeroGridProps {
+  banners: Banner[];
+}
+
+export default function HeroGrid({ banners }: HeroGridProps) {
   const heroMain = banners.find((b) => b.slot === "hero_main");
   const heroRightTop = banners.find((b) => b.slot === "hero_right_top");
   const heroRightBottom = banners.find((b) => b.slot === "hero_right_bottom");

@@ -1,45 +1,50 @@
-import { prisma } from "@/lib/db/prisma";
 import ProductCard from "@/components/shared/ProductCard";
 import Pagination from "@/components/shared/Pagination";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { Prisma } from "@/generated/prisma";
 import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
-import { getCachedFilteredProducts } from "@/lib/cache";
+import { getCachedFilteredProducts, getCachedCollectionBySlug } from "@/lib/cache";
 import { ChevronRight, ArrowRight, Sparkles } from "lucide-react";
+import InteractiveCategoryShowcase, { type SectionGroup, type VarietyItem } from "@/components/shared/InteractiveCategoryShowcase";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
   const { slug } = await params;
-  const collection = await prisma.collection.findUnique({ 
-    where: { slug }, 
-    select: { name: true, description: true, image: true } 
-  });
+  // Reuse the same cached query as the page body — zero extra DB hit
+  const collection = await getCachedCollectionBySlug(slug);
   if (!collection) return {};
+  
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://myrashoppingmall.com";
+  const cleanDescription = collection.description?.replace(/<[^>]*>?/gm, '') || `Shop the ${collection.name} collection at Myra Shopping Mall.`;
+  
   return {
     title: `${collection.name} | Myra Shopping Mall`,
-    description: collection.description || `Shop the ${collection.name} collection at Myra Shopping Mall.`,
+    description: cleanDescription,
+    alternates: {
+      canonical: `${appUrl}/collections/${collection.slug}`,
+    },
     openGraph: {
       title: `${collection.name} | Myra Shopping Mall`,
-      description: collection.description || `Shop the ${collection.name} collection at Myra Shopping Mall.`,
+      description: cleanDescription,
       type: "website",
       images: collection.image ? [{ url: collection.image }] : undefined,
     },
   };
 }
 
-export const revalidate = 60; // 1 minute ISR
+export const revalidate = 3600; // 1 hour ISR — revalidateTag handles immediate admin updates
 
 export async function generateStaticParams() {
   try {
-    const collections = await prisma.collection.findMany({
+    const { prisma } = await import("@/lib/db/prisma");
+    const cols = await prisma.collection.findMany({
       select: { slug: true },
       take: 20,
     });
-    return collections.map((c) => ({ slug: c.slug }));
+    return cols.map((c) => ({ slug: c.slug }));
   } catch {
     return [];
   }
@@ -61,28 +66,8 @@ export default async function CollectionPage({
   const stock = resolvedSearchParams.stock || 'all';
   const priceRange = resolvedSearchParams.priceRange || 'all';
 
-  // 1. Fetch collection along with child subcategories and parent
-  const collection = await prisma.collection.findUnique({
-    where: { slug },
-    include: {
-      children: {
-        include: {
-          _count: { select: { products: { where: { deletedAt: null } } } }
-        },
-        orderBy: [{ order: "asc" }, { name: "asc" }]
-      },
-      parent: {
-        include: {
-          children: {
-            include: {
-              _count: { select: { products: { where: { deletedAt: null } } } }
-            },
-            orderBy: [{ order: "asc" }, { name: "asc" }]
-          }
-        }
-      }
-    }
-  });
+  // Single cached DB call — same key used by generateMetadata above (cache hit)
+  const collection = await getCachedCollectionBySlug(slug);
 
   if (!collection) {
     notFound();
@@ -91,11 +76,14 @@ export default async function CollectionPage({
   const isMainCategory = !collection.parentId;
 
   // 2. Product Query Filter:
-  // If it's a Main Category -> Aggregate products from this category AND all its subcategories
-  // If it's a Subcategory -> Exclusively query products of this specific subcategory!
+  // If it's a Main Category -> Aggregate products from this category AND all its subcategories/varieties
+  // If it's a Subcategory/Section -> Aggregate products of this section and any child varieties
+  const directChildren = (collection.children as any[]) || [];
+  const directChildIds = directChildren.map((c) => c.id);
+  const grandchildIds = directChildren.flatMap((c) => c.children?.map((gc: any) => gc.id) || []);
   const targetCollectionIds = isMainCategory
-    ? [collection.id, ...collection.children.map(c => c.id)]
-    : [collection.id];
+    ? [collection.id, ...directChildIds, ...grandchildIds]
+    : [collection.id, ...directChildIds];
 
   const specialFilter = slug === "best-sellers" ? "best-sellers" : slug === "new-arrivals" ? "new-arrivals" : undefined;
 
@@ -151,6 +139,49 @@ export default async function CollectionPage({
   const mainCategorySlug = isMainCategory ? collection.slug : collection.parent?.slug;
   const mainCategoryName = isMainCategory ? collection.name : collection.parent?.name;
   const subcategoryList = isMainCategory ? collection.children : collection.parent?.children || [];
+
+  // Parse 3-tier hierarchy for InteractiveCategoryShowcase
+  const validChildren = directChildren.filter(
+    (c) => c.showInNav !== false || (c.children && c.children.length > 0)
+  );
+
+  const hasNestedStructure = validChildren.some((sec) => sec.children && sec.children.length > 0);
+
+  const formattedSections: SectionGroup[] = hasNestedStructure
+    ? validChildren
+        .filter((sec) => sec.children && sec.children.length > 0)
+        .map((sec) => ({
+          id: sec.id,
+          name: sec.name,
+          slug: sec.slug,
+          image: sec.image,
+          sampleImage: sec.products?.[0]?.images?.[0] || null,
+          productCount: sec._count?.products || 0,
+          varieties: (sec.children || []).map((v: any) => ({
+            id: v.id,
+            name: v.name,
+            slug: v.slug,
+            image: v.image,
+            sampleImage: v.products?.[0]?.images?.[0] || null,
+            productCount: v._count?.products || 0,
+            sectionName: sec.name,
+            sectionSlug: sec.slug,
+          })),
+        }))
+    : [];
+
+  const flatVarietiesFallback: VarietyItem[] = !hasNestedStructure
+    ? validChildren.map((child) => ({
+        id: child.id,
+        name: child.name,
+        slug: child.slug,
+        image: child.image,
+        sampleImage: child.products?.[0]?.images?.[0] || null,
+        productCount: child._count?.products || 0,
+        sectionName: collection.name,
+        sectionSlug: collection.slug,
+      }))
+    : [];
 
   return (
     <div className="w-full bg-white min-h-screen">
@@ -244,68 +275,17 @@ export default async function CollectionPage({
         </div>
       )}
 
-      {/* 3. Visual Subcategory Cards (When viewing a Main Category that has Subcategories) */}
-      {isMainCategory && collection.children.length > 0 && (
-        <section className="border-b border-[#7A0B2E]/15 bg-white py-10 md:py-14">
-          <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-serif text-[#2D1F2F] tracking-wide">
-                  Explore {collection.name} Categories
-                </h2>
-                <p className="text-xs text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">
-                  Choose a category below to browse specific designs
-                </p>
-              </div>
-            </div>
-
-            {/* Subcategory Visual Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-              {collection.children.map((child) => (
-                <Link
-                  key={child.id}
-                  href={`/collections/${child.slug}`}
-                  className="group relative flex flex-col bg-[#F5EFE6] border border-[#7A0B2E]/20 hover:border-[#7A0B2E] transition-all duration-300 shadow-sm hover:shadow-md overflow-hidden"
-                >
-                  {/* Thumbnail / Image container */}
-                  <div className="relative aspect-[3/4] w-full bg-[#FAF0F2] overflow-hidden">
-                    {child.image ? (
-                      <Image
-                        src={child.image}
-                        alt={child.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-[#F5EFE6] to-[#FAF0F2]">
-                        <Sparkles className="w-8 h-8 text-[#7A0B2E]/40 mb-2 group-hover:scale-110 transition-transform" />
-                        <span className="font-serif text-sm font-bold text-[#2D1F2F]">
-                          {child.name}
-                        </span>
-                      </div>
-                    )}
-                    {/* Badge */}
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 border border-[#7A0B2E]/30 text-[10px] font-bold text-[#7A0B2E] uppercase tracking-wider">
-                      {child._count.products} Styles
-                    </div>
-                  </div>
-
-                  {/* Card Title & Link footer */}
-                  <div className="p-3.5 flex items-center justify-between bg-white border-t border-[#7A0B2E]/10">
-                    <span className="font-serif text-sm sm:text-base font-bold text-[#2D1F2F] group-hover:text-[#7A0B2E] transition-colors line-clamp-1">
-                      {child.name}
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-[#7A0B2E] transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+      {/* 3. Interactive Category Showcase (When viewing a Main Category) */}
+      {isMainCategory && (formattedSections.length > 0 || flatVarietiesFallback.length > 0) && (
+        <InteractiveCategoryShowcase
+          departmentName={collection.name}
+          sections={formattedSections}
+          flatVarietiesFallback={flatVarietiesFallback}
+        />
       )}
 
-      {/* 4. Subcategory Quick Pill Buttons Bar */}
-      {subcategoryList.length > 0 && (
+      {/* 4. Subcategory Quick Pill Buttons Bar (When viewing a specific Subcategory/Section) */}
+      {subcategoryList.length > 0 && !isMainCategory && (
         <div className="sticky top-0 z-30 bg-[#F5EFE6]/95 backdrop-blur-md border-b border-[#7A0B2E]/20 py-3.5 px-4 shadow-xs">
           <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-[11px] font-bold uppercase tracking-widest text-[#2D1F2F] whitespace-nowrap">

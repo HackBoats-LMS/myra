@@ -1,6 +1,6 @@
 import CollectionForm from "@/components/shared/CollectionForm";
 import { requireWorkerModule } from "@/lib/worker";
-import { prisma } from "@/lib/db/prisma";
+import { getHierarchyParentOptions } from "@/services/collections";
 
 export default async function NewWorkerCollectionPage({
   searchParams
@@ -10,17 +10,7 @@ export default async function NewWorkerCollectionPage({
   await requireWorkerModule("inventory");
   const resolvedParams = searchParams ? await searchParams : undefined;
   const parentId = resolvedParams?.parentId;
-
-  let parentCollections: { id: string; name: string }[] = [];
-  try {
-    parentCollections = await prisma.collection.findMany({
-      where: { parentId: null },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" }
-    });
-  } catch (error) {
-    console.warn("Database unreachable in NewWorkerCollectionPage:", error);
-  }
+  const parentCollections = await getHierarchyParentOptions();
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">

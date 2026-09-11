@@ -1,12 +1,16 @@
 import ProductForm from "@/components/shared/ProductForm";
 import { getAllCollections } from "@/services/collections";
+import { getProductTypes } from "@/services/product-types-server";
 import { requireWorkerModule } from "@/lib/worker";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewWorkerProductPage() {
   await requireWorkerModule("inventory");
-  const collections = await getAllCollections();
+  const [collections, productTypes] = await Promise.all([
+    getAllCollections(),
+    getProductTypes(),
+  ]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -15,7 +19,7 @@ export default async function NewWorkerProductPage() {
         <p className="text-[10px] text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">Upload images and set inventory details.</p>
       </div>
 
-      <ProductForm collections={collections} />
+      <ProductForm collections={collections} productTypes={productTypes} />
     </div>
   );
 }

@@ -96,8 +96,8 @@ export default function MobileMenu({ links, isLoggedIn, cartCount, wishlistCount
                   </button>
                 </div>
                 <div
-                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isOpenSection ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                  className={`transition-all duration-300 ease-in-out ${
+                    isOpenSection ? "max-h-[60vh] opacity-100 overflow-y-auto" : "max-h-0 opacity-0 overflow-hidden"
                   }`}
                 >
                   <div className="pl-3 pb-3 flex flex-col gap-1 border-l border-[#7A0B2E]/20 ml-1">

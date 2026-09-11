@@ -137,7 +137,7 @@ export async function loadOrderForShipment(orderId: string) {
         },
       },
       address: true,
-      orderItems: { include: { product: { select: { name: true, sku: true, id: true } } } },
+      orderItems: { include: { product: { select: { name: true, sku: true, id: true, weight: true } } } },
     },
   });
 }
@@ -167,8 +167,17 @@ export function buildAdhocPayload(order: NonNullable<OrderForShipment>): AdhocOr
   const shippingCountry = order.giftCountry || addr?.country || user.country || "India";
   const shippingPhone = order.giftPhone || addr?.phone || user.phoneNumber || "0000000000";
 
-  const weight =
-    Number(process.env.SHIPROCKET_PACKAGE_WEIGHT || 1) || 1;
+  // Compute total package weight from product weight * quantity
+  const calculatedWeight = order.orderItems.reduce((total, item) => {
+    const rawWeight = (item.product as { weight?: string | null })?.weight || "";
+    const parsed = parseFloat(rawWeight.replace(/[^0-9.]/g, ""));
+    const weightInKg = rawWeight.toLowerCase().includes("g") && !rawWeight.toLowerCase().includes("kg")
+      ? parsed / 1000
+      : parsed || 0.5;
+    return total + (weightInKg * item.quantity);
+  }, 0);
+
+  const weight = Number((calculatedWeight || Number(process.env.SHIPROCKET_PACKAGE_WEIGHT || 1) || 1).toFixed(2));
   const dim = Number(process.env.SHIPROCKET_PACKAGE_DIM || 10) || 10;
 
   return {

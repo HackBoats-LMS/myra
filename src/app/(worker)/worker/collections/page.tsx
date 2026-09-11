@@ -15,6 +15,12 @@ export default async function WorkerCollectionsPage() {
       include: {
         children: {
           include: {
+            children: {
+              include: {
+                _count: { select: { products: true } }
+              },
+              orderBy: [{ order: "asc" }, { name: "asc" }]
+            },
             _count: { select: { products: true } }
           },
           orderBy: [{ order: "asc" }, { name: "asc" }]

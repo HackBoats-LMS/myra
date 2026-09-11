@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db/prisma";
 import ProductCard from "@/components/shared/ProductCard";
 import Pagination from "@/components/shared/Pagination";
 import type { Metadata } from "next";
-import type { Prisma } from "@/generated/prisma";
 import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
 import { getCachedSearchProducts } from "@/lib/cache";
 
@@ -38,18 +37,12 @@ export default async function SearchPage({
     );
   }
 
-  // Construct filters
-  const { products, totalProducts } = await getCachedSearchProducts(
-    query,
-    stock,
-    priceRange,
-    sort,
-    currentPage,
-    ITEMS_PER_PAGE
-  );
+  // Run product search and flash sales lookup in parallel
+  const [{ products, totalProducts }, sales] = await Promise.all([
+    getCachedSearchProducts(query, stock, priceRange, sort, currentPage, ITEMS_PER_PAGE),
+    getActiveFlashSales(),
+  ]);
 
-  // Compute review data for each product
-  const sales = await getActiveFlashSales();
   const productsWithReviews = applyFlashToProductList(products, sales).map(({ reviews, ...product }) => {
     const reviewCount = reviews?.length || 0;
     const averageRating = reviewCount > 0 

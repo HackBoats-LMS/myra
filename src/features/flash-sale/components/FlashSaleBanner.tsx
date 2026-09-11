@@ -1,8 +1,13 @@
-import { getActiveFlashSales } from "@/lib/flash-sale";
+import type { Prisma } from "@/generated/prisma";
 import FlashSaleBannerClient from "./FlashSaleBannerClient";
 
-export default async function FlashSaleBanner() {
-  const sales = await getActiveFlashSales();
+type FlashSaleWithCollection = Prisma.FlashSaleGetPayload<{ include: { collection: true } }>;
+
+interface FlashSaleBannerProps {
+  sales: FlashSaleWithCollection[];
+}
+
+export default function FlashSaleBanner({ sales }: FlashSaleBannerProps) {
   if (sales.length === 0) return null;
 
   const sale = sales[0];
