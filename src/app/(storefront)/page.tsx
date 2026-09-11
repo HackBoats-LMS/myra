@@ -14,6 +14,7 @@ import StoreLocationSection from "@/features/home/components/StoreLocationSectio
 
 import { getFeaturedProducts, getBestSellers } from "@/services/products";
 import { getActiveFlashSales, applyFlashToProductList } from "@/lib/flash-sale";
+import { getCachedBanners, getCachedBrandStories } from "@/lib/cache";
 
 import { preload } from 'react-dom';
 
@@ -25,19 +26,29 @@ export default async function StorefrontHome() {
 
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
   let bestSellers: Awaited<ReturnType<typeof getBestSellers>> = [];
+  let banners: Awaited<ReturnType<typeof getCachedBanners>> = [];
+  let brandStories: Awaited<ReturnType<typeof getCachedBrandStories>> = [];
+  let flashSales: Awaited<ReturnType<typeof getActiveFlashSales>> = [];
 
   try {
+    // All home-page data fetched in one parallel batch — no child component fetches its own data.
+    // This prevents duplicate getCachedBanners() / getActiveFlashSales() SSR calls.
     const results = await Promise.all([
       getFeaturedProducts(4),
       getBestSellers(4),
       getActiveFlashSales(),
+      getCachedBanners().catch(() => [] as typeof banners),
+      getCachedBrandStories().catch(() => [] as typeof brandStories),
     ]);
     featuredProducts = results[0];
     bestSellers = results[1];
-    const sales = results[2];
-    if (sales.length > 0) {
-      featuredProducts = applyFlashToProductList(featuredProducts, sales);
-      bestSellers = applyFlashToProductList(bestSellers, sales);
+    flashSales = results[2];
+    banners = results[3];
+    brandStories = results[4];
+
+    if (flashSales.length > 0) {
+      featuredProducts = applyFlashToProductList(featuredProducts, flashSales);
+      bestSellers = applyFlashToProductList(bestSellers, flashSales);
     }
   } catch (error) {
     console.warn("Database unreachable in StorefrontHome, falling back to empty state:", error instanceof Error ? error.message : "unknown error");
@@ -69,10 +80,10 @@ export default async function StorefrontHome() {
         </div>
 
         {/* 1. Hero Section */}
-        <HeroGrid />
+        <HeroGrid banners={banners} />
 
         {/* 1b. Flash Sale Banner */}
-        <FlashSaleBanner />
+        <FlashSaleBanner sales={flashSales} />
 
         {/* 2. Desktop Category Buttons (15-inch Laptops & Desktops) */}
         <div className="hidden xl:block mt-6">
@@ -95,7 +106,7 @@ export default async function StorefrontHome() {
         <RecommendedForYou />
 
         {/* 7. Curated Collection Block */}
-        <CuratedCollectionSection />
+        <CuratedCollectionSection banners={banners} brandStories={brandStories} />
 
         {/* 8. Feature Icons Bar */}
         <FeatureIconsSection />

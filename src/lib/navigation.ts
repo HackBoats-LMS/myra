@@ -3,9 +3,16 @@ export interface NavChild {
   href: string;
 }
 
+export interface NavSection {
+  title: string;
+  href: string;
+  items: NavChild[];
+}
+
 export interface NavLink {
   label: string;
   href: string;
+  sections?: NavSection[];
   children: NavChild[];
 }
 

@@ -3,6 +3,7 @@ import CollectionForm from "@/components/shared/CollectionForm";
 import CollectionBestSellers from "@/components/shared/CollectionBestSellers";
 import { notFound } from "next/navigation";
 import { requireWorkerModule } from "@/lib/worker";
+import { getHierarchyParentOptions } from "@/services/collections";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +15,7 @@ export default async function EditWorkerCollectionPage({ params }: { params: Pro
     prisma.collection.findUnique({
       where: { id },
     }),
-    prisma.collection.findMany({
-      where: { parentId: null, id: { not: id } },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" }
-    }),
+    getHierarchyParentOptions(id),
     prisma.product.findMany({
       where: { collectionId: id, deletedAt: null },
       select: { id: true, name: true, images: true, bestSeller: true },

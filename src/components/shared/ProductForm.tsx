@@ -1,12 +1,13 @@
 "use client";
-import { useState, useReducer } from "react";
+import React, { useState, useReducer } from "react";
 import { createProduct, updateProduct } from "@/actions/admin";
 import MultiImageDropzone from "@/app/(admin)/admin/_components/MultiImageDropzone";
 import Image from "next/image";
 import AdminForm from "@/app/(admin)/admin/_components/AdminForm";
 import type { Prisma } from "@/generated/prisma";
-import { ChevronLeft, ChevronRight, X, Plus, Layers, Palette } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Plus, Layers, Palette, SlidersHorizontal, AlertCircle, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { type ProductTypeTemplate, DEFAULT_PRODUCT_TYPES } from "@/services/product-types";
 
 interface ProductVariant {
   id: string;
@@ -24,6 +25,7 @@ type CollectionWithHierarchy = Prisma.CollectionGetPayload<{
 interface ProductFormProps {
   collections: CollectionWithHierarchy[];
   initialData?: Prisma.ProductGetPayload<{ include: { variants: true } }>;
+  productTypes?: ProductTypeTemplate[];
 }
 
 type ImageState = 
@@ -93,7 +95,7 @@ function variantsReducer(state: ProductVariant[], action: VariantsAction): Produ
 const COMMON_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Free Size"];
 const COMMON_COLORS = ["Red", "Maroon", "Royal Blue", "Navy", "Emerald Green", "Pink", "Mustard Yellow", "Orange", "Black", "Gold"];
 
-export default function ProductForm({ collections, initialData }: ProductFormProps) {
+export default function ProductForm({ collections, initialData, productTypes = DEFAULT_PRODUCT_TYPES }: ProductFormProps) {
   const [images, dispatchImages] = useReducer(
     imagesReducer, 
     (initialData?.images || []).map(url => ({ id: crypto.randomUUID(), type: "existing", url }))
@@ -110,8 +112,15 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
   const [customColorInput, setCustomColorInput] = useState("");
   const [baseStock, setBaseStock] = useState<number>(initialData?.stockQuantity ?? 0);
 
-  // Dynamic Attributes State
+  // Dynamic Product Types & Attributes State
+  const availableProductTypes = (productTypes && productTypes.length > 0) ? productTypes : DEFAULT_PRODUCT_TYPES;
   const [productType, setProductType] = useState(initialData?.productType || "");
+  const [specValidationError, setSpecValidationError] = useState<string | null>(null);
+
+  const currentTemplate = availableProductTypes.find(
+    (t) => t.name.toLowerCase() === productType.toLowerCase()
+  );
+
   const [attributes, setAttributes] = useState<Array<{key: string, value: string}>>(() => {
     let initialAttrs: Record<string, string> = {};
     if (initialData?.attributes && typeof initialData.attributes === 'object' && !Array.isArray(initialData.attributes)) {
@@ -121,40 +130,74 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
     if (initialData?.material && !initialAttrs["Material / Fabric"]) initialAttrs["Material / Fabric"] = initialData.material;
     if (initialData?.weight && !initialAttrs["Weight"]) initialAttrs["Weight"] = initialData.weight;
     
+    // If productType was already set, order attributes by template fields
+    const initialTypeName = initialData?.productType;
+    if (initialTypeName) {
+      const template = availableProductTypes.find(
+        (t) => t.name.toLowerCase() === initialTypeName.toLowerCase()
+      );
+      if (template) {
+        const initialMap = new Map(
+          Object.entries(initialAttrs).map(([k, v]) => [k.toLowerCase(), { key: k, value: v }])
+        );
+        const ordered = template.fields.map((f) => {
+          const matched = initialMap.get(f.name.toLowerCase());
+          return { key: f.name, value: matched ? matched.value : "" };
+        });
+        const templateKeys = new Set(template.fields.map((f) => f.name.toLowerCase()));
+        const custom = Object.entries(initialAttrs)
+          .filter(([k]) => !templateKeys.has(k.toLowerCase()))
+          .map(([k, v]) => ({ key: k, value: v }));
+        return [...ordered, ...custom];
+      }
+    }
+
     return Object.entries(initialAttrs).map(([k, v]) => ({ key: k, value: v }));
   });
-
-  const TEMPLATES: Record<string, string[]> = {
-    "Saree": ["Material / Fabric", "Pattern", "Blouse Piece", "Wash Care"],
-    "Suit": ["Material / Fabric", "Pattern", "Bottom Wear", "Dupatta", "Wash Care"],
-    "Lehenga": ["Material / Fabric", "Pattern", "Blouse / Choli", "Dupatta", "Wash Care"],
-    "Anarkali Suit": ["Material / Fabric", "Pattern", "Bottom Wear", "Dupatta", "Wash Care"],
-    "Kurti / Ethnic": ["Material / Fabric", "Pattern", "Wash Care"],
-    "Dress": ["Material / Fabric", "Pattern", "Wash Care"],
-  };
 
   const handleProductTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const type = e.target.value;
     setProductType(type);
+    setSpecValidationError(null);
     
-    if (TEMPLATES[type]) {
-      // Merge new template keys with existing attributes, avoiding duplicates
-      setAttributes(prev => {
-        const currentKeys = new Set(prev.map(a => a.key));
-        const newAttrs = [...prev];
-        TEMPLATES[type].forEach(k => {
-          if (!currentKeys.has(k)) {
-            newAttrs.push({ key: k, value: "" });
-          }
-        });
-        return newAttrs;
+    const template = availableProductTypes.find(
+      (t) => t.name.toLowerCase() === type.toLowerCase()
+    );
+
+    if (template) {
+      setAttributes((prev) => {
+        const prevMap = new Map(
+          prev.filter((a) => a.key.trim()).map((a) => [a.key.trim().toLowerCase(), a.value])
+        );
+        
+        // Put template fields first in their configured order
+        const templateAttrs = template.fields.map((f) => ({
+          key: f.name,
+          value: prevMap.get(f.name.toLowerCase()) || "",
+        }));
+
+        // Preserve any custom extra attributes previously added
+        const templateKeys = new Set(template.fields.map((f) => f.name.toLowerCase()));
+        const extraCustomAttrs = prev.filter(
+          (a) => a.key.trim() && !templateKeys.has(a.key.trim().toLowerCase())
+        );
+
+        return [...templateAttrs, ...extraCustomAttrs];
       });
     }
   };
 
-  // Group collections into Top-level Categories and Subcategories
+  // Group collections into 3-tier hierarchy: Departments -> Sections -> Varieties
   const topLevelCategories = collections.filter(c => !c.parentId);
-  const orphanSubcategories = collections.filter(c => c.parentId && !topLevelCategories.some(p => p.id === c.parentId));
+  const allKnownHierarchyIds = new Set<string>();
+  topLevelCategories.forEach(p => {
+    allKnownHierarchyIds.add(p.id);
+    p.children?.forEach((s: any) => {
+      allKnownHierarchyIds.add(s.id);
+      s.children?.forEach((c: any) => allKnownHierarchyIds.add(c.id));
+    });
+  });
+  const orphanSubcategories = collections.filter(c => !allKnownHierarchyIds.has(c.id));
 
   // Compute total stock from variants if variants exist, otherwise baseStock
   const totalStock = (hasSizes || hasColors) && variants.length > 0
@@ -184,7 +227,29 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
   const [videoUrl, setVideoUrl] = useState<string>(initialData?.videoUrl || "");
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
+  const validateRequiredSpecifications = () => {
+    if (!currentTemplate) return null;
+    for (const field of currentTemplate.fields) {
+      if (field.required) {
+        const match = attributes.find(
+          (a) => a.key.trim().toLowerCase() === field.name.trim().toLowerCase()
+        );
+        if (!match || !match.value.trim()) {
+          const err = `Please fill in the required specification: "${field.name}"`;
+          setSpecValidationError(err);
+          return err;
+        }
+      }
+    }
+    return null;
+  };
+
   const wrappedCreateAction = async (formData: FormData) => {
+    const specErr = validateRequiredSpecifications();
+    if (specErr) {
+      throw new Error(specErr);
+    }
+
     setIsUploadingFiles(true);
     try {
       const finalUrls = [];
@@ -217,6 +282,11 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
   };
 
   const wrappedUpdateAction = async (id: string, formData: FormData) => {
+    const specErr = validateRequiredSpecifications();
+    if (specErr) {
+      throw new Error(specErr);
+    }
+
     setIsUploadingFiles(true);
     try {
       const finalUrls = [];
@@ -348,8 +418,8 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
               />
             </div>
 
-            {/* 4. Pricing & Category Hierarchy */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* 4. Pricing, Category & Mandatory Weight */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Base Price (Original ₹)</label>
                 <input 
@@ -363,7 +433,7 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Selling Price (₹)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Selling Price (₹) <span className="text-red-600">*</span></label>
                 <input 
                   required 
                   defaultValue={initialData?.price} 
@@ -373,6 +443,22 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                   className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
                   placeholder="e.g. 1499" 
                 />
+              </div>
+
+              {/* Mandatory Package Weight */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">
+                  Package Weight (kg) <span className="text-red-600">*</span>
+                </label>
+                <input 
+                  required 
+                  defaultValue={initialData?.weight || "0.5"} 
+                  name="weight" 
+                  type="text" 
+                  className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]" 
+                  placeholder="e.g. 0.5 or 0.8 kg" 
+                />
+                <p className="text-[10px] text-gray-500 mt-1">Mandatory for Shiprocket shipping calculation.</p>
               </div>
 
               {/* Grouped Category & Subcategory Selection */}
@@ -387,17 +473,27 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
                 >
                   <option value="">Select category / subcategory</option>
                   {topLevelCategories.map(parent => (
-                    <optgroup key={parent.id} label={parent.name}>
-                      <option value={parent.id}>{parent.name} (Main Category)</option>
-                      {parent.children?.map((sub: any) => (
-                        <option key={sub.id} value={sub.id}>
-                          &nbsp;&nbsp;↳ {sub.name}
-                        </option>
-                      ))}
+                    <optgroup key={parent.id} label={`── ${parent.name.toUpperCase()} ──`}>
+                      <option value={parent.id}>{parent.name} (Entire Department)</option>
+                      {parent.children?.map((sub: any) => {
+                        const hasGrandchildren = Boolean(sub.children && sub.children.length > 0);
+                        return (
+                          <React.Fragment key={sub.id}>
+                            <option value={sub.id} className="font-semibold text-[#7A0B2E]">
+                              &nbsp;&nbsp;↳ {sub.name} {hasGrandchildren ? "(Section)" : ""}
+                            </option>
+                            {hasGrandchildren && sub.children.map((child: any) => (
+                              <option key={child.id} value={child.id}>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• {child.name}
+                              </option>
+                            ))}
+                          </React.Fragment>
+                        );
+                      })}
                     </optgroup>
                   ))}
                   {orphanSubcategories.length > 0 && (
-                    <optgroup label="Other Subcategories">
+                    <optgroup label="── OTHER COLLECTIONS ──">
                       {orphanSubcategories.map(sub => (
                         <option key={sub.id} value={sub.id}>{sub.name}</option>
                       ))}
@@ -411,72 +507,177 @@ export default function ProductForm({ collections, initialData }: ProductFormPro
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <h3 className="text-sm font-bold text-[#2D1F2F] uppercase tracking-widest flex items-center gap-2">
-                  Product Details & Attributes
+                  Product Details & Specifications
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Product Type</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
+                      Product Type
+                    </label>
+                    <a
+                      href={`${basePath}/product-types`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[9px] font-bold uppercase tracking-wider text-[#7A0B2E] hover:underline flex items-center gap-1"
+                      title="Configure product types and specifications"
+                    >
+                      <SlidersHorizontal className="w-3 h-3" /> Manage Types
+                    </a>
+                  </div>
                   <select 
                     name="productType" 
                     value={productType}
                     onChange={handleProductTypeChange}
-                    className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
+                    className="w-full rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] font-medium focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
                   >
-                    <option value="">Select type</option>
-                    {["Saree", "Anarkali Suit", "Suit", "Kurti / Ethnic", "Dress", "Lehenga", "Top", "Bottom", "Kids Wear", "Gown"].map((t) => (
-                      <option key={t} value={t}>{t}</option>
+                    <option value="">Select product type</option>
+                    {availableProductTypes.map((t) => (
+                      <option key={t.id || t.name} value={t.name}>{t.name}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* Dynamic Attributes Builder */}
-              <div className="space-y-2 border border-[#7A0B2E]/20 p-4 bg-[#F5EFE6]">
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">Specifications / Details</label>
-                {attributes.map((attr, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Attribute (e.g. Fabric)"
-                      value={attr.key}
-                      onChange={(e) => {
-                        const newAttrs = [...attributes];
-                        newAttrs[index].key = e.target.value;
-                        setAttributes(newAttrs);
-                      }}
-                      className="flex-1 rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Value (e.g. Silk)"
-                      value={attr.value}
-                      onChange={(e) => {
-                        const newAttrs = [...attributes];
-                        newAttrs[index].value = e.target.value;
-                        setAttributes(newAttrs);
-                      }}
-                      className="flex-[2] rounded-none border border-[#7A0B2E]/20 bg-white px-3 py-2 text-sm text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E] focus:ring-1 focus:ring-[#7A0B2E]"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setAttributes(attributes.filter((_, i) => i !== index))}
-                      className="p-2 text-red-500 hover:bg-red-50 border border-transparent transition-colors"
-                      title="Remove Attribute"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+              {/* Dynamic Attributes & Specifications Builder */}
+              <div className="space-y-3 border border-[#7A0B2E]/20 p-5 bg-[#FBF8F5]">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#7A0B2E]/10">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <label className="block text-xs font-bold uppercase tracking-widest text-[#2D1F2F]">
+                        Specifications / Details
+                      </label>
+                      {currentTemplate && (
+                        <span className="text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider bg-[#7A0B2E]/10 text-[#7A0B2E] border border-[#7A0B2E]/20">
+                          {currentTemplate.name} Specifications
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-0.5">
+                      Fields tagged with <span className="text-[#7A0B2E] font-bold">* Req</span> must be provided. Optional fields can be left blank or filled as needed.
+                    </p>
                   </div>
-                ))}
-                
-                <button
-                  type="button"
-                  onClick={() => setAttributes([...attributes, { key: "", value: "" }])}
-                  className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] flex items-center gap-1 transition-colors"
-                >
-                  <Plus className="w-3 h-3" /> Add Custom Detail
-                </button>
+
+                  <a
+                    href={`${basePath}/product-types`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:underline flex items-center gap-1"
+                    title="Configure schemas & required fields"
+                  >
+                    <Settings className="w-3 h-3" /> Edit Fields
+                  </a>
+                </div>
+
+                {specValidationError && (
+                  <div className="p-3 bg-red-50 border border-red-300 text-red-800 text-xs font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>{specValidationError}</span>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  {attributes.map((attr, index) => {
+                    const templateField = currentTemplate?.fields.find(
+                      (f) => f.name.trim().toLowerCase() === attr.key.trim().toLowerCase()
+                    );
+                    const isRequired = Boolean(templateField?.required);
+                    const isCustom = !templateField;
+                    const isMissingRequired = isRequired && !attr.value.trim();
+
+                    return (
+                      <div 
+                        key={index} 
+                        className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2.5 border transition-colors ${
+                          isMissingRequired && specValidationError
+                            ? "bg-red-50/70 border-red-400"
+                            : "bg-white border-gray-200 hover:border-[#7A0B2E]/30"
+                        }`}
+                      >
+                        {/* Key / Name Input + Req/Not Req Badge */}
+                        <div className="flex items-center gap-2 sm:w-1/3">
+                          <input
+                            type="text"
+                            placeholder="Specification (e.g. Fabric)"
+                            value={attr.key}
+                            onChange={(e) => {
+                              const newAttrs = [...attributes];
+                              newAttrs[index].key = e.target.value;
+                              setAttributes(newAttrs);
+                              setSpecValidationError(null);
+                            }}
+                            className="flex-1 rounded-none border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-[#2D1F2F] focus:outline-none focus:border-[#7A0B2E]"
+                          />
+                          {isRequired ? (
+                            <span className="shrink-0 px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-[#7A0B2E] text-white whitespace-nowrap shadow-sm">
+                              * Req
+                            </span>
+                          ) : isCustom ? (
+                            <span className="shrink-0 px-2 py-1 text-[9px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap">
+                              Custom
+                            </span>
+                          ) : (
+                            <span className="shrink-0 px-2 py-1 text-[9px] font-medium uppercase tracking-wider bg-stone-200 text-stone-700 whitespace-nowrap">
+                              Not Req
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Value Input */}
+                        <div className="flex-1 flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder={isRequired ? "Value (Required) *" : "Value (e.g. Silk, Banarasi, Dry Clean)"}
+                            value={attr.value}
+                            onChange={(e) => {
+                              const newAttrs = [...attributes];
+                              newAttrs[index].value = e.target.value;
+                              setAttributes(newAttrs);
+                              setSpecValidationError(null);
+                            }}
+                            className={`w-full rounded-none border px-3 py-2 text-xs text-[#2D1F2F] focus:outline-none focus:ring-1 ${
+                              isMissingRequired && specValidationError
+                                ? "border-red-400 focus:border-red-600 focus:ring-red-200 bg-white"
+                                : "border-gray-300 bg-white focus:border-[#7A0B2E] focus:ring-[#7A0B2E]"
+                            }`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAttributes(attributes.filter((_, i) => i !== index));
+                              setSpecValidationError(null);
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 border border-transparent transition-colors"
+                            title="Remove specification"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {attributes.length === 0 && (
+                    <div className="p-4 text-center text-xs text-gray-400 border border-dashed border-gray-300 bg-white">
+                      No specifications added. Select a Product Type above or add a custom detail.
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAttributes([...attributes, { key: "", value: "" }]);
+                      setSpecValidationError(null);
+                    }}
+                    className="text-[10px] font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add Custom Detail
+                  </button>
+                </div>
               </div>
             </div>
 

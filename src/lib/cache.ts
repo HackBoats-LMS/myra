@@ -128,6 +128,24 @@ export const getCachedBestSellers = createCachedQuery(
   { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.long }
 );
 
+// Recently Viewed Products — fetched server-side on product pages to replace
+// the uncached client-side API fetch. Keyed on sorted product ID list.
+export const getCachedRecentlyViewedProducts = createCachedQuery(
+  ["products", "recently-viewed"],
+  async (sortedIds: string[]) => {
+    if (sortedIds.length === 0) return [];
+    const products = await prisma.product.findMany({
+      where: { id: { in: sortedIds }, deletedAt: null },
+      include: { collection: true },
+    });
+    // Preserve the original cookie order
+    return sortedIds
+      .map((id) => products.find((p) => p.id === id))
+      .filter((p): p is NonNullable<typeof p> => p !== undefined);
+  },
+  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.medium }
+);
+
 export const getCachedRelatedProducts = createCachedQuery(
   ["products", "related"],
   async (productId: string, collectionId: string | null, take: number = 4) => {
@@ -196,7 +214,13 @@ export const getCachedAllCollections = createCachedQuery(
       include: {
         parent: true,
         children: {
-          include: { _count: { select: { products: true } } },
+          include: { 
+            children: {
+              include: { _count: { select: { products: true } } },
+              orderBy: [{ order: "asc" }, { name: "asc" }]
+            },
+            _count: { select: { products: true } } 
+          },
           orderBy: [{ order: "asc" }, { name: "asc" }]
         },
         _count: { select: { products: true } }
@@ -205,6 +229,61 @@ export const getCachedAllCollections = createCachedQuery(
     });
   },
   { tags: [CACHE_TAGS.collections], revalidate: 31536000 }
+);
+
+// Full collection by slug — used by collection page AND generateMetadata to avoid
+// double raw-Prisma calls. Includes children + parent with subcategory counts.
+export const getCachedCollectionBySlug = createCachedQuery(
+  ["collection", "slug"],
+  async (slug: string) => {
+    return prisma.collection.findUnique({
+      where: { slug },
+      include: {
+        children: {
+          include: {
+            children: {
+              include: {
+                _count: { select: { products: { where: { deletedAt: null } } } },
+                products: {
+                  where: { deletedAt: null },
+                  take: 1,
+                  select: { images: true }
+                }
+              },
+              orderBy: [{ order: "asc" }, { name: "asc" }]
+            },
+            _count: { select: { products: { where: { deletedAt: null } } } },
+            products: {
+              where: { deletedAt: null },
+              take: 1,
+              select: { images: true }
+            }
+          },
+          orderBy: [{ order: "asc" }, { name: "asc" }]
+        },
+        parent: {
+          include: {
+            children: {
+              include: {
+                children: {
+                  include: {
+                    _count: { select: { products: { where: { deletedAt: null } } } }
+                  },
+                  orderBy: [{ order: "asc" }, { name: "asc" }]
+                },
+                _count: { select: { products: { where: { deletedAt: null } } } }
+              },
+              orderBy: [{ order: "asc" }, { name: "asc" }]
+            }
+          }
+        }
+      }
+    });
+  },
+  {
+    tags: (slug: string) => [CACHE_TAGS.collection(slug), CACHE_TAGS.collections],
+    revalidate: CACHE_TTL.long,
+  }
 );
 
 // Main Top-Level Collections for Navigation & Footer
@@ -234,6 +313,12 @@ export const getCachedNavigationTree = createCachedQuery(
         include: {
           children: {
             where: { showInNav: true },
+            include: {
+              children: {
+                where: { showInNav: true },
+                orderBy: [{ order: "asc" }, { name: "asc" }]
+              }
+            },
             orderBy: [{ order: "asc" }, { name: "asc" }]
           }
         },
@@ -244,14 +329,39 @@ export const getCachedNavigationTree = createCachedQuery(
         return null;
       }
 
-      return topLevel.map((cat) => ({
-        label: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
-        href: `/collections/${cat.slug}`,
-        children: cat.children.map((sub) => ({
-          label: sub.name.charAt(0).toUpperCase() + sub.name.slice(1),
-          href: `/collections/${sub.slug}`,
-        }))
-      }));
+      return topLevel.map((cat) => {
+        const hasNestedSections = cat.children.some(
+          (sub) => sub.children && sub.children.length > 0
+        );
+
+        let sections = undefined;
+        let flatChildren: { label: string; href: string }[] = [];
+
+        if (hasNestedSections) {
+          const sectionChildren = cat.children.filter((sec) => sec.children && sec.children.length > 0);
+          sections = sectionChildren.map((sec) => ({
+            title: sec.name.charAt(0).toUpperCase() + sec.name.slice(1),
+            href: `/collections/${sec.slug}`,
+            items: sec.children.map((item) => ({
+              label: item.name.charAt(0).toUpperCase() + item.name.slice(1),
+              href: `/collections/${item.slug}`,
+            })),
+          }));
+          flatChildren = sections.flatMap((s) => s.items);
+        } else {
+          flatChildren = cat.children.map((sub) => ({
+            label: sub.name.charAt(0).toUpperCase() + sub.name.slice(1),
+            href: `/collections/${sub.slug}`,
+          }));
+        }
+
+        return {
+          label: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
+          href: `/collections/${cat.slug}`,
+          sections,
+          children: flatChildren,
+        };
+      });
     } catch {
       return null;
     }
@@ -352,6 +462,8 @@ export const getCachedSitemapData = createCachedQuery(
 );
 
 // Banners (SSR cached for maximum performance with on-demand invalidation)
+// TTL is long because banners rarely change on their own; admin mutations call
+// revalidateTag(CACHE_TAGS.banners) immediately after any change.
 export const getCachedBanners = createCachedQuery(
   ["banners", "all"],
   async () => {
@@ -359,10 +471,12 @@ export const getCachedBanners = createCachedQuery(
       where: { isActive: true },
     });
   },
-  { tags: [CACHE_TAGS.banners], revalidate: CACHE_TTL.short }
+  { tags: [CACHE_TAGS.banners], revalidate: CACHE_TTL.long }
 );
 
 // Brand Stories (SSR cached for maximum performance with on-demand invalidation)
+// TTL is long because brand stories rarely change; admin mutations call
+// revalidateTag(CACHE_TAGS.brandStories) immediately after any change.
 export const getCachedBrandStories = createCachedQuery(
   ["brand-stories", "all"],
   async () => {
@@ -371,7 +485,7 @@ export const getCachedBrandStories = createCachedQuery(
       orderBy: { sortOrder: "asc" },
     });
   },
-  { tags: [CACHE_TAGS.brandStories], revalidate: CACHE_TTL.short }
+  { tags: [CACHE_TAGS.brandStories], revalidate: CACHE_TTL.long }
 );
 
 // Revalidation helpers - use revalidateTag from next/cache at call site

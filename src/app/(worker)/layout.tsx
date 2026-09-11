@@ -28,7 +28,15 @@ export default async function WorkerLayout({ children }: { children: React.React
   }
 
   return (
-    <WorkerShell canInventory={canInventory} canShipping={canShipping}>
+    <WorkerShell
+      canInventory={canInventory}
+      canShipping={canShipping}
+      user={{
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role,
+      }}
+    >
       {children}
     </WorkerShell>
   );

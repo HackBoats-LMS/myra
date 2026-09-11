@@ -1,21 +1,26 @@
 import { prisma } from "@/lib/db/prisma";
 import { getAllCollections } from "@/services/collections";
+import { getProductTypes } from "@/services/product-types-server";
 import ProductForm from "@/components/shared/ProductForm";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: { variants: true }
-  });
+  const [product, collections, productTypes] = await Promise.all([
+    prisma.product.findUnique({
+      where: { id },
+      include: { variants: true },
+    }),
+    getAllCollections(),
+    getProductTypes(),
+  ]);
 
   if (!product) {
     notFound();
   }
-
-  const collections = await getAllCollections();
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -24,7 +29,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         <p className="text-[10px] text-[#7A0B2E] uppercase tracking-widest font-bold mt-1">Update details for {product.name}</p>
       </div>
       
-      <ProductForm collections={collections} initialData={product} />
+      <ProductForm collections={collections} initialData={product} productTypes={productTypes} />
     </div>
   );
 }

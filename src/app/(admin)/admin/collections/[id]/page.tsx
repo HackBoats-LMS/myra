@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import CollectionForm from "@/components/shared/CollectionForm";
 import CollectionBestSellers from "@/components/shared/CollectionBestSellers";
+import { getHierarchyParentOptions } from "@/services/collections";
 import { notFound } from "next/navigation";
 
 export default async function EditCollectionPage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,11 +11,7 @@ export default async function EditCollectionPage({ params }: { params: Promise<{
     prisma.collection.findUnique({
       where: { id }
     }),
-    prisma.collection.findMany({
-      where: { parentId: null, id: { not: id } },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" }
-    }),
+    getHierarchyParentOptions(id),
     prisma.product.findMany({
       where: { collectionId: id, deletedAt: null },
       select: { id: true, name: true, images: true, bestSeller: true },

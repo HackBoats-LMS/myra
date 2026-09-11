@@ -59,6 +59,7 @@ export default async function AccountPage() {
         },
         orders: {
           orderBy: { createdAt: 'desc' },
+          take: 3, // Page only shows last 3 orders; DB should return exactly that
           select: {
             id: true,
             status: true,

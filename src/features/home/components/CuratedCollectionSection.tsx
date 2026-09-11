@@ -1,5 +1,13 @@
-import { getCachedBanners, getCachedBrandStories } from "@/lib/cache";
+import type { Prisma } from "@/generated/prisma";
 import CuratedCollectionClient, { StoryItem } from "./CuratedCollectionClient";
+
+type Banner = Prisma.BannerGetPayload<Record<string, unknown>>;
+type BrandStory = Prisma.BrandStoryGetPayload<Record<string, unknown>>;
+
+interface CuratedCollectionSectionProps {
+  banners: Banner[];
+  brandStories: BrandStory[];
+}
 
 const DEFAULT_STORIES: StoryItem[] = [
   {
@@ -26,19 +34,7 @@ const DEFAULT_STORIES: StoryItem[] = [
   },
 ];
 
-export default async function CuratedCollectionSection() {
-  let banners: Awaited<ReturnType<typeof getCachedBanners>> = [];
-  let dbStories: Awaited<ReturnType<typeof getCachedBrandStories>> = [];
-
-  try {
-    [banners, dbStories] = await Promise.all([
-      getCachedBanners().catch(() => []),
-      getCachedBrandStories().catch(() => []),
-    ]);
-  } catch (err) {
-    console.warn("Failed to load cached stories/banners in CuratedCollectionSection:", err);
-  }
-
+export default function CuratedCollectionSection({ banners, brandStories: dbStories }: CuratedCollectionSectionProps) {
   const story1Banner = banners.find((b) => b.slot === "curated_story_1");
   const story2Banner = banners.find((b) => b.slot === "curated_story_2");
 

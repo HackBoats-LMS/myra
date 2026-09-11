@@ -11,6 +11,7 @@ interface SubCategoryItem {
   order: number;
   showInNav?: boolean;
   parentId: string | null;
+  children?: SubCategoryItem[];
   _count: { products: number };
 }
 
@@ -356,120 +357,191 @@ export default function CollectionListTable({
                     {mainCat.children.map((sub, subIdx) => {
                       const isSubNavVisible = sub.showInNav ?? true;
                       return (
-                        <tr key={sub.id} className="hover:bg-[#F5EFE6] transition-colors bg-white">
-                          {/* Subcategory Order Controls */}
-                          <td className="px-3 py-2.5 border-r border-[#7A0B2E]/10 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <button
-                                type="button"
-                                disabled={subIdx === 0 || isPending}
-                                onClick={() => handleMoveSub(mainIdx, subIdx, "up")}
-                                className="p-0.5 hover:bg-gray-200 disabled:opacity-20 text-gray-500 border border-gray-200 transition-colors cursor-pointer disabled:cursor-not-allowed"
-                                title="Move Subcategory Up"
-                              >
-                                <ArrowUp className="w-2.5 h-2.5" />
-                              </button>
-                              
-                              {editingOrderId === sub.id ? (
-                                <input
-                                  type="number"
-                                  autoFocus
-                                  value={tempOrderValue}
-                                  onChange={(e) => setTempOrderValue(e.target.value)}
-                                  onBlur={() => handleSaveOrderInput(sub.id)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") handleSaveOrderInput(sub.id);
-                                    if (e.key === "Escape") setEditingOrderId(null);
-                                  }}
-                                  className="w-9 text-center text-[11px] font-mono py-0.5 border border-[#7A0B2E] bg-white outline-none"
-                                />
-                              ) : (
+                        <React.Fragment key={sub.id}>
+                          <tr className="hover:bg-[#F5EFE6] transition-colors bg-white">
+                            {/* Subcategory Order Controls */}
+                            <td className="px-3 py-2.5 border-r border-[#7A0B2E]/10 text-center">
+                              <div className="flex items-center justify-center gap-1">
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    setEditingOrderId(sub.id);
-                                    setTempOrderValue(String(sub.order ?? 0));
-                                  }}
-                                  className="px-1 py-0.5 text-[11px] font-mono text-gray-500 hover:bg-gray-100 cursor-pointer"
-                                  title="Click to edit subcategory order"
+                                  disabled={subIdx === 0 || isPending}
+                                  onClick={() => handleMoveSub(mainIdx, subIdx, "up")}
+                                  className="p-0.5 hover:bg-gray-200 disabled:opacity-20 text-gray-500 border border-gray-200 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                                  title="Move Subcategory Up"
                                 >
-                                  .{sub.order ?? subIdx + 1}
+                                  <ArrowUp className="w-2.5 h-2.5" />
                                 </button>
-                              )}
+                                
+                                {editingOrderId === sub.id ? (
+                                  <input
+                                    type="number"
+                                    autoFocus
+                                    value={tempOrderValue}
+                                    onChange={(e) => setTempOrderValue(e.target.value)}
+                                    onBlur={() => handleSaveOrderInput(sub.id)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") handleSaveOrderInput(sub.id);
+                                      if (e.key === "Escape") setEditingOrderId(null);
+                                    }}
+                                    className="w-9 text-center text-[11px] font-mono py-0.5 border border-[#7A0B2E] bg-white outline-none"
+                                  />
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingOrderId(sub.id);
+                                      setTempOrderValue(String(sub.order ?? 0));
+                                    }}
+                                    className="px-1 py-0.5 text-[11px] font-mono text-gray-500 hover:bg-gray-100 cursor-pointer"
+                                    title="Click to edit subcategory order"
+                                  >
+                                    .{sub.order ?? subIdx + 1}
+                                  </button>
+                                )}
 
+                                <button
+                                  type="button"
+                                  disabled={subIdx === mainCat.children.length - 1 || isPending}
+                                  onClick={() => handleMoveSub(mainIdx, subIdx, "down")}
+                                  className="p-0.5 hover:bg-gray-200 disabled:opacity-20 text-gray-500 border border-gray-200 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                                  title="Move Subcategory Down"
+                                >
+                                  <ArrowDown className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            </td>
+
+                            <td className="px-6 py-3.5 text-xs text-[#2D1F2F] border-r border-[#7A0B2E]/10 pl-12">
+                              <div className="flex items-center gap-2">
+                                <CornerDownRight className="w-3.5 h-3.5 text-[#7A0B2E]" />
+                                <span className="font-medium text-[13px]">{sub.name}</span>
+                                {sub.children && sub.children.length > 0 && (
+                                  <span className="text-[10px] font-bold text-[#7A0B2E] bg-[#F5EFE6] px-1.5 py-0.2 border border-[#7A0B2E]/20">
+                                    {sub.children.length} items
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-xs">
+                              <span className="inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-gray-100 text-gray-600 border border-gray-200">
+                                {sub.children && sub.children.length > 0 ? "Section" : "Subcategory"}
+                              </span>
+                            </td>
+
+                            <td className="px-4 py-3.5 text-xs text-gray-500 border-r border-[#7A0B2E]/10">
+                              /{sub.slug}
+                            </td>
+
+                            {/* Subcategory Navbar Visibility Toggle */}
+                            <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-center whitespace-nowrap">
                               <button
                                 type="button"
-                                disabled={subIdx === mainCat.children.length - 1 || isPending}
-                                onClick={() => handleMoveSub(mainIdx, subIdx, "down")}
-                                className="p-0.5 hover:bg-gray-200 disabled:opacity-20 text-gray-500 border border-gray-200 transition-colors cursor-pointer disabled:cursor-not-allowed"
-                                title="Move Subcategory Down"
+                                disabled={isPending}
+                                onClick={() => handleToggleNav(sub.id, isSubNavVisible)}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
+                                  isSubNavVisible
+                                    ? "bg-[#7A0B2E]/10 text-[#7A0B2E] border-[#7A0B2E]/30 hover:bg-[#7A0B2E]/20"
+                                    : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
+                                }`}
+                                title={isSubNavVisible ? "Visible in Dropdown - Click to Hide" : "Hidden from Dropdown - Click to Show"}
                               >
-                                <ArrowDown className="w-2.5 h-2.5" />
+                                <span className={`w-1.5 h-1.5 rounded-full ${isSubNavVisible ? "bg-[#7A0B2E]" : "bg-gray-400"}`} />
+                                {isSubNavVisible ? "Visible" : "Hidden"}
                               </button>
-                            </div>
-                          </td>
+                            </td>
 
-                          <td className="px-6 py-3.5 text-xs text-[#2D1F2F] border-r border-[#7A0B2E]/10 pl-12">
-                            <div className="flex items-center gap-2">
-                              <CornerDownRight className="w-3.5 h-3.5 text-[#7A0B2E]" />
-                              <span className="font-medium text-[13px]">{sub.name}</span>
-                            </div>
-                          </td>
+                            <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-center">
+                              <span className="inline-flex items-center px-2 py-0.5 text-[10px] bg-[#F5EFE6] border border-gray-200 text-gray-600">
+                                {sub._count.products} products
+                              </span>
+                            </td>
 
-                          <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-xs">
-                            <span className="inline-flex px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest bg-gray-100 text-gray-600 border border-gray-200">
-                              Subcategory
-                            </span>
-                          </td>
+                            <td className="px-6 py-3.5 text-right whitespace-nowrap">
+                              <div className="inline-flex items-center justify-end gap-1">
+                                <Link 
+                                  href={`${basePath}/collections/new?parentId=${sub.id}`} 
+                                  className="inline-flex text-[#7A0B2E] hover:text-[#2D1F2F] border border-[#7A0B2E]/20 bg-[#F5EFE6] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors mr-1"
+                                  title="Add Child Variety under this section"
+                                >
+                                  + Variety
+                                </Link>
+                                <Link 
+                                  href={`${basePath}/collections/${sub.id}`} 
+                                  className="inline-flex text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1" 
+                                  title="Edit Subcategory"
+                                >
+                                  <Pencil className="w-3.5 h-3.5" />
+                                </Link>
+                                <button 
+                                  type="button"
+                                  onClick={() => handleDelete(sub.id, sub.name)} 
+                                  className="text-gray-400 hover:text-red-600 transition-colors p-1 flex items-center justify-center cursor-pointer"
+                                  title={`Delete subcategory ${sub.name}`}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
 
-                          <td className="px-4 py-3.5 text-xs text-gray-500 border-r border-[#7A0B2E]/10">
-                            /{sub.slug}
-                          </td>
-
-                          {/* Subcategory Navbar Visibility Toggle */}
-                          <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-center whitespace-nowrap">
-                            <button
-                              type="button"
-                              disabled={isPending}
-                              onClick={() => handleToggleNav(sub.id, isSubNavVisible)}
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
-                                isSubNavVisible
-                                  ? "bg-[#7A0B2E]/10 text-[#7A0B2E] border-[#7A0B2E]/30 hover:bg-[#7A0B2E]/20"
-                                  : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
-                              }`}
-                              title={isSubNavVisible ? "Visible in Dropdown - Click to Hide" : "Hidden from Dropdown - Click to Show"}
-                            >
-                              <span className={`w-1.5 h-1.5 rounded-full ${isSubNavVisible ? "bg-[#7A0B2E]" : "bg-gray-400"}`} />
-                              {isSubNavVisible ? "Visible" : "Hidden"}
-                            </button>
-                          </td>
-
-                          <td className="px-4 py-3.5 border-r border-[#7A0B2E]/10 text-center">
-                            <span className="inline-flex items-center px-2 py-0.5 text-[10px] bg-[#F5EFE6] border border-gray-200 text-gray-600">
-                              {sub._count.products} products
-                            </span>
-                          </td>
-
-                          <td className="px-6 py-3.5 text-right whitespace-nowrap">
-                            <div className="inline-flex items-center justify-end gap-1">
-                              <Link 
-                                href={`${basePath}/collections/${sub.id}`} 
-                                className="inline-flex text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1" 
-                                title="Edit Subcategory"
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                              </Link>
-                              <button 
-                                type="button"
-                                onClick={() => handleDelete(sub.id, sub.name)} 
-                                className="text-gray-400 hover:text-red-600 transition-colors p-1 flex items-center justify-center cursor-pointer"
-                                title={`Delete subcategory ${sub.name}`}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
+                          {/* Level-3 Grandchildren Rows */}
+                          {sub.children && sub.children.map((child, childIdx) => {
+                            const isChildNavVisible = child.showInNav ?? true;
+                            return (
+                              <tr key={child.id} className="hover:bg-[#FAF0F2] transition-colors bg-[#FCF8F5]/70 text-xs">
+                                <td className="px-3 py-1.5 border-r border-[#7A0B2E]/10 text-center">
+                                  <span className="text-[10px] font-mono text-gray-400">
+                                    ..{child.order ?? childIdx + 1}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-2 text-xs text-[#2D1F2F] border-r border-[#7A0B2E]/10 pl-20">
+                                  <div className="flex items-center gap-2">
+                                    <CornerDownRight className="w-3 h-3 text-[#7A0B2E]/50" />
+                                    <span className="text-gray-700 text-[12px]">{child.name}</span>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-2 border-r border-[#7A0B2E]/10 text-xs">
+                                  <span className="inline-flex px-1.5 py-0.2 text-[8px] font-bold uppercase tracking-widest bg-amber-50 text-amber-800 border border-amber-200">
+                                    Variety
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2 text-[11px] text-gray-400 border-r border-[#7A0B2E]/10">
+                                  /{child.slug}
+                                </td>
+                                <td className="px-4 py-2 border-r border-[#7A0B2E]/10 text-center">
+                                  <span className={`inline-flex px-1.5 py-0.2 text-[8px] font-bold uppercase ${isChildNavVisible ? "text-green-700 bg-green-50" : "text-gray-400"}`}>
+                                    {isChildNavVisible ? "Yes" : "No"}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2 border-r border-[#7A0B2E]/10 text-center">
+                                  <span className="text-[10px] text-gray-500">
+                                    {child._count.products}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-2 text-right whitespace-nowrap">
+                                  <div className="inline-flex items-center justify-end gap-1">
+                                    <Link 
+                                      href={`${basePath}/collections/${child.id}`} 
+                                      className="text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors p-1" 
+                                      title="Edit Variety"
+                                    >
+                                      <Pencil className="w-3 h-3" />
+                                    </Link>
+                                    <button 
+                                      type="button"
+                                      onClick={() => handleDelete(child.id, child.name)} 
+                                      className="text-gray-400 hover:text-red-600 transition-colors p-1 flex items-center justify-center cursor-pointer"
+                                      title={`Delete variety ${child.name}`}
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </React.Fragment>
                       );
                     })}
                   </React.Fragment>

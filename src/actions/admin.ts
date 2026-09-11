@@ -85,7 +85,7 @@ const productSchema = z.object({
   productType: z.string().max(50).nullable().optional(),
   attributes: z.any().optional(),
   material: z.string().max(100).nullable().optional(),
-  weight: z.string().max(50).nullable().optional(),
+  weight: z.string().min(1, "Weight is mandatory for shipping calculations (e.g. 0.5 kg)").max(50),
   videoUrl: z.string().url("Video URL must be a valid URL").max(500).nullable().optional(),
   images: z.array(z.string().url()).max(5, "Max 5 images allowed"),
   variants: z.array(z.object({
@@ -201,7 +201,9 @@ export async function createProduct(formData: FormData) {
   await logAudit("product.create", "Product", created.id, { slug: data.slug });
 
   revalidatePath("/admin/products");
+  revalidatePath("/collections", "layout");
   revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.collections);
   revalidateTag(CACHE_TAGS.workerProducts);
 }
 
@@ -334,7 +336,9 @@ export async function updateProduct(id: string, formData: FormData) {
   }
 
   revalidatePath("/admin/products");
+  revalidatePath("/collections", "layout");
   revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.collections);
   revalidateTag(CACHE_TAGS.workerProducts);
   if (prev?.slug) revalidateTag(CACHE_TAGS.product(prev.slug));
   if (data.slug !== prev?.slug) revalidateTag(CACHE_TAGS.product(data.slug));
@@ -352,7 +356,9 @@ export async function deleteProduct(id: string) {
   await logAudit("product.delete", "Product", id);
 
   revalidatePath("/admin/products");
+  revalidatePath("/collections", "layout");
   revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.collections);
   revalidateTag(CACHE_TAGS.workerProducts);
   if (prev?.slug) revalidateTag(CACHE_TAGS.product(prev.slug));
 }
@@ -451,6 +457,7 @@ const collectionSchema = z.object({
 function purgeCollectionCache() {
   revalidatePath("/admin/collections");
   revalidatePath("/worker/collections");
+  revalidatePath("/collections", "layout");
   revalidatePath("/", "layout");
   try { revalidateTag(CACHE_TAGS.collections); } catch {}
   try { revalidateTag(CACHE_TAGS.navigation); } catch {}

@@ -36,7 +36,19 @@ const getCachedAdminProducts = unstable_cache(
         take,
       }),
       prisma.product.count({ where }),
-      prisma.collection.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
+      prisma.collection.findMany({ 
+        select: { 
+          id: true, 
+          name: true,
+          parent: {
+            select: {
+              name: true,
+              parent: { select: { name: true } }
+            }
+          }
+        }, 
+        orderBy: [{ order: 'asc' }, { name: 'asc' }] 
+      }),
     ]);
     return { products: products as ProductWithCollection[], totalProducts, collections };
   },
@@ -58,7 +70,7 @@ export default async function AdminProductsPage({
 
   let products: ProductWithCollection[] = [];
   let totalProducts = 0;
-  let collections: { id: string; name: string }[] = [];
+  let collections: any[] = [];
 
   try {
     const result = await getCachedAdminProducts(
@@ -76,32 +88,30 @@ export default async function AdminProductsPage({
   }
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / ITEMS_PER_PAGE));
-  const baseUrl =
-    (archived ? '/admin/products?view=archived' : '/admin/products') +
+  const baseUrl = `/admin/products?view=${archived ? 'archived' : 'active'}` +
     (search ? `&search=${encodeURIComponent(search)}` : '') +
     (collection ? `&collection=${encodeURIComponent(collection)}` : '');
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between border-b border-[#7A0B2E]/20 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#7A0B2E]/20 pb-4">
         <div>
-          <h2 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">
-            {archived ? 'Archived Products' : 'Products'}
-          </h2>
-          <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">Manage your storefront inventory</p>
+          <h2 className="text-3xl font-serif font-bold text-[#2D1F2F] tracking-wide">Products</h2>
+          <p className="text-xs text-[#7A0B2E] font-bold uppercase tracking-widest mt-2">Manage storefront products, inventory and variations</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href={archived ? '/admin/products' : '/admin/products?view=archived'}
-            className="border border-[#7A0B2E]/30 hover:bg-[#F5EFE6] text-[#2D1F2F] px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors rounded-none"
-          >
-            <Archive className="w-4 h-4" />
-            {archived ? 'Active Products' : 'Archived'}
+        <div className="flex items-center gap-3">
+          <Link href="/admin/products/new" className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none">
+            <Plus className="w-4 h-4" />
+            Add Product
           </Link>
-          {!archived && (
-            <Link href="/admin/products/new" className="bg-[#7A0B2E] hover:bg-[#5C0820] text-white px-5 py-2 text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors shadow-sm rounded-none">
-              <Plus className="w-4 h-4" />
-              Add Product
+          {archived ? (
+            <Link href="/admin/products" className="border border-[#7A0B2E]/40 text-[#7A0B2E] hover:bg-[#7A0B2E] hover:text-white px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-1.5 rounded-none">
+              View Active
+            </Link>
+          ) : (
+            <Link href="/admin/products?view=archived" className="border border-gray-300 text-gray-600 hover:bg-gray-100 px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-1.5 rounded-none">
+              <Archive className="w-3.5 h-3.5" />
+              Archived
             </Link>
           )}
         </div>
@@ -113,7 +123,13 @@ export default async function AdminProductsPage({
         placeholder="Search name, description, SKU or collection..."
         selectName="collection"
         selectLabel="All collections"
-        statusOptions={collections.map((c) => ({ value: c.id, label: c.name }))}
+        statusOptions={collections.map((c: any) => {
+          const parts = [];
+          if (c.parent?.parent?.name) parts.push(c.parent.parent.name);
+          if (c.parent?.name) parts.push(c.parent.name);
+          parts.push(c.name);
+          return { value: c.id, label: parts.join(" > ") };
+        })}
       />
 
       <ProductListTable products={products} archived={archived} />
