@@ -20,8 +20,10 @@ export default function ImageUpload({ value, onChange, disabled, bucket }: Image
   const handleUpload = async (file: File) => {
     try {
       setIsUploading(true);
+      const { compressImageSmartLossy } = await import("@/lib/image-compression");
+      const optimizedFile = await compressImageSmartLossy(file);
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", optimizedFile);
       if (bucket) {
         formData.append("bucket", bucket);
       }
