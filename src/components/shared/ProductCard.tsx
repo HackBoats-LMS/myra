@@ -50,7 +50,7 @@ export default function ProductCard({
               fill
               quality={100}
               sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#FAF0F0]">

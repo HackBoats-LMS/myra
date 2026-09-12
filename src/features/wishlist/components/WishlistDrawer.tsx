@@ -185,7 +185,7 @@ export default function WishlistDrawer() {
                         alt={item.product.name}
                         fill
                         quality={100}
-                        className="object-cover"
+                        className="object-cover object-top"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[#7A0B2E] text-[10px] font-bold uppercase">No image</div>

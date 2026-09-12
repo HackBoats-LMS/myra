@@ -57,7 +57,7 @@ export default function CartItem({ item }: { item: CartLineItem }) {
       
       <Link href={`/products/${item.product.slug}`} className="relative w-24 h-32 md:w-32 md:h-40 bg-[#F5EFE6] flex-shrink-0 rounded-none overflow-hidden border border-[#7A0B2E]/20 hover:opacity-90 transition-opacity">
         {item.product.images[0] && (
-          <Image src={item.product.images[0]} alt={item.product.name} fill quality={100} sizes="(max-width: 768px) 96px, 128px" className="object-cover" />
+          <Image src={item.product.images[0]} alt={item.product.name} fill quality={100} sizes="(max-width: 768px) 96px, 128px" className="object-cover object-top" />
         )}
       </Link>
       
