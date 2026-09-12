@@ -1,6 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
-import { CACHE_TAGS } from "@/lib/cache";
+import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag, CACHE_TAGS } from "@/lib/cache";
 import crypto from "crypto";
 
 /**
