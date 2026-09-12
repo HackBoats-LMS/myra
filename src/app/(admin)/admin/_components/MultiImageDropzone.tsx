@@ -25,7 +25,7 @@ export default function ImageUpload({ onFilesSelected, maxFiles }: ImageUploadPr
         toast.error(`${file.name} is not a supported media type.`);
         return false;
       }
-      const maxMb = isVideo ? 50 : 10;
+      const maxMb = isVideo ? 50 : 35;
       if (file.size > maxMb * 1024 * 1024) {
         toast.error(`${file.name} must be smaller than ${maxMb} MB.`);
         return false;

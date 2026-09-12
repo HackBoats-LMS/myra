@@ -5,7 +5,7 @@ import MultiImageDropzone from "@/app/(admin)/admin/_components/MultiImageDropzo
 import Image from "next/image";
 import AdminForm from "@/app/(admin)/admin/_components/AdminForm";
 import type { Prisma } from "@/generated/prisma";
-import { ChevronLeft, ChevronRight, X, Plus, Layers, Palette, SlidersHorizontal, AlertCircle, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Plus, Layers, Palette, SlidersHorizontal, AlertCircle, Settings, Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { type ProductTypeTemplate, DEFAULT_PRODUCT_TYPES } from "@/services/product-types";
 
@@ -226,6 +226,7 @@ export default function ProductForm({ collections, initialData, productTypes = D
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string>(initialData?.videoUrl || "");
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string>("");
 
   const validateRequiredSpecifications = () => {
     if (!currentTemplate) return null;
@@ -244,6 +245,52 @@ export default function ProductForm({ collections, initialData, productTypes = D
     return null;
   };
 
+  /**
+   * Smart Lossy Compression & Parallel Supabase Storage Upload.
+   * Compresses new image files right when the user clicks save,
+   * achieving visually lossless WebP output and uploading in parallel.
+   */
+  const prepareAndUploadImages = async (
+    onProgress?: (status: string) => void
+  ): Promise<string[]> => {
+    const hasNewImages = images.some((img) => img.type === "new");
+
+    let processedImages = images;
+    if (hasNewImages) {
+      onProgress?.("Smart-compressing images (visually lossless WebP)...");
+      const { compressImageSmartLossy } = await import("@/lib/image-compression");
+
+      // Parallel smart lossy compression across all new images
+      processedImages = await Promise.all(
+        images.map(async (img) => {
+          if (img.type === "existing") return img;
+          const compressedFile = await compressImageSmartLossy(img.file);
+          return {
+            ...img,
+            file: compressedFile,
+          };
+        })
+      );
+    }
+
+    onProgress?.("Uploading images to Supabase storage...");
+    const { uploadMedia } = await import("@/actions/admin");
+
+    // Parallel upload of all processed images to Supabase
+    const finalUrls = await Promise.all(
+      processedImages.map(async (img) => {
+        if (img.type === "existing") {
+          return img.url;
+        }
+        const uploadData = new FormData();
+        uploadData.append("file", img.file);
+        return await uploadMedia(uploadData);
+      })
+    );
+
+    return finalUrls;
+  };
+
   const wrappedCreateAction = async (formData: FormData) => {
     const specErr = validateRequiredSpecifications();
     if (specErr) {
@@ -252,22 +299,12 @@ export default function ProductForm({ collections, initialData, productTypes = D
 
     setIsUploadingFiles(true);
     try {
-      const finalUrls = [];
-      for (const img of images) {
-        if (img.type === "existing") {
-          finalUrls.push(img.url);
-        } else {
-          const uploadData = new FormData();
-          uploadData.append("file", img.file);
-          const { uploadMedia } = await import("@/actions/admin");
-          const publicUrl = await uploadMedia(uploadData);
-          finalUrls.push(publicUrl);
-        }
-      }
+      const finalUrls = await prepareAndUploadImages(setUploadStatus);
       formData.set("images", JSON.stringify(finalUrls));
 
       let finalVideoUrl = videoUrl;
       if (videoFile) {
+        setUploadStatus("Uploading video to storage...");
         const uploadData = new FormData();
         uploadData.append("file", videoFile);
         const { uploadMedia } = await import("@/actions/admin");
@@ -275,9 +312,11 @@ export default function ProductForm({ collections, initialData, productTypes = D
       }
       formData.set("videoUrl", finalVideoUrl);
 
+      setUploadStatus("Saving product...");
       await createProduct(formData);
     } finally {
       setIsUploadingFiles(false);
+      setUploadStatus("");
     }
   };
 
@@ -289,22 +328,12 @@ export default function ProductForm({ collections, initialData, productTypes = D
 
     setIsUploadingFiles(true);
     try {
-      const finalUrls = [];
-      for (const img of images) {
-        if (img.type === "existing") {
-          finalUrls.push(img.url);
-        } else {
-          const uploadData = new FormData();
-          uploadData.append("file", img.file);
-          const { uploadMedia } = await import("@/actions/admin");
-          const publicUrl = await uploadMedia(uploadData);
-          finalUrls.push(publicUrl);
-        }
-      }
+      const finalUrls = await prepareAndUploadImages(setUploadStatus);
       formData.set("images", JSON.stringify(finalUrls));
 
       let finalVideoUrl = videoUrl;
       if (videoFile) {
+        setUploadStatus("Uploading video to storage...");
         const uploadData = new FormData();
         uploadData.append("file", videoFile);
         const { uploadMedia } = await import("@/actions/admin");
@@ -312,9 +341,11 @@ export default function ProductForm({ collections, initialData, productTypes = D
       }
       formData.set("videoUrl", finalVideoUrl);
 
+      setUploadStatus("Updating product...");
       await updateProduct(id, formData);
     } finally {
       setIsUploadingFiles(false);
+      setUploadStatus("");
     }
   };
 
@@ -335,9 +366,15 @@ export default function ProductForm({ collections, initialData, productTypes = D
           <div className="space-y-6">
             {/* 1. Images */}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F] mb-2">
-                Product Images ({images.length}/5)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-[#2D1F2F]">
+                  Product Images ({images.length}/5)
+                </label>
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#7A0B2E] bg-[#7A0B2E]/5 border border-[#7A0B2E]/20 px-2 py-0.5 rounded-none flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#7A0B2E] animate-pulse" />
+                  Smart Lossy Compression Active
+                </span>
+              </div>
               <div className="flex flex-wrap gap-4 items-center">
                 {images.map((img, index) => (
                   <div key={img.id} className="relative w-28 h-28 rounded-none overflow-hidden border border-[#7A0B2E]/20 shadow-sm flex-shrink-0 group">
@@ -1001,6 +1038,13 @@ export default function ProductForm({ collections, initialData, productTypes = D
               )}
             </div>
           </div>
+
+          {isUploadingFiles && uploadStatus && (
+            <div className="p-3 bg-[#7A0B2E]/5 border border-[#7A0B2E]/20 flex items-center gap-2.5 text-xs text-[#7A0B2E] font-medium animate-pulse">
+              <Loader2 className="w-4 h-4 animate-spin shrink-0 text-[#7A0B2E]" />
+              <span>{uploadStatus}</span>
+            </div>
+          )}
 
           <input type="hidden" name="stockQuantity" value={totalStock} />
           {/* We do NOT serialize images here anymore, the wrapper sets it! */}
