@@ -12,14 +12,13 @@ import {
   getCachedReviews,
   getCachedRelatedProducts,
   getCachedProductBySlug,
-  getCachedRecentlyViewedProducts,
 } from "@/lib/cache";
-import { getRecentlyViewedProductIds } from "@/lib/recently-viewed";
 
 function safeJsonLd(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c").replace(/\>/g, "\\u003e").replace(/<\//g, "\\u003c/");
 }
 
+export const dynamicParams = true;
 export const revalidate = 3600; // 1 hour ISR — revalidateTag handles immediate admin updates
 
 export async function generateStaticParams() {
@@ -73,23 +72,12 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   const product = await getCachedProductBySlug(slug);
   if (!product) notFound();
 
-  // Parallel fetch: reviews, related products, flash sales, and recently viewed IDs
-  const [reviews, related, flashSales, recentIds] = await Promise.all([
+  // Parallel fetch: reviews, related products, and flash sales
+  const [reviews, related, flashSales] = await Promise.all([
     getCachedReviews(product.id),
     getCachedRelatedProducts(product.id, product.collectionId),
     getActiveFlashSales(),
-    getRecentlyViewedProductIds(),
   ]);
-
-  // Recently viewed — server-side, cached, excludes current product
-  const recentlyViewedSortedIds = [...recentIds]
-    .filter((id) => id !== product.id)
-    .slice(0, 4)
-    .sort();
-  const recentlyViewedProducts = recentlyViewedSortedIds.length > 0
-    ? await getCachedRecentlyViewedProducts(recentlyViewedSortedIds)
-    : [];
-  const flashedRecentlyViewed = applyFlashToProductList(recentlyViewedProducts, flashSales);
 
   const flashPricing = applyFlashDiscount(product.price, product.originalPrice, flashSales, product.collectionId);
   const displayPrice = flashPricing.price;
@@ -208,8 +196,8 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         {/* Similar Products */}
         <SimilarProducts products={relatedWithPricing} />
 
-        {/* Recently Viewed — SSR, no client fetch */}
-        <RecentlyViewedRail products={flashedRecentlyViewed as any} />
+        {/* Recently Viewed */}
+        <RecentlyViewedRail currentProductId={product.id} />
       </div>
 
       <RecentlyViewedTracker productId={product.id} />
