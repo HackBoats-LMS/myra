@@ -32,6 +32,12 @@ export const CACHE_TTL = {
 } as const;
 
 // Generic cached query wrapper
+// When `tags` is a static array, wraps the query with unstable_cache directly.
+// When `tags` is a function (dynamic per-argument tags), returns a wrapper that
+// calls unstable_cache with the args baked into the cache key so each unique
+// argument combination gets its own cache entry with the correct tags.
+// NOTE: Next.js 16 unstable_cache does NOT support getDerivedTags — we bake
+// args into the key instead, which is the correct pattern for this version.
 export function createCachedQuery<TArgs extends unknown[], TResult>(
   key: string[],
   queryFn: (...args: TArgs) => Promise<TResult>,
@@ -40,14 +46,24 @@ export function createCachedQuery<TArgs extends unknown[], TResult>(
     revalidate?: number;
   } = {}
 ) {
-  const staticTags = typeof options.tags === "function" ? [] : (options.tags || []);
-  return unstable_cache(queryFn, key, {
-    tags: staticTags,
-    revalidate: options.revalidate || CACHE_TTL.medium,
-    ...(typeof options.tags === "function"
-      ? { getDerivedTags: (...args: TArgs) => (options.tags as (...a: TArgs) => string[])(...args) }
-      : {}),
-  });
+  const revalidate = options.revalidate || CACHE_TTL.medium;
+
+  if (typeof options.tags === "function") {
+    const tagsFn = options.tags;
+    // Return a wrapper: each unique args combination gets its own cache entry
+    return (...args: TArgs): Promise<TResult> => {
+      const argKey = args.map((a) => (a === null || a === undefined ? "__null__" : String(a)));
+      const resolvedTags = tagsFn(...args);
+      return unstable_cache(
+        () => queryFn(...args),
+        [...key, ...argKey],
+        { tags: resolvedTags, revalidate }
+      )();
+    };
+  }
+
+  const staticTags = options.tags || [];
+  return unstable_cache(queryFn, key, { tags: staticTags, revalidate });
 }
 
 // Products
