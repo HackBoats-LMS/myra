@@ -215,10 +215,12 @@ export default async function CollectionPage({
               fill
               priority
               sizes="100vw"
-              className="object-cover object-top sm:object-[center_12%] opacity-90"
+              quality={100}
+              unoptimized={allBanners[0].startsWith("http")}
+              className="object-cover object-center opacity-100"
             />
             {/* Elegant Luxury Gradient Overlay with Lower-Third Title Placement */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end justify-center pb-8 sm:pb-12 md:pb-16">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-8 sm:pb-12 md:pb-16">
               <div className="text-center px-4 max-w-3xl">
                 <span className="text-[10px] sm:text-xs text-[#F3E8E8] uppercase tracking-[0.25em] font-bold block mb-2 drop-shadow">
                   {isMainCategory ? "Exclusive Collection" : `Category / ${collection.parent?.name || "Collection"}`}
@@ -248,6 +250,8 @@ export default async function CollectionPage({
                       src={bannerUrl}
                       alt={`${collection.name} promo banner ${idx + 1}`}
                       fill
+                      quality={95}
+                      unoptimized={bannerUrl.startsWith("http")}
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
