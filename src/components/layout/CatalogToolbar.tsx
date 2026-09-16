@@ -18,20 +18,75 @@ function BackArrowSvg({ className = "w-6 h-6" }: { className?: string }) {
   );
 }
 
-export default function CatalogToolbar() {
+// Reusable chip button used inside the filter drawer
+function FilterChip({
+  label,
+  active,
+  onClick,
+  icon,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  icon?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs rounded-full border transition-all duration-150 font-serif ${
+        active
+          ? "bg-[#7A0B2E] border-[#7A0B2E] text-white font-semibold shadow-sm"
+          : "bg-white border-[#C3A29B]/60 text-[#2D1F2F] hover:border-[#7A0B2E]/60 hover:bg-[#EBDCD9]/40"
+      }`}
+    >
+      {icon && <span>{icon}</span>}
+      {label}
+      {active && (
+        <span className="ml-0.5 text-white/80">
+          <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3">
+            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      )}
+    </button>
+  );
+}
+
+// Section header inside the drawer
+function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-6">
+      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7A0B2E] mb-3 flex items-center gap-2">
+        <span className="flex-1 h-px bg-[#C3A29B]/40" />
+        {title}
+        <span className="flex-1 h-px bg-[#C3A29B]/40" />
+      </p>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
+
+export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const sortRef = useRef<HTMLDivElement>(null);
+  const mobileSortRef = useRef<HTMLDivElement>(null);
 
   const currentSort = searchParams.get("sort") || "newest";
   const currentStock = searchParams.get("stock") || "all";
   const currentPriceRange = searchParams.get("priceRange") || "all";
+  const currentDiscount = searchParams.get("discount") || "all";
+  const currentRating = searchParams.get("rating") || "all";
+  const currentCategory = searchParams.get("category") || "all";
+  const currentSubcat = searchParams.get("subcat") || "all";
 
   const sortLabels: Record<string, string> = {
     newest: "Newest",
@@ -40,7 +95,7 @@ export default function CatalogToolbar() {
     "name-asc": "Name: A to Z",
   };
 
-  // Close dropdown when clicking outside
+  // Close desktop sort dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
@@ -51,6 +106,29 @@ export default function CatalogToolbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close mobile sort dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (mobileSortRef.current && !mobileSortRef.current.contains(event.target as Node)) {
+        setIsMobileSortOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Lock body scroll when filter drawer is open so background doesn't scroll through
+  useEffect(() => {
+    if (isFilterOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFilterOpen]);
+
   const handleParamChange = (name: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value === "all" || value === "newest" || !value) {
@@ -59,7 +137,8 @@ export default function CatalogToolbar() {
       params.set(name, value);
     }
     params.delete("page");
-    router.push(`${pathname}?${params.toString()}`);
+    // scroll: false keeps the user's position — no jump to top on filter change
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -68,29 +147,55 @@ export default function CatalogToolbar() {
     router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  const hasActiveFilters = currentStock !== "all" || currentPriceRange !== "all";
+  const hasActiveFilters =
+    currentStock !== "all" ||
+    currentPriceRange !== "all" ||
+    currentDiscount !== "all" ||
+    currentRating !== "all" ||
+    currentCategory !== "all" ||
+    currentSubcat !== "all";
+
+  const activeFilterCount = [
+    currentStock !== "all",
+    currentPriceRange !== "all",
+    currentDiscount !== "all",
+    currentRating !== "all",
+    currentCategory !== "all" || currentSubcat !== "all",
+  ].filter(Boolean).length;
+
+  const handleClearAll = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("stock");
+    params.delete("priceRange");
+    params.delete("discount");
+    params.delete("rating");
+    params.delete("category");
+    params.delete("subcat");
+    params.delete("page");
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   return (
-    <div className="w-full bg-white">
-      {/* Bordered Bar matching exact mockup across mobile and desktop */}
+    <div className="w-full bg-white sticky top-0 z-40 shadow-sm">
+      {/* Bordered Bar */}
       <div className="w-full border-y border-[#7A0B2E]/50 bg-white">
-        
-        {/* Desktop Single-Row Layout (md and up) */}
+
+        {/* Desktop Layout (md+) */}
         <div className="hidden md:flex items-stretch h-12 md:h-13 w-full">
-          {/* Back Button (left) */}
+          {/* Back Button */}
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push(backHref)}
             aria-label="Go back"
-            className="w-16 md:w-20 flex items-center justify-center hover:bg-[#FAF0F2] transition-colors border-r border-[#7A0B2E]/50 shrink-0"
+            className="w-16 md:w-20 flex items-center justify-center hover:bg-[#EBDCD9]/60 transition-colors border-r border-[#7A0B2E]/50 shrink-0"
           >
             <BackArrowSvg className="w-6 h-6 sm:w-7 sm:h-7" />
           </button>
 
-          {/* Search Box (fixed width with subtle blush fill) */}
+          {/* Search Box */}
           <form
             onSubmit={handleSearchSubmit}
-            className="w-80 lg:w-96 flex items-stretch relative bg-[#FAF0F2] border-r border-[#7A0B2E]/50 shrink-0"
+            className="w-80 lg:w-96 flex items-stretch relative bg-[#EBDCD9]/50 border-r border-[#7A0B2E]/50 shrink-0"
           >
             <div className="flex items-center justify-center pl-4 pr-2 text-[#2D1F2F]">
               <i className="ri-search-line text-base text-gray-700" />
@@ -107,19 +212,19 @@ export default function CatalogToolbar() {
           {/* Spacer */}
           <div className="flex-1 bg-white" />
 
-          {/* Sort By Dropdown (right) */}
+          {/* Sort By Dropdown */}
           <div className="relative flex items-stretch shrink-0" ref={sortRef}>
             <button
               type="button"
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="px-6 lg:px-10 flex items-center gap-2 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#FAF0F2] transition-colors border-l border-[#7A0B2E]/50 whitespace-nowrap"
+              className="px-6 lg:px-10 flex items-center gap-2 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#EBDCD9]/60 transition-colors border-l border-[#7A0B2E]/50 whitespace-nowrap"
             >
               <span>SORT BY</span>
               <i className={`ri-arrow-down-s-line text-sm text-[#7A0B2E] transition-transform ${isSortOpen ? "rotate-180" : ""}`} />
             </button>
 
             {isSortOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[#7A0B2E]/50 shadow-lg z-50 py-1.5">
+              <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-[#C3A29B]/60 shadow-xl z-50 py-1.5 rounded-sm">
                 {Object.entries(sortLabels).map(([key, label]) => (
                   <button
                     key={key}
@@ -130,49 +235,53 @@ export default function CatalogToolbar() {
                     }}
                     className={`w-full text-left px-4 py-2.5 text-xs transition-colors flex items-center justify-between ${
                       currentSort === key
-                        ? "bg-[#FAF0F2] text-[#7A0B2E] font-bold"
-                        : "text-[#2D1F2F] hover:bg-[#FAF0F2]"
+                        ? "bg-[#EBDCD9] text-[#7A0B2E] font-bold"
+                        : "text-[#2D1F2F] hover:bg-[#EBDCD9]/50"
                     }`}
                   >
                     <span>{label}</span>
-                    {currentSort === key && <i className="ri-check-line text-xs text-[#7A0B2E]" />}
+                    {currentSort === key && (
+                      <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5">
+                        <path d="M2 6l3 3 5-5" stroke="#7A0B2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Filter Button (far right) */}
+          {/* Filter Button */}
           <button
             type="button"
             onClick={() => setIsFilterOpen(true)}
-            className="px-6 lg:px-10 flex items-center gap-2 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#FAF0F2] transition-colors border-l border-[#7A0B2E]/50 relative shrink-0 whitespace-nowrap"
+            className="px-6 lg:px-10 flex items-center gap-2 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#EBDCD9]/60 transition-colors border-l border-[#7A0B2E]/50 relative shrink-0 whitespace-nowrap"
           >
             <span>FILTER</span>
             {hasActiveFilters && (
-              <span className="w-2 h-2 rounded-full bg-[#7A0B2E]" />
+              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#7A0B2E] text-white text-[9px] font-bold">
+                {activeFilterCount}
+              </span>
             )}
           </button>
         </div>
 
-        {/* Mobile 2-Row Stacked Layout (< md) */}
+        {/* Mobile Layout */}
         <div className="flex md:hidden flex-col w-full">
-          {/* Top Row: Back Arrow + Full Width Blush Search Input */}
+          {/* Top Row: Back + Search */}
           <div className="flex items-stretch h-11 w-full border-b border-[#7A0B2E]/50">
-            {/* Back Button */}
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => router.push(backHref)}
               aria-label="Go back"
-              className="w-13 flex items-center justify-center bg-white hover:bg-[#FAF0F2] transition-colors border-r border-[#7A0B2E]/50 shrink-0"
+              className="w-13 flex items-center justify-center bg-white hover:bg-[#EBDCD9]/60 transition-colors border-r border-[#7A0B2E]/50 shrink-0"
             >
               <BackArrowSvg className="w-6 h-6" />
             </button>
 
-            {/* Search Input Box spanning remaining width with subtle blush fill */}
             <form
               onSubmit={handleSearchSubmit}
-              className="flex-1 flex items-stretch relative bg-[#FAF0F2]"
+              className="flex-1 flex items-stretch relative bg-[#EBDCD9]/40"
             >
               <div className="flex items-center justify-center pl-3.5 pr-2 text-gray-700">
                 <i className="ri-search-line text-sm" />
@@ -187,52 +296,57 @@ export default function CatalogToolbar() {
             </form>
           </div>
 
-          {/* Bottom Row: 50% SORT BY ∨ | 50% FILTER */}
+          {/* Bottom Row: Sort | Filter */}
           <div className="grid grid-cols-2 h-11 w-full bg-white relative">
-            {/* Mobile Sort Button (left column) */}
-            <div className="relative flex items-stretch border-r border-[#7A0B2E]/50">
+            {/* Mobile sort — same custom dropdown UI, own independent state */}
+            <div className="relative flex items-stretch border-r border-[#7A0B2E]/50" ref={mobileSortRef}>
               <button
                 type="button"
-                onClick={() => setIsSortOpen(!isSortOpen)}
-                className="w-full h-full flex items-center justify-center gap-1.5 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#FAF0F2] transition-colors"
+                onClick={() => setIsMobileSortOpen(!isMobileSortOpen)}
+                className="w-full h-full flex items-center justify-center gap-1.5 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#EBDCD9]/60 transition-colors"
               >
                 <span>SORT BY</span>
-                <i className={`ri-arrow-down-s-line text-sm text-[#7A0B2E] transition-transform ${isSortOpen ? "rotate-180" : ""}`} />
+                <i className={`ri-arrow-down-s-line text-sm text-[#7A0B2E] transition-transform ${isMobileSortOpen ? "rotate-180" : ""}`} />
               </button>
 
-              {isSortOpen && (
-                <div className="absolute left-0 top-full mt-1 w-full min-w-[180px] bg-white border border-[#7A0B2E]/50 shadow-xl z-50 py-1.5">
+              {isMobileSortOpen && (
+                <div className="absolute left-0 top-full mt-1 w-full min-w-[180px] bg-white border border-[#C3A29B]/60 shadow-xl z-50 py-1.5 rounded-sm">
                   {Object.entries(sortLabels).map(([key, label]) => (
                     <button
                       key={key}
                       type="button"
                       onClick={() => {
                         handleParamChange("sort", key);
-                        setIsSortOpen(false);
+                        setIsMobileSortOpen(false);
                       }}
                       className={`w-full text-left px-4 py-2.5 text-xs transition-colors flex items-center justify-between ${
                         currentSort === key
-                          ? "bg-[#FAF0F2] text-[#7A0B2E] font-bold"
-                          : "text-[#2D1F2F] hover:bg-[#FAF0F2]"
+                          ? "bg-[#EBDCD9] text-[#7A0B2E] font-bold"
+                          : "text-[#2D1F2F] hover:bg-[#EBDCD9]/50"
                       }`}
                     >
                       <span>{label}</span>
-                      {currentSort === key && <i className="ri-check-line text-xs text-[#7A0B2E]" />}
+                      {currentSort === key && (
+                        <svg viewBox="0 0 12 12" fill="none" className="w-3.5 h-3.5">
+                          <path d="M2 6l3 3 5-5" stroke="#7A0B2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Mobile Filter Button (right column) */}
             <button
               type="button"
               onClick={() => setIsFilterOpen(true)}
-              className="w-full h-full flex items-center justify-center gap-1.5 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#FAF0F2] transition-colors relative"
+              className="w-full h-full flex items-center justify-center gap-1.5 text-xs font-serif tracking-widest uppercase text-[#2D1F2F] hover:bg-[#EBDCD9]/60 transition-colors relative"
             >
               <span>FILTER</span>
               {hasActiveFilters && (
-                <span className="w-2 h-2 rounded-full bg-[#7A0B2E]" />
+                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#7A0B2E] text-white text-[9px] font-bold">
+                  {activeFilterCount}
+                </span>
               )}
             </button>
           </div>
@@ -240,98 +354,145 @@ export default function CatalogToolbar() {
 
       </div>
 
-      {/* Slide-over Filter Drawer */}
+      {/* ============================================================
+          Slide-over Filter Drawer — redesigned with home page palette
+          ============================================================ */}
       {isFilterOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
             onClick={() => setIsFilterOpen(false)}
           />
 
-          {/* Drawer Content */}
-          <div className="relative w-full max-w-sm bg-white h-full shadow-2xl z-10 flex flex-col p-6 overflow-y-auto animate-slide-in-right">
-            <div className="flex items-center justify-between pb-4 border-b border-[#7A0B2E]/30 mb-6">
-              <h2 className="font-serif text-xl text-[#2D1F2F] tracking-wide">Filters</h2>
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen(false)}
-                className="p-1 text-gray-500 hover:text-black transition-colors"
-                aria-label="Close filters"
-              >
-                <i className="ri-close-line text-2xl" />
-              </button>
-            </div>
+          {/* Drawer */}
+          <div className="relative w-full max-w-[340px] bg-[#FDFAF8] h-full shadow-2xl z-10 flex flex-col overflow-hidden animate-slide-in-right">
 
-            {/* Filter: Stock Availability */}
-            <div className="mb-6">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#2D1F2F] mb-3">
-                Availability
-              </label>
-              <div className="space-y-2">
-                {[
-                  { value: "all", label: "All Items" },
-                  { value: "instock", label: "In Stock Only" },
-                ].map((opt) => (
+            {/* Drawer Header */}
+            <div
+              className="flex items-center justify-between px-6 py-5 border-b border-[#C3A29B]/40"
+              style={{ background: "linear-gradient(135deg, #EBDCD9 0%, #F5EFE6 100%)" }}
+            >
+              <div>
+                <h2 className="font-serif text-xl text-[#2D1F2F] tracking-wide">Filters</h2>
+                {hasActiveFilters && (
+                  <p className="text-[10px] text-[#7A0B2E] mt-0.5 font-medium">
+                    {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                {hasActiveFilters && (
                   <button
-                    key={opt.value}
                     type="button"
-                    onClick={() => handleParamChange("stock", opt.value)}
-                    className={`w-full text-left px-3 py-2.5 text-xs rounded border transition-colors flex items-center justify-between ${
-                      currentStock === opt.value
-                        ? "border-[#7A0B2E] bg-[#FAF0F2] text-[#7A0B2E] font-semibold"
-                        : "border-gray-200 text-gray-700 hover:border-gray-300"
-                    }`}
+                    onClick={handleClearAll}
+                    className="text-[10px] font-bold uppercase tracking-wider text-[#7A0B2E] hover:text-[#5C0820] underline underline-offset-2 transition-colors"
                   >
-                    <span>{opt.label}</span>
-                    {currentStock === opt.value && <i className="ri-check-line text-[#7A0B2E]" />}
+                    Clear All
                   </button>
-                ))}
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/70 text-gray-500 hover:text-[#7A0B2E] hover:bg-white transition-colors shadow-sm"
+                  aria-label="Close filters"
+                >
+                  <i className="ri-close-line text-xl" />
+                </button>
               </div>
             </div>
 
-            {/* Filter: Price Range */}
-            <div className="mb-8">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#2D1F2F] mb-3">
-                Price Range
-              </label>
-              <div className="space-y-2">
+            {/* Drawer Body — scrollable */}
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-1">
+
+              {/* ── 1. Availability ── */}
+              <FilterSection title="Availability">
+                {[
+                  { value: "all", label: "All Items", icon: "🛍️" },
+                  { value: "instock", label: "In Stock", icon: "✅" },
+                ].map((opt) => (
+                  <FilterChip
+                    key={opt.value}
+                    label={opt.label}
+                    icon={opt.icon}
+                    active={currentStock === opt.value}
+                    onClick={() => handleParamChange("stock", opt.value)}
+                  />
+                ))}
+              </FilterSection>
+
+              {/* ── 2. Price Range ── */}
+              <FilterSection title="Price Range">
                 {[
                   { value: "all", label: "All Prices" },
                   { value: "under-1000", label: "Under ₹1,000" },
-                  { value: "1000-5000", label: "₹1,000 - ₹5,000" },
-                  { value: "over-5000", label: "Over ₹5,000" },
+                  { value: "1000-5000", label: "₹1,000 – ₹5,000" },
+                  { value: "over-5000", label: "Above ₹5,000" },
                 ].map((opt) => (
-                  <button
+                  <FilterChip
                     key={opt.value}
-                    type="button"
+                    label={opt.label}
+                    active={currentPriceRange === opt.value}
                     onClick={() => handleParamChange("priceRange", opt.value)}
-                    className={`w-full text-left px-3 py-2.5 text-xs rounded border transition-colors flex items-center justify-between ${
-                      currentPriceRange === opt.value
-                        ? "border-[#7A0B2E] bg-[#FAF0F2] text-[#7A0B2E] font-semibold"
-                        : "border-gray-200 text-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    <span>{opt.label}</span>
-                    {currentPriceRange === opt.value && <i className="ri-check-line text-[#7A0B2E]" />}
-                  </button>
+                  />
                 ))}
-              </div>
+              </FilterSection>
+
+              {/* ── 3. Offers & Discounts ── */}
+              <FilterSection title="Offers">
+                {[
+                  { value: "all", label: "All Products" },
+                  { value: "on-sale", label: "On Sale 🏷️" },
+                ].map((opt) => (
+                  <FilterChip
+                    key={opt.value}
+                    label={opt.label}
+                    active={currentDiscount === opt.value}
+                    onClick={() => handleParamChange("discount", opt.value)}
+                  />
+                ))}
+              </FilterSection>
+
+              {/* ── 4. Customer Rating ── */}
+              <FilterSection title="Customer Rating">
+                {[
+                  { value: "all", label: "All Ratings" },
+                  { value: "4-plus", label: "⭐ 4 & Above" },
+                  { value: "3-plus", label: "⭐ 3 & Above" },
+                ].map((opt) => (
+                  <FilterChip
+                    key={opt.value}
+                    label={opt.label}
+                    active={currentRating === opt.value}
+                    onClick={() => handleParamChange("rating", opt.value)}
+                  />
+                ))}
+              </FilterSection>
+
+              {/* ── 5. Sort (inline within drawer for mobile convenience) ── */}
+              <FilterSection title="Sort By">
+                {Object.entries(sortLabels).map(([key, label]) => (
+                  <FilterChip
+                    key={key}
+                    label={label}
+                    active={currentSort === key}
+                    onClick={() => handleParamChange("sort", key)}
+                  />
+                ))}
+              </FilterSection>
+
             </div>
 
-            {/* Actions */}
-            <div className="mt-auto pt-4 border-t border-[#7A0B2E]/30 flex gap-3">
+            {/* Drawer Footer */}
+            <div
+              className="px-6 py-4 border-t border-[#C3A29B]/40 flex gap-3"
+              style={{ background: "linear-gradient(180deg, #F5EFE6 0%, #EBDCD9 100%)" }}
+            >
               {hasActiveFilters && (
                 <button
                   type="button"
-                  onClick={() => {
-                    const params = new URLSearchParams(searchParams.toString());
-                    params.delete("stock");
-                    params.delete("priceRange");
-                    params.delete("page");
-                    router.push(`${pathname}?${params.toString()}`);
-                  }}
-                  className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider border border-[#7A0B2E] text-[#2D1F2F] hover:bg-[#FAF0F2] transition-colors"
+                  onClick={handleClearAll}
+                  className="flex-1 py-3 text-xs font-bold uppercase tracking-wider border border-[#7A0B2E] text-[#7A0B2E] hover:bg-[#EBDCD9] rounded-sm transition-colors"
                 >
                   Reset
                 </button>
@@ -339,9 +500,9 @@ export default function CatalogToolbar() {
               <button
                 type="button"
                 onClick={() => setIsFilterOpen(false)}
-                className="flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider bg-[#7A0B2E] text-white hover:bg-[#5C0820] transition-colors"
+                className="flex-1 py-3 text-xs font-bold uppercase tracking-wider bg-[#7A0B2E] text-white hover:bg-[#5C0820] rounded-sm transition-colors shadow-sm"
               >
-                Apply
+                Show Results
               </button>
             </div>
           </div>

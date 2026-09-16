@@ -19,7 +19,7 @@ export const revalidate = 3600;
 export default async function AllProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; sort?: string; stock?: string; priceRange?: string }>;
+  searchParams: Promise<{ page?: string; sort?: string; stock?: string; priceRange?: string; discount?: string; rating?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10));
@@ -28,10 +28,12 @@ export default async function AllProductsPage({
   const sort = resolvedSearchParams.sort || 'newest';
   const stock = resolvedSearchParams.stock || 'all';
   const priceRange = resolvedSearchParams.priceRange || 'all';
+  const discount = resolvedSearchParams.discount || 'all';
+  const rating = resolvedSearchParams.rating || 'all';
 
   // Run products + flash sales in parallel
   const [{ products, totalProducts }, sales] = await Promise.all([
-    getCachedFilteredProducts(null, stock, priceRange, sort, currentPage, ITEMS_PER_PAGE),
+    getCachedFilteredProducts(null, stock, priceRange, sort, currentPage, ITEMS_PER_PAGE, undefined, discount, rating),
     getActiveFlashSales(),
   ]);
 
@@ -48,6 +50,8 @@ export default async function AllProductsPage({
   if (sort !== 'newest') queryParams.set('sort', sort);
   if (stock !== 'all') queryParams.set('stock', stock);
   if (priceRange !== 'all') queryParams.set('priceRange', priceRange);
+  if (discount !== 'all') queryParams.set('discount', discount);
+  if (rating !== 'all') queryParams.set('rating', rating);
   const queryString = queryParams.toString();
   const baseUrl = `/collections${queryString ? `?${queryString}` : ''}`;
 
