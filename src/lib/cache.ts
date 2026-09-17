@@ -319,6 +319,41 @@ export const getCachedMainCollections = createCachedQuery(
   { tags: [CACHE_TAGS.collections], revalidate: 31536000 }
 );
 
+// Lightweight category tree — top-level collections + 2 levels of children.
+// Cached for 1 year; auto-busted when admin updates collections via revalidateTag.
+// Used to build category filter chips on the New Arrivals / Best Sellers pages.
+export const getCachedCategoryTree = createCachedQuery(
+  ["collections", "category-tree"],
+  async () => {
+    try {
+      return await prisma.collection.findMany({
+        where: { parentId: null },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          children: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              children: {
+                select: { id: true, name: true, slug: true },
+                orderBy: [{ order: "asc" }, { name: "asc" }]
+              }
+            },
+            orderBy: [{ order: "asc" }, { name: "asc" }]
+          }
+        },
+        orderBy: [{ order: "asc" }, { name: "asc" }]
+      });
+    } catch {
+      return [];
+    }
+  },
+  { tags: [CACHE_TAGS.collections], revalidate: 31536000 }
+);
+
 // Navigation Tree for Storefront Header
 export const getCachedNavigationTree = createCachedQuery(
   ["navigation", "tree"],
@@ -529,44 +564,73 @@ export const CACHE_REVALIDATE = {
 export const getCachedFilteredProducts = createCachedQuery(
   ["products", "filtered"],
   async (
-    collectionIds: string[] | null, 
-    stock: string, 
-    priceRange: string, 
-    sort: string, 
-    page: number, 
+    collectionIds: string[] | null,
+    stock: string,
+    priceRange: string,
+    sort: string,
+    page: number,
     itemsPerPage: number,
-    specialFilter?: "best-sellers" | "new-arrivals"
+    specialFilter?: "best-sellers" | "new-arrivals",
+    discount?: string,
+    rating?: string,
+    // Optional: when set on a special-filter page, restrict products to these IDs.
+    // Allows "New Arrivals" to be scoped to a specific category/subcategory.
+    categoryIds?: string[] | null
   ) => {
     const whereClause: Prisma.ProductWhereInput = { deletedAt: null };
-    
-    // Ignore explicit collectionIds if it's a dynamic smart collection
-    if (collectionIds && collectionIds.length > 0 && !specialFilter) {
-      whereClause.collectionId = { in: collectionIds };
-    }
 
     if (specialFilter === "best-sellers") {
-      // Only include items that are manually marked as Best Seller OR have organically sold at least once
       whereClause.OR = [
         { bestSeller: true },
         { salesCount: { gt: 0 } }
       ];
+      // Still allow category scoping on best-sellers page
+      if (categoryIds && categoryIds.length > 0) {
+        whereClause.collectionId = { in: categoryIds };
+      }
+    } else if (specialFilter === "new-arrivals") {
+      // New Arrivals = newest products across the store.
+      // If a category filter is applied, scope to that category's IDs.
+      if (categoryIds && categoryIds.length > 0) {
+        whereClause.collectionId = { in: categoryIds };
+      }
+      // No extra whereClause needed — ORDER BY createdAt DESC handles this.
+    } else {
+      // Regular collection page — filter by collection hierarchy
+      if (collectionIds && collectionIds.length > 0) {
+        whereClause.collectionId = { in: collectionIds };
+      }
     }
-    
-    if (stock === 'instock') whereClause.stockQuantity = { gt: 0 };
-    if (priceRange === 'under-1000') whereClause.price = { lt: 1000 };
-    else if (priceRange === '1000-5000') whereClause.price = { gte: 1000, lte: 5000 };
-    else if (priceRange === 'over-5000') whereClause.price = { gt: 5000 };
 
-    let orderByClause: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] = { createdAt: 'desc' };
-    
-    if (sort === 'price-asc') orderByClause = { price: 'asc' };
-    else if (sort === 'price-desc') orderByClause = { price: 'desc' };
-    else if (sort === 'name-asc') orderByClause = { name: 'asc' };
-    else if (sort === 'newest') {
+    if (stock === "instock") whereClause.stockQuantity = { gt: 0 };
+    if (priceRange === "under-1000") whereClause.price = { lt: 1000 };
+    else if (priceRange === "1000-5000") whereClause.price = { gte: 1000, lte: 5000 };
+    else if (priceRange === "over-5000") whereClause.price = { gt: 5000 };
+
+    // On-sale: only show products with a marked-down price
+    if (discount === "on-sale") {
+      whereClause.originalPrice = { not: null };
+    }
+
+    // Rating proxy — surface best-selling / popular products
+    if (rating === "4-plus") {
+      whereClause.bestSeller = true;
+    } else if (rating === "3-plus") {
+      whereClause.salesCount = { gt: 0 };
+    }
+
+    let orderByClause:
+      | Prisma.ProductOrderByWithRelationInput
+      | Prisma.ProductOrderByWithRelationInput[] = { createdAt: "desc" };
+
+    if (sort === "price-asc") orderByClause = { price: "asc" };
+    else if (sort === "price-desc") orderByClause = { price: "desc" };
+    else if (sort === "name-asc") orderByClause = { name: "asc" };
+    else if (sort === "newest") {
       if (specialFilter === "best-sellers") {
         orderByClause = [{ bestSeller: "desc" }, { salesCount: "desc" }];
       } else {
-        orderByClause = { createdAt: 'desc' };
+        orderByClause = { createdAt: "desc" };
       }
     }
 
@@ -576,11 +640,18 @@ export const getCachedFilteredProducts = createCachedQuery(
         orderBy: orderByClause,
         skip: (page - 1) * itemsPerPage,
         take: itemsPerPage,
-        include: { reviews: { select: { rating: true } } }
+        include: { reviews: { select: { rating: true } } },
       }),
-      prisma.product.count({ where: whereClause })
+      prisma.product.count({ where: whereClause }),
     ]);
-    return { products, totalProducts };
+
+    // JS-side discount refinement: only keep products where price < originalPrice
+    const filtered =
+      discount === "on-sale"
+        ? products.filter((p) => p.originalPrice != null && p.originalPrice > p.price)
+        : products;
+
+    return { products: filtered, totalProducts };
   },
   { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL.short }
 );
