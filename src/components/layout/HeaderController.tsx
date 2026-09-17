@@ -104,7 +104,7 @@ export default function HeaderController({ cartCount: initialCart, wishlistCount
       )}
       {isCatalog && (
         <Suspense fallback={null}>
-          <CatalogToolbar backHref={backHref} />
+          <CatalogToolbar backHref={backHref} navLinks={navLinks} />
         </Suspense>
       )}
     </>

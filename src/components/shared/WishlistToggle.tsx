@@ -29,8 +29,13 @@ export default function WishlistButton({
       setWishlisted(result);
       toast.success(result ? "Added to wishlist!" : "Removed from wishlist.");
       router.refresh();
-    } catch {
-      toast.error("Could not update wishlist. Please try again.");
+    } catch (error: any) {
+      if (error?.message?.includes("UNAUTHORIZED")) {
+        toast.error("Please login to manage your wishlist.");
+        router.push(`/account/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+      } else {
+        toast.error("Could not update wishlist. Please try again.");
+      }
     } finally {
       setIsProcessing(false);
     }

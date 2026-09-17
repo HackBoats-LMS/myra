@@ -96,6 +96,8 @@ export default async function CollectionPage({
     category?: string;
     // subcat = child/grandchild collection slug for finer scoping
     subcat?: string;
+    // view mode for main categories
+    view?: string;
   }>;
 }) {
   const { slug } = await params;
@@ -111,6 +113,7 @@ export default async function CollectionPage({
   const rating = sp.rating || "all";
   const categoryParam = sp.category || "all"; // top-level category slug filter
   const subcatParam = sp.subcat || "all";     // sub/grandchild category slug filter
+  const viewParam = sp.view || "categories";  // view mode (categories vs all)
 
   const specialFilter =
     slug === "best-sellers"
@@ -227,7 +230,7 @@ export default async function CollectionPage({
   const buildUrl = (overrides: Record<string, string>) => {
     const params = new URLSearchParams();
     const merged = {
-      sort, stock, priceRange, discount, rating, category: categoryParam, subcat: subcatParam,
+      sort, stock, priceRange, discount, rating, category: categoryParam, subcat: subcatParam, view: viewParam,
       ...overrides,
     };
     if (merged.sort !== "newest") params.set("sort", merged.sort);
@@ -237,6 +240,7 @@ export default async function CollectionPage({
     if (merged.rating !== "all") params.set("rating", merged.rating);
     if (merged.category !== "all") params.set("category", merged.category);
     if (merged.subcat !== "all") params.set("subcat", merged.subcat);
+    if (merged.view !== "categories") params.set("view", merged.view);
     const qs = params.toString();
     return `/collections/${slug}${qs ? `?${qs}` : ""}`;
   };
@@ -437,6 +441,28 @@ export default async function CollectionPage({
         </div>
       )}
 
+      {/* View Toggle for Main Categories */}
+      {isMainCategory && (
+        <div className="flex justify-center -mt-6 relative z-30 mb-6">
+          <div className="bg-white p-1 rounded-full shadow-md border border-[#7A0B2E]/10 flex items-center">
+             <Link 
+               href={buildUrl({ view: 'categories', page: "1" })} 
+               scroll={false} 
+               className={`px-6 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${viewParam !== 'all' ? 'bg-[#7A0B2E] text-white shadow-sm' : 'text-[#2D1F2F]/70 hover:text-[#7A0B2E] hover:bg-[#F5EFE6]'}`}
+             >
+               Categories
+             </Link>
+             <Link 
+               href={buildUrl({ view: 'all', page: "1" })} 
+               scroll={false} 
+               className={`px-6 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${viewParam === 'all' ? 'bg-[#7A0B2E] text-white shadow-sm' : 'text-[#2D1F2F]/70 hover:text-[#7A0B2E] hover:bg-[#F5EFE6]'}`}
+             >
+               View All
+             </Link>
+          </div>
+        </div>
+      )}
+
       {/* 3. ── CATEGORY FILTER STRIP (New Arrivals / Best Sellers only) ──────
            Fully server-rendered. Zero JS. Each chip is a plain <Link>.
            Shows exactly the same categories as the "/" navbar (getCachedNavigationTree,
@@ -549,7 +575,7 @@ export default async function CollectionPage({
 
 
       {/* 4. Interactive Showcase (Main Category pages only) */}
-      {isMainCategory && (formattedSections.length > 0 || flatVarietiesFallback.length > 0) && (
+      {isMainCategory && viewParam !== 'all' && (formattedSections.length > 0 || flatVarietiesFallback.length > 0) && (
         <InteractiveCategoryShowcase
           departmentName={collection.name}
           sections={formattedSections}
@@ -605,7 +631,7 @@ export default async function CollectionPage({
 
       {/* 6. Products Section */}
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8 py-8 md:py-12">
-        <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#7A0B2E]/10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-2 border-b border-[#7A0B2E]/10 gap-3">
           <span className="text-xs uppercase tracking-widest font-serif text-gray-500">
             Showing{" "}
             <strong className="text-[#2D1F2F]">{totalProducts}</strong> products
@@ -621,6 +647,29 @@ export default async function CollectionPage({
               <span className="text-[#7A0B2E] ml-1">in {collection.name}</span>
             )}
           </span>
+
+          {/* View All Button in Header */}
+          <div className="flex items-center gap-3">
+            {isMainCategory && viewParam !== 'all' && (
+              <Link
+                href={buildUrl({ view: 'all', page: "1" })}
+                scroll={false}
+                className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors"
+              >
+                View All {collection.name}
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
+            {!isMainCategory && collection.parent && (
+              <Link
+                href={`/collections/${collection.parent.slug}`}
+                className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] transition-colors"
+              >
+                View All {collection.parent.name}
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
+          </div>
         </div>
 
         {productsWithReviews.length === 0 ? (

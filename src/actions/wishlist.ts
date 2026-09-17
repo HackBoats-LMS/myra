@@ -38,55 +38,32 @@ export async function toggleWishlist(productId: string) {
   }
 
   const session = await getServerSession(authOptions);
-  if (session?.user?.id) {
-    const userId = session.user.id;
+  if (!session?.user?.id) {
+    throw new Error("UNAUTHORIZED");
+  }
+  
+  const userId = session.user.id;
 
-    let wishlist = await prisma.wishlist.findUnique({ where: { userId } });
-    if (!wishlist) {
-      wishlist = await prisma.wishlist.create({ data: { userId } });
-    }
-
-    const existing = await prisma.wishlistItem.findFirst({
-      where: { wishlistId: wishlist.id, productId }
-    });
-
-    if (existing) {
-      await prisma.wishlistItem.delete({ where: { id: existing.id } });
-      revalidateTag(CACHE_TAGS.wishlist(userId));
-      return false; // Removed
-    } else {
-      await prisma.wishlistItem.create({
-        data: { wishlistId: wishlist.id, productId }
-      });
-      revalidateTag(CACHE_TAGS.wishlist(userId));
-      return true; // Added
-    }
+  let wishlist = await prisma.wishlist.findUnique({ where: { userId } });
+  if (!wishlist) {
+    wishlist = await prisma.wishlist.create({ data: { userId } });
   }
 
-  // Guest wishlist (cookie-based)
-  const cookieStore = await cookies();
-  const rawWishlistData = verifyCookieValue(cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
-  const productIds = await parseGuestWishlistCookie(rawWishlistData ?? cookieStore.get(GUEST_WISHLIST_COOKIE)?.value);
-  const index = productIds.indexOf(productId);
-
-  let added: boolean;
-  if (index > -1) {
-    productIds.splice(index, 1);
-    added = false;
-  } else {
-    productIds.push(productId);
-    added = true;
-  }
-
-  cookieStore.set(GUEST_WISHLIST_COOKIE, signCookieValue(JSON.stringify(productIds)), {
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
+  const existing = await prisma.wishlistItem.findFirst({
+    where: { wishlistId: wishlist.id, productId }
   });
 
-  return added;
+  if (existing) {
+    await prisma.wishlistItem.delete({ where: { id: existing.id } });
+    revalidateTag(CACHE_TAGS.wishlist(userId));
+    return false; // Removed
+  } else {
+    await prisma.wishlistItem.create({
+      data: { wishlistId: wishlist.id, productId }
+    });
+    revalidateTag(CACHE_TAGS.wishlist(userId));
+    return true; // Added
+  }
 }
 
 export async function mergeGuestWishlistItems(userId: string, productIds: string[]) {

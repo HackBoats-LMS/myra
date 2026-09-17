@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
 
 function BackArrowSvg({ className = "w-6 h-6" }: { className?: string }) {
   return (
@@ -67,7 +68,9 @@ function FilterSection({ title, children }: { title: string; children: React.Rea
   );
 }
 
-export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }) {
+import type { NavLink } from "@/lib/navigation";
+
+export default function CatalogToolbar({ backHref = "/", navLinks = [] }: { backHref?: string, navLinks?: NavLink[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -76,6 +79,11 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const sortRef = useRef<HTMLDivElement>(null);
   const mobileSortRef = useRef<HTMLDivElement>(null);
@@ -117,15 +125,26 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Lock body scroll when filter drawer is open so background doesn't scroll through
+  // Scroll lock: prevent background scrolling when filter drawer is open.
+  // We apply overflow: hidden and height: 100vh to both html and body elements.
+  // This forces mobile browsers (like iOS Safari) to truly freeze the background.
   useEffect(() => {
     if (isFilterOpen) {
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.style.height = "100vh";
       document.body.style.overflow = "hidden";
+      document.body.style.height = "100vh";
     } else {
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.height = "";
       document.body.style.overflow = "";
+      document.body.style.height = "";
     }
     return () => {
+      document.documentElement.style.overflow = "";
+      document.documentElement.style.height = "";
       document.body.style.overflow = "";
+      document.body.style.height = "";
     };
   }, [isFilterOpen]);
 
@@ -146,6 +165,41 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
     if (!searchQuery.trim()) return;
     router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
   };
+
+  // Derive category context for dynamic filters
+  const cleanPath = pathname.split("?")[0];
+  const isSpecialPage = cleanPath === "/collections" || cleanPath === "/search" || cleanPath.startsWith("/collections/best-sellers") || cleanPath.startsWith("/collections/new-arrivals");
+  
+  let activeTopCategory: NavLink | null = null;
+  let subCategories: { label: string; href: string }[] = [];
+
+  if (!isSpecialPage && navLinks.length > 0) {
+    for (const topItem of navLinks) {
+      const topHref = topItem.href.split("?")[0];
+      if (topHref === cleanPath) {
+        activeTopCategory = topItem;
+        break;
+      }
+      if (topItem.sections && topItem.sections.some(s => s.href.split("?")[0] === cleanPath || s.items.some(i => i.href.split("?")[0] === cleanPath))) {
+        activeTopCategory = topItem;
+        break;
+      }
+      if (topItem.children && topItem.children.some(c => c.href.split("?")[0] === cleanPath)) {
+        activeTopCategory = topItem;
+        break;
+      }
+    }
+  } else if (isSpecialPage && currentCategory !== "all") {
+    activeTopCategory = navLinks.find(nav => nav.href.split("?")[0].split("/").pop() === currentCategory) || null;
+  }
+
+  if (activeTopCategory) {
+    subCategories = activeTopCategory.sections && activeTopCategory.sections.length > 0
+      ? activeTopCategory.sections.flatMap((sec) => sec.items)
+      : activeTopCategory.children ?? [];
+  } else if (isSpecialPage) {
+    subCategories = navLinks.map(nav => ({ label: nav.label, href: nav.href }));
+  }
 
   const hasActiveFilters =
     currentStock !== "all" ||
@@ -356,8 +410,10 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
 
       {/* ============================================================
           Slide-over Filter Drawer — redesigned with home page palette
+          Rendered in a portal to escape the sticky header context, ensuring
+          desktop scroll events target the drawer and not the background page.
           ============================================================ */}
-      {isFilterOpen && (
+      {mounted && isFilterOpen && createPortal(
         <div className="fixed inset-0 z-50 flex justify-end">
           {/* Backdrop */}
           <div
@@ -366,7 +422,7 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
           />
 
           {/* Drawer */}
-          <div className="relative w-full max-w-[340px] bg-[#FDFAF8] h-full shadow-2xl z-10 flex flex-col overflow-hidden animate-slide-in-right">
+          <div className="relative w-full max-w-[340px] bg-[#FDFAF8] h-[100dvh] shadow-2xl z-10 flex flex-col overflow-hidden animate-slide-in-right">
 
             {/* Drawer Header */}
             <div
@@ -402,19 +458,80 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
               </div>
             </div>
 
-            {/* Drawer Body — scrollable */}
-            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-1">
+            {/* Drawer Body — scrollable, overscroll-contain prevents scroll escaping to background */}
+            <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-6 py-6 space-y-1">
+
+              {/* ── 0. Dynamic Categories ── */}
+              {subCategories.length > 0 && (
+                <FilterSection title={activeTopCategory ? `Subcategories in ${activeTopCategory.label}` : "Categories"}>
+                  <FilterChip
+                    label={activeTopCategory ? `All ${activeTopCategory.label}` : "All Categories"}
+                    active={
+                      isSpecialPage
+                        ? (activeTopCategory ? currentSubcat === "all" : currentCategory === "all")
+                        : (activeTopCategory ? cleanPath === activeTopCategory.href.split("?")[0] : false)
+                    }
+                    onClick={() => {
+                      if (isSpecialPage) {
+                        if (activeTopCategory) {
+                          handleParamChange("subcat", "all");
+                        } else {
+                          handleParamChange("category", "all");
+                        }
+                      } else {
+                        if (activeTopCategory && cleanPath !== activeTopCategory.href.split("?")[0]) {
+                          router.push(activeTopCategory.href, { scroll: false });
+                          setIsFilterOpen(false);
+                        }
+                      }
+                    }}
+                  />
+                  {subCategories.map((cat) => {
+                    const catSlug = cat.href.split("?")[0].split("/").pop();
+                    
+                    let isActive = false;
+                    let onClick = () => {};
+                    
+                    if (isSpecialPage) {
+                      isActive = activeTopCategory ? currentSubcat === catSlug : currentCategory === catSlug;
+                      onClick = () => {
+                        if (activeTopCategory) {
+                          handleParamChange("subcat", isActive ? "all" : (catSlug || ""));
+                        } else {
+                          handleParamChange("category", isActive ? "all" : (catSlug || ""));
+                        }
+                      };
+                    } else {
+                      isActive = cleanPath === cat.href.split("?")[0];
+                      onClick = () => {
+                        if (!isActive) {
+                          router.push(cat.href, { scroll: false });
+                          setIsFilterOpen(false); // Close drawer on navigation
+                        }
+                      };
+                    }
+
+                    return (
+                      <FilterChip
+                        key={cat.href}
+                        label={cat.label}
+                        active={isActive}
+                        onClick={onClick}
+                      />
+                    );
+                  })}
+                </FilterSection>
+              )}
 
               {/* ── 1. Availability ── */}
               <FilterSection title="Availability">
                 {[
-                  { value: "all", label: "All Items", icon: "🛍️" },
-                  { value: "instock", label: "In Stock", icon: "✅" },
+                  { value: "all", label: "All Items" },
+                  { value: "instock", label: "In Stock" },
                 ].map((opt) => (
                   <FilterChip
                     key={opt.value}
                     label={opt.label}
-                    icon={opt.icon}
                     active={currentStock === opt.value}
                     onClick={() => handleParamChange("stock", opt.value)}
                   />
@@ -442,7 +559,7 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
               <FilterSection title="Offers">
                 {[
                   { value: "all", label: "All Products" },
-                  { value: "on-sale", label: "On Sale 🏷️" },
+                  { value: "on-sale", label: "On Sale" },
                 ].map((opt) => (
                   <FilterChip
                     key={opt.value}
@@ -457,8 +574,8 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
               <FilterSection title="Customer Rating">
                 {[
                   { value: "all", label: "All Ratings" },
-                  { value: "4-plus", label: "⭐ 4 & Above" },
-                  { value: "3-plus", label: "⭐ 3 & Above" },
+                  { value: "4-plus", label: "4 & Above" },
+                  { value: "3-plus", label: "3 & Above" },
                 ].map((opt) => (
                   <FilterChip
                     key={opt.value}
@@ -506,7 +623,8 @@ export default function CatalogToolbar({ backHref = "/" }: { backHref?: string }
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
