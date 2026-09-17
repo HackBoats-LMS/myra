@@ -1,6 +1,6 @@
 "use server";
 import { prisma } from "@/lib/db/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { verifyAdmin } from "@/lib/auth/auth-utils";
 import { logAudit } from "@/lib/audit";
 
@@ -15,6 +15,9 @@ export async function updateStoreSettings(formData: FormData) {
   const promoEnabled = formData.get("promoEnabled") === "on";
   const promoText = String(formData.get("promoText") || "").trim();
   const promoLink = String(formData.get("promoLink") || "").trim();
+  
+  const homePromoEnabled = formData.get("homePromoEnabled") === "on";
+  const homePromoText = String(formData.get("homePromoText") || "").trim();
 
   if (!storeName) {
     throw new Error("Store name cannot be empty.");
@@ -28,7 +31,7 @@ export async function updateStoreSettings(formData: FormData) {
   if (isNaN(taxPercent) || taxPercent < 0 || taxPercent > 100) {
     throw new Error("Tax percentage must be between 0 and 100.");
   }
-  if (promoText.length > 500) {
+  if (promoText.length > 500 || homePromoText.length > 500) {
     throw new Error("Promo text must not exceed 500 characters.");
   }
   if (promoLink.length > 500) {
@@ -59,6 +62,8 @@ export async function updateStoreSettings(formData: FormData) {
     promoEnabled: promoEnabled ? "true" : "false",
     promoText,
     promoLink,
+    homePromoEnabled: homePromoEnabled ? "true" : "false",
+    homePromoText,
   };
 
   for (const [key, value] of Object.entries(values)) {
@@ -71,6 +76,7 @@ export async function updateStoreSettings(formData: FormData) {
 
   await logAudit("settings.update", "StoreSetting", "global", values);
 
+  updateTag("store_settings");
   revalidatePath("/admin/settings");
   revalidatePath("/");
 }
