@@ -11,11 +11,13 @@ import { getCachedCartCount, getCachedWishlistCount, getCachedNavigationTree } f
 import { NAV_LINKS, type NavLink } from "@/lib/navigation";
 import CookieConsent from "@/components/layout/CookieConsent";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
+import HomePagePromoBar from "@/components/layout/HomePagePromoBar";
 import Footer from "@/components/layout/Footer";
 import PwaRegister from "@/app/(storefront)/_components/PwaRegister";
 import Drawers from "@/app/(storefront)/_components/Drawers";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import { verifyCookieValue } from "@/lib/cookie-signing";
+import { getStoreSettings } from "@/lib/settings";
 
 function parseGuestCartCount(raw: string | undefined): number {
   if (!raw) return 0;
@@ -61,6 +63,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
   const isLoggedIn = false;
   const compareIds: string[] = [];
 
+  const settings = await getStoreSettings();
 
   return (
     <CartProvider initialCartCount={cartCount}>
@@ -68,6 +71,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
         <CompareProvider initialIds={compareIds}>
           <div className="w-full min-h-screen flex flex-col bg-[var(--background)]">
             <AnnouncementBar />
+            <HomePagePromoBar enabled={settings.homePromoEnabled} text={settings.homePromoText} />
             <HeaderController cartCount={cartCount} wishlistCount={wishlistCount} isLoggedIn={isLoggedIn} navLinks={navLinks} />
             <main id="main-content" className="flex-1">
               {children}

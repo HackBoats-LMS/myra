@@ -12,6 +12,8 @@ interface StoreSettingsFormProps {
   promoEnabled: boolean;
   promoText: string;
   promoLink: string;
+  homePromoEnabled: boolean;
+  homePromoText: string;
 }
 
 export default function StoreSettingsForm(props: StoreSettingsFormProps) {
@@ -61,21 +63,37 @@ export default function StoreSettingsForm(props: StoreSettingsFormProps) {
       </div>
 
       <div className="border-t border-[#7A0B2E]/20 pt-6">
-        <h3 className="font-serif text-lg text-[#2D1F2F] mb-4">Promo Banner</h3>
+        <h3 className="font-serif text-lg text-[#2D1F2F] mb-4">Global Announcement Bar</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 md:col-span-2">
             <label className="inline-flex items-center gap-2 cursor-pointer">
               <input type="checkbox" name="promoEnabled" defaultChecked={props.promoEnabled} className="accent-[#7A0B2E]" />
-              <span className="text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Show promo banner at the top of the store</span>
+              <span className="text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Show global announcement bar at the top of the store</span>
             </label>
           </div>
           <div className="space-y-2">
-            <label className={label} htmlFor="promoText">Banner Text</label>
+            <label className={label} htmlFor="promoText">Announcement Text</label>
             <input id="promoText" name="promoText" defaultValue={props.promoText} placeholder="e.g. 20% off sarees this weekend" className={field} />
           </div>
           <div className="space-y-2">
-            <label className={label} htmlFor="promoLink">Banner Link (optional)</label>
+            <label className={label} htmlFor="promoLink">Announcement Link (optional)</label>
             <input id="promoLink" name="promoLink" defaultValue={props.promoLink} placeholder="e.g. /collections/sarees" className={field} />
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-[#7A0B2E]/20 pt-6">
+        <h3 className="font-serif text-lg text-[#2D1F2F] mb-4">Home Page Promo Bar</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 md:col-span-2">
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" name="homePromoEnabled" defaultChecked={props.homePromoEnabled} className="accent-[#7A0B2E]" />
+              <span className="text-[10px] font-bold text-[#2D1F2F] uppercase tracking-widest">Show promo bar above navbar on homepage</span>
+            </label>
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <label className={label} htmlFor="homePromoText">Promo Text</label>
+            <input id="homePromoText" name="homePromoText" defaultValue={props.homePromoText} placeholder="e.g. Enjoy Free Shipping on Orders Over ₹2000! ✨" className={field} />
           </div>
         </div>
       </div>
