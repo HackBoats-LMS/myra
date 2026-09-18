@@ -369,7 +369,6 @@ export default async function CollectionPage({
               priority
               sizes="100vw"
               quality={100}
-              unoptimized={allBanners[0].startsWith("http")}
               className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-8 sm:pb-12 md:pb-16">

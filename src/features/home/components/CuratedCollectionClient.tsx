@@ -72,7 +72,6 @@ export default function CuratedCollectionClient({ stories }: { stories: StoryIte
                     sizes="(max-width: 768px) 90vw, 650px"
                     quality={95}
                     priority={idx === 0}
-                    unoptimized={story.image.startsWith("http")}
                     className="object-contain object-center"
                   />
                 </div>

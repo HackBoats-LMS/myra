@@ -41,7 +41,6 @@ export default function HeroGrid({ banners }: HeroGridProps) {
             priority
             quality={90}
             sizes="(max-width: 1280px) 100vw, 60vw"
-            unoptimized={mainSrc.startsWith("http")}
             className="object-cover object-center"
           />
         </Link>
@@ -59,7 +58,6 @@ export default function HeroGrid({ banners }: HeroGridProps) {
               priority
               quality={90}
               sizes="(max-width: 1280px) 50vw, 40vw"
-              unoptimized={topSrc.startsWith("http")}
               className="object-cover object-left"
             />
           </Link>
@@ -74,7 +72,6 @@ export default function HeroGrid({ banners }: HeroGridProps) {
               priority
               quality={90}
               sizes="(max-width: 1280px) 50vw, 40vw"
-              unoptimized={bottomSrc.startsWith("http")}
               className="object-cover object-left"
             />
           </Link>

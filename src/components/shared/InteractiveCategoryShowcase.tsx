@@ -248,71 +248,63 @@ export default function InteractiveCategoryShowcase({
 
         {/* View Mode 1: Curated Sections Showcase */}
         {viewMode === "sections" && !searchQuery.trim() && selectedSection === "all" ? (
-          <div className="space-y-12">
+          <div className="space-y-6">
             {sections.map((section) => {
               const varieties = section.varieties;
               const isExpanded = expandedSections[section.id] ?? false;
-              // Display first 8 varieties by default, or all if expanded
-              const visibleVarieties = isExpanded ? varieties : varieties.slice(0, 8);
-              const hasMore = varieties.length > 8;
 
               return (
                 <div
                   key={section.id}
-                  className="bg-white border border-[#7A0B2E]/15 p-5 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
+                  className="bg-white border border-[#5C0820]/20 shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all rounded-sm overflow-hidden"
                 >
                   {/* Section Title & Action Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 border-b border-[#7A0B2E]/15 gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#7A0B2E] tracking-wide">
+                  <div
+                    onClick={() => toggleSectionExpand(section.id)}
+                    className="flex flex-row items-center justify-between gap-4 cursor-pointer group p-4 sm:p-6 bg-[#5C0820] text-white"
+                  >
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg sm:text-2xl font-serif font-bold tracking-wide text-white group-hover:text-white/90 transition-colors">
                           {section.name}
                         </h3>
-                        <span className="px-2 py-0.5 text-[10px] font-sans font-bold uppercase tracking-widest bg-[#F5EFE6] text-[#7A0B2E] border border-[#7A0B2E]/20">
+                        <span className="px-2 py-0.5 text-[10px] font-sans font-bold uppercase tracking-widest bg-white/20 text-white border border-white/30 rounded-sm whitespace-nowrap">
                           {varieties.length} Varieties
                         </span>
                       </div>
-                      <p className="text-xs font-serif text-gray-500 mt-1">
+                      <p className="text-[11px] sm:text-xs font-serif text-white/80 mt-1 sm:mt-1.5 leading-snug">
                         Handcrafted {section.name.toLowerCase()} collections & signature weaves
                       </p>
                     </div>
 
-                    <Link
-                      href={`/collections/${section.slug}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-sans font-bold uppercase tracking-widest text-[#7A0B2E] hover:text-[#2D1F2F] border-b border-[#7A0B2E]/40 pb-0.5 transition-colors self-start sm:self-auto"
-                    >
-                      <span>Explore All {section.name}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    <div className="shrink-0 flex items-center">
+                      <button 
+                        type="button"
+                        className="text-white p-1.5 sm:p-2 bg-white/10 group-hover:bg-white/20 border border-white/30 transition-all rounded-full flex items-center justify-center"
+                      >
+                        {isExpanded ? <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Variety Cards Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5">
-                    {visibleVarieties.map((variety) => (
-                      <VarietyCard key={variety.id} variety={variety} />
-                    ))}
-                  </div>
-
-                  {/* Expand / Collapse Button for Sections with many varieties */}
-                  {hasMore && (
-                    <div className="mt-6 pt-4 border-t border-[#7A0B2E]/10 text-center">
-                      <button
-                        type="button"
-                        onClick={() => toggleSectionExpand(section.id)}
-                        className="inline-flex items-center gap-2 px-5 py-2 text-xs font-sans font-bold uppercase tracking-wider text-[#7A0B2E] bg-[#F5EFE6] hover:bg-[#7A0B2E] hover:text-white border border-[#7A0B2E]/30 transition-all cursor-pointer"
-                      >
-                        {isExpanded ? (
-                          <>
-                            <span>Show Less</span>
-                            <ChevronUp className="w-4 h-4" />
-                          </>
-                        ) : (
-                          <>
-                            <span>View All {varieties.length} {section.name}</span>
-                            <ChevronDown className="w-4 h-4" />
-                          </>
-                        )}
-                      </button>
+                  {isExpanded && (
+                    <div className="animate-in fade-in duration-300 p-5 sm:p-7">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5">
+                        {varieties.map((variety) => (
+                          <VarietyCard key={variety.id} variety={variety} />
+                        ))}
+                      </div>
+                      
+                      <div className="mt-6 pt-5 border-t border-[#7A0B2E]/10 flex justify-center">
+                        <Link
+                          href={`/collections/${section.slug}`}
+                          className="inline-flex items-center gap-2 px-6 py-2.5 text-xs font-sans font-bold uppercase tracking-widest text-[#7A0B2E] bg-[#F5EFE6] hover:bg-[#7A0B2E] hover:text-white border border-[#7A0B2E]/30 transition-all"
+                        >
+                          <span>Explore All {section.name}</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </div>
                   )}
                 </div>
