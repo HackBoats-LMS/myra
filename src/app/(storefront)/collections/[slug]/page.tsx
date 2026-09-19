@@ -248,23 +248,9 @@ export default async function CollectionPage({
   const baseUrl = buildUrl({});
 
   // ── Banners ───────────────────────────────────────────────────────────────
-  const DEFAULT_BANNERS: Record<string, string> = {
-    women: "/displaypics/women-banner.jpg",
-    sarees: "/displaypics/sarees-banner.jpg",
-    bridal: "/displaypics/bridal-banner.jpg",
-    kids: "/displaypics/kids-banner.jpg",
-  };
-  const defaultBanner =
-    DEFAULT_BANNERS[slug.toLowerCase()] ||
-    (collection.parent ? DEFAULT_BANNERS[collection.parent.slug.toLowerCase()] : undefined);
-
   const allBanners =
     collection.banners && collection.banners.length > 0
       ? collection.banners
-      : collection.image
-      ? [collection.image]
-      : defaultBanner
-      ? [defaultBanner]
       : [];
 
   // ── Subcategory pill data (for normal collection pages) ───────────────────
