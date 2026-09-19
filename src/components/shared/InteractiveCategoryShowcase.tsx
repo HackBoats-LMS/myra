@@ -290,7 +290,7 @@ export default function InteractiveCategoryShowcase({
                   {/* Variety Cards Grid */}
                   {isExpanded && (
                     <div className="animate-in fade-in duration-300 p-5 sm:p-7">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 sm:gap-5">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 sm:gap-2 lg:gap-3">
                         {varieties.map((variety) => (
                           <VarietyCard key={variety.id} variety={variety} />
                         ))}
@@ -323,9 +323,9 @@ export default function InteractiveCategoryShowcase({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5 sm:gap-2 lg:gap-3">
                   {filteredVarieties.map((variety) => (
-                    <VarietyCard key={variety.id} variety={variety} showSectionTag />
+                    <VarietyCard key={variety.id} variety={variety} showSectionTag={false} />
                   ))}
                 </div>
               </>
@@ -356,7 +356,6 @@ export default function InteractiveCategoryShowcase({
   );
 }
 
-// Individual Interactive Variety Card Component
 function VarietyCard({
   variety,
   showSectionTag = false,
@@ -369,58 +368,32 @@ function VarietyCard({
   return (
     <Link
       href={`/collections/${variety.slug}`}
-      className="group relative flex flex-col bg-white border border-[#7A0B2E]/20 hover:border-[#7A0B2E] transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(122,11,46,0.12)] hover:-translate-y-0.5 overflow-hidden"
+      className="group relative block aspect-[4/5] overflow-hidden bg-[#F5EFE6]"
     >
-      {/* Card Visual Header */}
-      <div className="relative aspect-[4/3] w-full bg-gradient-to-br from-[#FAF0F2] via-[#F5EFE6] to-[#EEDFD7] overflow-hidden">
-        {displayImage ? (
-          <Image
-            src={displayImage}
-            alt={variety.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            className="object-cover group-hover:scale-108 transition-transform duration-500"
-          />
-        ) : (
-          /* Bespoke Indian Luxury Motif Pattern */
-          <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center relative">
-            <HeritageFabricIcon className="w-10 h-10 text-[#7A0B2E]/50 group-hover:text-[#7A0B2E] group-hover:scale-110 transition-all duration-300 mb-1" />
-            <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-[#7A0B2E]/70 line-clamp-1">
-              {variety.sectionName}
-            </span>
-          </div>
-        )}
-
-        {/* Styles Badge */}
-        <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-xs px-2 py-0.5 border border-[#7A0B2E]/20 text-[9px] font-sans font-bold text-[#7A0B2E] uppercase tracking-wider shadow-xs">
-          {variety.productCount > 0 ? `${variety.productCount} Styles` : "Curated"}
+      {/* Background Image */}
+      {displayImage ? (
+        <Image
+          src={displayImage}
+          alt={variety.name}
+          fill
+          quality={85}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-700"
+        />
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-gradient-to-br from-[#FAF0F2] via-[#F5EFE6] to-[#EEDFD7]">
+          <HeritageFabricIcon className="w-10 h-10 text-[#7A0B2E]/30 group-hover:text-[#7A0B2E]/50 group-hover:scale-110 transition-all duration-300" />
         </div>
+      )}
 
-        {/* Section Pill if requested */}
-        {showSectionTag && (
-          <div className="absolute bottom-2 left-2 bg-[#2D1F2F]/80 backdrop-blur-xs px-1.5 py-0.5 text-[8px] font-sans font-semibold text-[#F5EFE6] uppercase tracking-wider">
-            {variety.sectionName}
-          </div>
-        )}
-      </div>
+      {/* Gradient Overlay for text contrast */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
-      {/* Card Content & Action Bar */}
-      <div className="p-3.5 flex flex-col justify-between flex-1 bg-white border-t border-[#7A0B2E]/10">
-        <div>
-          <h4 className="font-serif text-sm sm:text-[15px] font-bold text-[#2D1F2F] group-hover:text-[#7A0B2E] transition-colors line-clamp-1 leading-snug">
-            {variety.name}
-          </h4>
-          <span className="text-[11px] font-serif text-gray-500 italic block mt-0.5">
-            View collection
-          </span>
-        </div>
-
-        <div className="mt-3 pt-2 border-t border-[#7A0B2E]/10 flex items-center justify-between text-[#7A0B2E]">
-          <span className="text-[10px] font-sans font-bold uppercase tracking-widest group-hover:underline">
-            Explore
-          </span>
-          <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
-        </div>
+      {/* Text Content (centered at bottom, handling bigger names) */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col items-center text-center justify-end">
+        <h4 className="font-sans text-sm sm:text-base font-medium text-white uppercase tracking-widest break-words w-full drop-shadow-md">
+          {variety.name}
+        </h4>
       </div>
     </Link>
   );
